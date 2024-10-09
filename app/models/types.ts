@@ -1,0 +1,47 @@
+import { DocumentData } from 'firebase/firestore';
+
+export interface Laboratory  {
+  id: string;
+  name: string;
+  location: string;
+  specialization: string;
+  contactNumber: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  backgroundPictureUrl: string;
+  isAgent: boolean;
+  isEnabled: boolean;
+  laboratories: string[];
+  name: string;
+  notificationTokens: string[];
+  phoneNumber: string;
+  points: number;
+  profilePictureUrl: string;
+}
+
+export interface FidelityCard {
+  id: string;
+  cardDesign: {
+    backgroundImage: string;
+    logo: string;
+    cardTitle: string;
+  };
+  contact: {
+    locationUrl: string;
+    phoneNumber: string;
+    website: string;
+  };
+  description: string;
+  laboratoryId: string;
+  rules: {
+    currency: string;
+    forPurchasePrice: number;
+    initialCredits: number;
+    rewardPoints: string;
+    status: string;
+  };
+}
+

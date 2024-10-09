@@ -1,0 +1,107 @@
+You are an expert in TypeScript, React, and Remix. You are also an expert in Firebase and Firestore.
+
+# Loyalty Solution Project
+
+This project implements a comprehensive loyalty solution with three main components:
+
+1. **Seller Mobile App**: Allows sellers to accumulate points.
+2. **Agent Mobile App**: Enables agents to scan seller codes and credit points.
+3. **Admin Panel**: Manages the entire loyalty program backend.
+
+## Key Technologies
+
+- **Frontend**: Flutter for mobile apps, Remix for admin panel
+- **Backend**: Firebase
+- **Database**: Firebase Firestore
+- **UI Library**: Shadcn
+- **Styling**: TailwindCSS
+- **Language**: TypeScript
+
+## Development Guidelines
+
+### Key Principles
+
+- Write clear, precise Remix and TypeScript code.
+- Implement immutability and pure functions where applicable.
+- Use route modules and nested layouts for better composition and modularity.
+- Choose meaningful variable names (e.g., `isAuthenticated`, `userRole`).
+- Use kebab-case for file names (e.g., `user-profile.tsx`).
+- Prefer named exports for loaders, actions, and components.
+
+### TypeScript & Remix Best Practices
+
+- Define data structures using interfaces for type safety.
+- Avoid `any` type, leverage TypeScript's type system fully.
+- Organize files: imports, loaders/actions, component logic.
+- Use template strings for multi-line literals.
+- Utilize optional chaining and nullish coalescing.
+- Implement nested layouts and dynamic routes where applicable.
+- Use loaders for efficient server-side rendering and data fetching.
+- Leverage `useFetcher` and `useLoaderData` for seamless data management.
+
+### File Naming Conventions
+
+- `*.tsx` for React components
+- `*.ts` for utilities, types, and configurations
+- `root.tsx` for the root layout
+- All files use kebab-case
+
+### Code Style
+
+- Use single quotes for string literals
+- Indent with 2 spaces
+- Ensure clean code with no trailing whitespace
+- Use `const` for immutable variables
+- Use template strings for string interpolation
+
+### Remix-Specific Guidelines
+
+- Use `<Link>` for navigation to avoid full page reloads
+- Implement loaders and actions for server-side data handling
+- Ensure accessibility with semantic HTML and ARIA labels
+- Leverage route-based loading, error boundaries, and catch boundaries
+- Use `useFetcher` hook for non-blocking data updates
+- Optimize resource loading and caching for better performance
+
+### Import Order
+
+1. Remix core modules
+2. React and other core libraries
+3. Third-party packages
+4. Application-specific imports
+5. Environment-specific imports
+6. Relative path imports
+
+### Error Handling and Validation
+
+- Implement error boundaries for unexpected errors
+- Use custom error handling in loaders and actions
+- Validate user input on both client and server sides
+
+### Testing
+
+- Use `@testing-library/react` for component testing
+- Write tests for loaders and actions to ensure data correctness
+- Mock fetch requests and responses where applicable
+
+### Performance Optimization
+
+- Use `<Link prefetch="intent">` for faster navigation
+- Defer non-essential JavaScript with `<Scripts defer />`
+- Optimize nested layouts to minimize re-rendering
+- Leverage Remix's built-in caching and data revalidation
+
+### Security
+
+- Prevent XSS by sanitizing user-generated content
+- Use Remix's CSRF protection for form submissions
+- Handle sensitive data on the server, never expose in client code
+
+### Key Conventions
+
+- Use Remix's loaders and actions for server-side logic
+- Focus on reusability and modularity across routes and components
+- Follow Remix's best practices for file structure and data fetching
+- Optimize for performance and accessibility
+
+For detailed best practices, refer to the official Remix documentation on Routes, Loaders, and Actions.
