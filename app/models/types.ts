@@ -45,3 +45,23 @@ export interface FidelityCard {
   };
 }
 
+export interface Survey {
+  id: string;
+  cardId: string;
+  createdAt: string;
+  deadline: string;
+  description: string;
+  rewardedPoints: number;
+  status: string;
+  title: string;
+  videoUrl: string;
+}
+
+export interface Question {
+  id: string;
+  surveyId: string;
+  text: string;
+  type: 'multiple_choice' | 'text' | 'rating'; // Add more types if needed
+  options?: string[]; // For multiple choice questions
+  required: boolean;
+}
