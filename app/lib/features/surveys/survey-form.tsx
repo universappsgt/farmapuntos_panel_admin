@@ -23,9 +23,16 @@ import {
 import { Calendar } from "~/components/ui/calendar";
 import { CalendarIcon, PlusIcon, TrashIcon } from "@radix-ui/react-icons";
 import { cn } from "~/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 interface SurveyFormProps {
-  surveys: Survey[];
+  surveyToEdit: Survey | undefined;
   isCreating: boolean;
   setIsCreating: (value: boolean) => void;
   editingId: string | null;
@@ -35,7 +42,7 @@ interface SurveyFormProps {
 }
 
 export function SurveyForm({
-  surveys,
+  surveyToEdit,
   isCreating,
   setIsCreating,
   editingId,
@@ -56,10 +63,19 @@ export function SurveyForm({
     }
   }, [actionData, setIsSheetOpen]);
 
-  const surveyToEdit = surveys.find((survey) => survey.id === editingId);
   const [date, setDate] = useState<Date | undefined>(undefined);
-  const [time, setTime] = useState<string>("");
+
   const [questions, setQuestions] = useState<Question[]>([]);
+
+  useEffect(() => {
+    if (surveyToEdit) {
+      setDate(surveyToEdit.deadline);
+    } else {
+      setDate(undefined);
+
+      setQuestions([]);
+    }
+  }, [surveyToEdit]);
 
   const addQuestion = () => {
     setQuestions([
@@ -68,7 +84,7 @@ export function SurveyForm({
         id: Date.now().toString(),
         text: "",
         type: "text",
-        surveyId: "",
+        surveyId: editingId || "",
         required: false,
       },
     ]);
@@ -144,70 +160,103 @@ export function SurveyForm({
             </div>
             <div className="mb-4">
               <Label htmlFor="deadline">Fecha Límite</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-[280px] justify-start text-left font-normal",
-                      !date && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? (
-                      format(date, "PPP HH:mm")
-                    ) : (
-                      <span>Pick a date and time</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    initialFocus
+              <div className="flex space-x-4">
+                <div className="flex-1">
+                  <Label htmlFor="date">Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        id="date"
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !date && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {date ? format(date, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="flex-1">
+                  <Label htmlFor="time">Time</Label>
+                  <Input
+                    id="time"
+                    type="time"
+                    value={
+                      date
+                        ? date.toLocaleTimeString("en-US", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
+                          })
+                        : ""
+                    }
+                    onChange={(e) => undefined}
+                    className="w-full"
                   />
-                  <div className="p-3 border-t border-border">
-                    <Label htmlFor="time">Time</Label>
-                    <Input
-                      id="time"
-                      type="time"
-                      value={time}
-                      onChange={(e) => setTime(e.target.value)}
-                    />
-                  </div>
-                </PopoverContent>
-              </Popover>
+                </div>
+              </div>
             </div>
-            <div className="mb-4">
-              <Label htmlFor="rewardedPoints">Puntos de Recompensa</Label>
-              <Input
-                id="rewardedPoints"
-                name="rewardedPoints"
-                type="number"
-                required
-                defaultValue={
-                  isCreating ? "" : surveyToEdit?.rewardedPoints.toString()
-                }
-              />
-            </div>
+
             <div className="mb-4">
               <Label htmlFor="status">Estado</Label>
-              <Input
-                id="status"
+              <Select
                 name="status"
                 required
                 defaultValue={isCreating ? "" : surveyToEdit?.status}
-              />
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona un estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Activo</SelectItem>
+                  <SelectItem value="inactive">Inactivo</SelectItem>
+                  <SelectItem value="draft">Borrador</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="mb-4">
               <Label htmlFor="videoUrl">URL del Video</Label>
-              <Input
-                id="videoUrl"
-                name="videoUrl"
-                defaultValue={isCreating ? "" : surveyToEdit?.videoUrl}
-              />
+              <div className="flex items-center space-x-2">
+                <Input
+                  id="videoUrl"
+                  name="videoUrl"
+                  defaultValue={isCreating ? "" : surveyToEdit?.videoUrl}
+                  className="flex-grow"
+                />
+                {surveyToEdit?.videoUrl && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => window.open(surveyToEdit.videoUrl, "_blank")}
+                  >
+                    Abrir
+                  </Button>
+                )}
+              </div>
+              {surveyToEdit?.videoUrl && (
+                <div className="mt-2">
+                  <Label>Video Preview</Label>
+                  <div className="aspect-video mt-1">
+                    <iframe
+                      src={surveyToEdit.videoUrl}
+                      title="Video preview"
+                      className="w-full h-full border-0"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="mb-4">
               <Label>Preguntas</Label>
@@ -223,21 +272,29 @@ export function SurveyForm({
                     }
                     placeholder={`Pregunta ${index + 1}`}
                   />
-                  <select
+                  <Select
                     value={question.type}
-                    onChange={(e) =>
-                      updateQuestion(question.id, "type", e.target.value)
+                    onValueChange={(value) =>
+                      updateQuestion(question.id, "type", value)
                     }
-                    className="border rounded p-2"
                   >
-                    <option value="text">Texto</option>
-                    <option value="multipleChoice">Opción múltiple</option>
-                    <option value="checkbox">Casilla de verificación</option>
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona un tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="text">Texto</SelectItem>
+                      <SelectItem value="multipleChoice">
+                        Opción múltiple
+                      </SelectItem>
+                      <SelectItem value="checkbox">
+                        Casilla de verificación
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Button
+                    type="button"
                     onClick={() => removeQuestion(question.id)}
                     variant="destructive"
-                    size="icon"
                   >
                     <TrashIcon className="h-4 w-4" />
                   </Button>

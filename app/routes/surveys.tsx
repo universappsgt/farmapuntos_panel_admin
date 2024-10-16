@@ -37,12 +37,12 @@ export const action: ActionFunction = async ({ request }) => {
           title: title as string,
           description: description as string,
           cardId: "",
-          deadline: "",
           rewardedPoints: 0,
-          status: "",
+          status: "active",
           videoUrl: "",
-          createdAt: new Date().toISOString(),
+          createdAt: new Date(),
           id: "",
+          deadline: new Date(),
         };
 
         const [errors, createdSurvey] = await createDocument<Survey>(
@@ -66,11 +66,11 @@ export const action: ActionFunction = async ({ request }) => {
           title: title as string,
           description: description as string,
           cardId: "",
-          deadline: "",
+          deadline: new Date(formData.get("deadline") as string),
           rewardedPoints: 0,
-          status: "",
+          status: "active",
           videoUrl: "",
-          createdAt: formData.get("createdAt") as string,
+          createdAt: new Date(formData.get("createdAt") as string),
           id: id as string,
         };
 
@@ -107,6 +107,13 @@ export default function Surveys() {
 
   const actionData = useActionData<typeof action>();
 
+  // convert surveys to have date objects
+  const surveysWithDates = surveys.map((survey) => ({
+    ...survey,
+    deadline: new Date(survey.deadline),
+    createdAt: new Date(survey.createdAt),
+  }));
+
   useEffect(() => {
     if (actionData && actionData.success) {
       setIsSheetOpen(false);
@@ -123,24 +130,27 @@ export default function Surveys() {
       <SurveyForm
         isSheetOpen={isSheetOpen}
         setIsSheetOpen={setIsSheetOpen}
-        surveys={surveys}
+        surveyToEdit={getSurveyToEdit()}
         isCreating={isCreating}
         setIsCreating={setIsCreating}
         editingId={editingId}
         setEditingId={setEditingId}
       />
-
       <DataTable
         columns={surveyColumns({
-          editAction: (id) => {
+          editAction: (id: string) => {
             setIsCreating(false);
             setEditingId(id);
             setIsSheetOpen(true);
           },
           navigation,
         })}
-        data={surveys}
+        data={surveysWithDates}
       />
     </div>
   );
+
+  function getSurveyToEdit() {
+    return surveysWithDates.find((survey) => survey.id === editingId);
+  }
 }

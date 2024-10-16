@@ -68,7 +68,7 @@ export function LaboratoryForm({
             {isCreating ? "Create New Laboratory" : "Edit Laboratory"}
           </SheetTitle>
         </SheetHeader>
-        <Form method="post" className="space-y-4">
+        <Form method="post" className="space-y-8">
           <fieldset disabled={navigation.state === "submitting"}>
             <input
               type="hidden"

@@ -47,14 +47,14 @@ export interface FidelityCard {
 
 export interface Survey {
   id: string;
-  cardId: string;
-  createdAt: string;
-  deadline: string;
-  description: string;
-  rewardedPoints: number;
-  status: string;
   title: string;
   videoUrl: string;
+  deadline: Date;
+  cardId: string;
+  createdAt: Date;
+  description: string;
+  rewardedPoints: number;
+  status: 'active' | 'inactive' | 'completed';
 }
 
 export interface Question {

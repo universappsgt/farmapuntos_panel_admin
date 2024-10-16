@@ -12,7 +12,7 @@ import type { LinksFunction, LoaderFunction } from "@remix-run/node";
 
 import "./tailwind.css";
 import styles from "./tailwind.css?url";
-import LeftPanelNavigation from "./components/ui/leftPanel";
+import LeftPanelNavigation from "./components/ui/left-panel";
 import {
   PreventFlashOnWrongTheme,
   ThemeProvider,

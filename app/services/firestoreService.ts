@@ -1,17 +1,54 @@
 import { db } from 'firebase'; // Ensure you have your Firebase config imported
-import { collection, getDocs, addDoc, updateDoc, doc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, doc, deleteDoc, getDoc, WhereFilterOp, query, where, CollectionReference, Query } from "firebase/firestore";
 
 // Fetch documents from a collection
-export async function fetchDocuments<T>(collectionName: string): Promise<T[]> {
-  const collectionRef = collection(db, collectionName);
-  const snapshot = await getDocs(collectionRef);
 
-  const data = snapshot.docs.map(doc => ({
-    ...doc.data(),
-    id: doc.id,
-    // Type assertion to include id in the T object
-  } as T & { id: string }));
+// add optional query params
+
+
+export async function fetchDocuments<T>(
+  collectionName: string,
+  whereClause?: [string, WhereFilterOp, any]
+): Promise<T[]> {
+  const collectionRef = collection(db, collectionName);
+  let q: CollectionReference | Query = collectionRef;
+
+  if (whereClause) {
+    q = query(collectionRef, where(...whereClause));
+  }
+
+  const snapshot = await getDocs(q);
+
+  const data = snapshot.docs.map(doc => {
+    const docData = doc.data();
+    // Parse date fields
+    Object.keys(docData).forEach(key => {
+      if (docData[key] && docData[key].toDate instanceof Function) {
+        docData[key] = docData[key].toDate();
+      }
+    });
+    return {
+      ...docData,
+      id: doc.id,
+    } as T & { id: string };
+  });
   return data;
+}
+
+
+
+// Fetch a single document from a collection
+export async function fetchDocument<T>(collectionName: string, id: string): Promise<T | null> {
+  const documentRef = doc(db, collectionName, id);
+  const docSnap = await getDoc(documentRef);
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+    return {
+      ...data,
+      id: docSnap.id,
+    } as T & { id: string };
+  }
+  return null;
 }
 
 // Add a new document to a collection
@@ -32,5 +69,6 @@ export async function deleteDocument(collectionName: string, id: string): Promis
   const documentRef = doc(db, collectionName, id);
   await deleteDoc(documentRef);
 }
+
 
 
