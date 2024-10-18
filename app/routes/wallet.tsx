@@ -137,6 +137,18 @@ export const action: ActionFunction = async ({ request }) => {
   }
 };
 
+export function HydrateFallback() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+    </div>
+  );
+}
+
 export default function Wallet() {
   const { fidelityCards } = useLoaderData<{ fidelityCards: FidelityCard[] }>();
   const [isCreating, setIsCreating] = useState(false);
@@ -155,8 +167,6 @@ export default function Wallet() {
       });
     }
   }, [data]);
-
-  const isLoading = navigation.state === "loading";
 
   return (
     <div className="container mx-auto">
@@ -221,27 +231,17 @@ export default function Wallet() {
         </SheetContent>
       </Sheet>
 
-      {isLoading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-        </div>
-      ) : (
-        <DataTable
-          columns={fidelityCardColumns({
-            editAction: (id) => {
-              console.log("Editing ID:", id);
-              setEditingId(id);
-              setIsSheetOpen(true);
-            },
-            navigation,
-          })}
-          data={fidelityCards}
-        />
-      )}
+      <DataTable
+        columns={fidelityCardColumns({
+          editAction: (id) => {
+            console.log("Editing ID:", id);
+            setEditingId(id);
+            setIsSheetOpen(true);
+          },
+          navigation,
+        })}
+        data={fidelityCards}
+      />
     </div>
   );
 }

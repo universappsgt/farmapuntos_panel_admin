@@ -57,9 +57,8 @@ export interface Survey {
 
 export interface Question {
   id: string;
-  surveyId: string;
-  text: string;
-  type: 'multiple_choice' | 'text' | 'rating'; // Add more types if needed
-  options?: string[]; // For multiple choice questions
-  required: boolean;
+  questionText: string;
+  correctAnswer: string;
+  correctAnswerIndex: number;
+  answers: string[];
 }

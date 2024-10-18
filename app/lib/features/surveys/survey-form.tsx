@@ -1,5 +1,10 @@
-import { useState, useEffect } from "react";
-import { Form, useNavigation, useActionData } from "@remix-run/react";
+import { useState, useEffect, useCallback } from "react";
+import {
+  Form,
+  useNavigation,
+  useActionData,
+  useFetcher,
+} from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -21,7 +26,7 @@ import {
   PopoverTrigger,
 } from "~/components/ui/popover";
 import { Calendar } from "~/components/ui/calendar";
-import { CalendarIcon, PlusIcon, TrashIcon } from "@radix-ui/react-icons";
+import { CalendarIcon } from "@radix-ui/react-icons";
 import { cn } from "~/lib/utils";
 import {
   Select,
@@ -30,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import QuestionList from "./question-editor";
 
 interface SurveyFormProps {
   surveyToEdit: Survey | undefined;
@@ -52,6 +58,7 @@ export function SurveyForm({
 }: SurveyFormProps) {
   const navigation = useNavigation();
   const actionData = useActionData<{ success: boolean; message: string }>();
+  const questionsFetcher = useFetcher();
 
   useEffect(() => {
     if (actionData && actionData.success) {
@@ -70,35 +77,35 @@ export function SurveyForm({
   useEffect(() => {
     if (surveyToEdit) {
       setDate(surveyToEdit.deadline);
+      setQuestions([]);
     } else {
       setDate(undefined);
-
       setQuestions([]);
     }
   }, [surveyToEdit]);
 
-  const addQuestion = () => {
-    setQuestions([
-      ...questions,
-      {
-        id: Date.now().toString(),
-        text: "",
-        type: "text",
-        surveyId: editingId || "",
-        required: false,
-      },
-    ]);
-  };
+  useEffect(() => {
+    if (isSheetOpen && !isCreating && editingId) {
+      // Fetch questions when editing an existing survey
+      questionsFetcher.submit(
+        { surveyId: editingId },
+        { method: "get", action: "/api/fetch-questions" }
+      );
+    } else {
+      // Reset questions when creating a new survey
+      setQuestions([]);
+    }
+  }, [isSheetOpen, isCreating, editingId, questionsFetcher]);
 
-  const removeQuestion = (id: string) => {
-    setQuestions(questions.filter((q) => q.id !== id));
-  };
+  useEffect(() => {
+    if (questionsFetcher.data && Array.isArray(questionsFetcher.data)) {
+      setQuestions(questionsFetcher.data);
+    }
+  }, [questionsFetcher.data]);
 
-  const updateQuestion = (id: string, field: keyof Question, value: string) => {
-    setQuestions(
-      questions.map((q) => (q.id === id ? { ...q, [field]: value } : q))
-    );
-  };
+  const handleQuestionsChange = useCallback((updatedQuestions: Question[]) => {
+    setQuestions(updatedQuestions);
+  }, []);
 
   return (
     <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -115,7 +122,10 @@ export function SurveyForm({
           + Agregar
         </Button>
       </SheetTrigger>
-      <SheetContent>
+      <SheetContent
+        side="right"
+        className="w-[50vw] sm:max-w-[50vw] overflow-y-auto"
+      >
         <SheetHeader>
           <SheetTitle>
             {isCreating ? "Crear Nueva Encuesta" : "Editar Encuesta"}
@@ -244,71 +254,16 @@ export function SurveyForm({
                   </Button>
                 )}
               </div>
-              {surveyToEdit?.videoUrl && (
-                <div className="mt-2">
-                  <Label>Video Preview</Label>
-                  <div className="aspect-video mt-1">
-                    <iframe
-                      src={surveyToEdit.videoUrl}
-                      title="Video preview"
-                      className="w-full h-full border-0"
-                      allowFullScreen
-                    ></iframe>
-                  </div>
-                </div>
-              )}
             </div>
-            <div className="mb-4">
-              <Label>Preguntas</Label>
-              {questions.map((question, index) => (
-                <div
-                  key={question.id}
-                  className="flex items-center space-x-2 mb-2"
-                >
-                  <Input
-                    value={question.text}
-                    onChange={(e) =>
-                      updateQuestion(question.id, "text", e.target.value)
-                    }
-                    placeholder={`Pregunta ${index + 1}`}
-                  />
-                  <Select
-                    value={question.type}
-                    onValueChange={(value) =>
-                      updateQuestion(question.id, "type", value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="text">Texto</SelectItem>
-                      <SelectItem value="multipleChoice">
-                        Opción múltiple
-                      </SelectItem>
-                      <SelectItem value="checkbox">
-                        Casilla de verificación
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    type="button"
-                    onClick={() => removeQuestion(question.id)}
-                    variant="destructive"
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-              <Button
-                onClick={addQuestion}
-                type="button"
-                variant="outline"
-                className="mt-2"
-              >
-                <PlusIcon className="mr-2 h-4 w-4" /> Añadir Pregunta
-              </Button>
-            </div>
+            <QuestionList
+              initialQuestions={questions}
+              onQuestionsChange={handleQuestionsChange}
+            />
+            <input
+              type="hidden"
+              name="questions"
+              value={JSON.stringify(questions)}
+            />
             <SheetFooter>
               <Button type="submit">
                 {navigation.state === "submitting"
