@@ -61,4 +61,6 @@ export interface Question {
   correctAnswer: string;
   correctAnswerIndex: number;
   answers: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }

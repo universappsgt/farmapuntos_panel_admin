@@ -131,7 +131,7 @@ export function SurveyForm({
             {isCreating ? "Crear Nueva Encuesta" : "Editar Encuesta"}
           </SheetTitle>
         </SheetHeader>
-        <Form method="post" className="space-y-4">
+        <Form method="post" action="/surveys" className="space-y-4">
           <fieldset disabled={navigation.state === "submitting"}>
             <input
               type="hidden"

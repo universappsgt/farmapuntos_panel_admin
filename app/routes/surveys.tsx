@@ -7,7 +7,7 @@ import {
   useNavigation,
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
-import { Survey } from "~/models/types";
+import { Survey, Question } from "~/models/types";
 import {
   createDocument,
   deleteDocument,
@@ -18,6 +18,8 @@ import { toast } from "~/hooks/use-toast";
 import { DataTable } from "~/components/ui/data-table";
 import { surveyColumns } from "~/components/custom/columns";
 import { SurveyForm } from "~/lib/features/surveys/survey-form";
+import { db } from "firebase";
+import { collection, addDoc, writeBatch, doc } from "firebase/firestore";
 
 export const loader: LoaderFunction = async () => {
   const surveys: Survey[] = await fetchDocuments<Survey>("surveys");
@@ -31,28 +33,46 @@ export const action: ActionFunction = async ({ request }) => {
   try {
     switch (action) {
       case "create": {
-        const title = formData.get("title");
-        const description = formData.get("description");
-        const survey: Survey = {
-          title: title as string,
-          description: description as string,
-          cardId: "",
-          rewardedPoints: 0,
-          status: "active",
-          videoUrl: "",
-          createdAt: new Date(),
-          id: "",
-          deadline: new Date(),
-        };
+        const title = formData.get("title") as string;
+        const description = formData.get("description") as string;
+        const cardId = formData.get("cardId") as string;
+        const deadline = new Date(formData.get("deadline") as string);
+        const status = formData.get("status") as string;
+        const videoUrl = formData.get("videoUrl") as string;
+        const questionsJson = formData.get("questions") as string;
+        const questions = JSON.parse(questionsJson) as Question[];
 
-        const [errors, createdSurvey] = await createDocument<Survey>(
-          "surveys",
-          survey
+        // 1. Create the survey in the surveys collection
+        const surveysRef = collection(db, "surveys");
+        const newSurveyRef = await addDoc(surveysRef, {
+          title,
+          description,
+          cardId,
+          deadline,
+          status,
+          videoUrl,
+          createdAt: new Date(),
+          rewardedPoints: 0,
+        });
+
+        // 2. Batch create questions in the survey subcollection
+        const batch = writeBatch(db);
+        const questionsRef = collection(
+          db,
+          `surveys/${newSurveyRef.id}/questions`
         );
-        if (errors) {
-          const values = Object.fromEntries(formData);
-          return json({ errors, values });
-        }
+
+        questions.forEach((question) => {
+          const newQuestionRef = doc(questionsRef);
+          batch.set(newQuestionRef, {
+            ...question,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        });
+
+        await batch.commit();
+
         return json({
           success: true,
           message: "Survey created successfully!",
