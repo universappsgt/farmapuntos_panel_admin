@@ -24,7 +24,7 @@ import {
   deleteDocument,
   fetchDocuments,
   updateDocument,
-} from "~/services/firestoreService";
+} from "~/services/firestore.server";
 import { toast } from "~/hooks/use-toast";
 import { Trash } from "lucide-react";
 import { DataTable } from "~/components/ui/data-table";

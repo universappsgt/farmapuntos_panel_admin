@@ -13,7 +13,7 @@ import {
   deleteDocument,
   fetchDocuments,
   updateDocument,
-} from "~/services/firestoreService";
+} from "~/services/firestore.server";
 import { toast } from "~/hooks/use-toast";
 import { DataTable } from "~/components/ui/data-table";
 import { surveyColumns } from "~/components/custom/columns";

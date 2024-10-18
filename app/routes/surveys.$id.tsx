@@ -15,7 +15,7 @@ import {
   updateDocument,
   createDocument,
   fetchDocuments,
-} from "~/services/firestoreService";
+} from "~/services/firestore.server";
 import { toast } from "~/hooks/use-toast";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";

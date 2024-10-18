@@ -1,5 +1,3 @@
-import { DocumentData } from 'firebase/firestore';
-
 export interface Laboratory  {
   id: string;
   name: string;

@@ -18,7 +18,7 @@ import {
   ThemeProvider,
   useTheme,
 } from "remix-themes";
-import { themeSessionResolver } from "./sessions.server";
+import { themeSessionResolver } from "./services/sessions.server";
 import { clsx } from "clsx";
 import { Separator } from "./components/ui/separator";
 
