@@ -18,6 +18,7 @@ import {
   Laptop,
   User,
   LogOut,
+  CreditCard,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
@@ -37,6 +38,7 @@ const navigation = [
   { name: "Wallet", href: "/wallet", icon: Wallet },
   { name: "Laboratorios", href: "/laboratories", icon: FlaskConical },
   { name: "Encuestas", href: "/surveys", icon: ClipboardList },
+  { name: "Transactions", href: "/transactions", icon: CreditCard },
 ];
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}

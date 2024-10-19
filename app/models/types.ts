@@ -64,3 +64,27 @@ export interface Question {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+export enum TransactionStatus {
+  InProgress = "inProgress",
+  Approved = "approved",
+  Denied = "denied",
+}
+
+export enum TransactionType {
+  Credit = "credit",
+  Debit = "debit",
+}
+
+export interface Transaction {
+  id: string;
+  createdAt: Date;
+  userId: string;
+  agentId: string;
+  agentSignatureUrl: string;
+  clientSignatureUrl: string;
+  evidenceImageUrl: string;
+  rewardPoints: number;
+  transactionStatus: TransactionStatus;
+  transactionType: TransactionType;
+}

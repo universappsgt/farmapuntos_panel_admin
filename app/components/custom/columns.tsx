@@ -1,7 +1,7 @@
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import { ColumnDef } from "@tanstack/react-table";
-import { FidelityCard, Laboratory, Survey, User } from "~/models/types";
+import { FidelityCard, Laboratory, Survey, User, Transaction, TransactionStatus, TransactionType } from "~/models/types";
 import { Button } from "../ui/button";
 import { Form } from "@remix-run/react";
 
@@ -386,3 +386,89 @@ export const userColumns = ({
     ),
   },
 ];
+
+export const transactionColumns = ({
+  editAction,
+  navigation,
+}: {
+  editAction: (id: string) => void;
+  navigation: { state: string; formData?: FormData };
+}): ColumnDef<Transaction>[] => [
+  {
+    accessorKey: "createdAt",
+    header: "Created At",
+    cell: ({ row }) => <div>{new Date(row.getValue("createdAt")).toLocaleString()}</div>,
+  },
+  {
+    accessorKey: "userId",
+    header: "User ID",
+  },
+  {
+    accessorKey: "agentId",
+    header: "Agent ID",
+  },
+  {
+    accessorKey: "rewardPoints",
+    header: "Reward Points",
+  },
+  {
+    accessorKey: "transactionStatus",
+    header: "Status",
+    cell: ({ row }) => (
+      <div className={`capitalize ${getStatusColor(row.getValue("transactionStatus"))}`}>
+        {row.getValue("transactionStatus")}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "transactionType",
+    header: "Type",
+    cell: ({ row }) => <div className="capitalize">{row.getValue("transactionType")}</div>,
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => (
+      <div className="flex space-x-2">
+        <Form method="post" style={{ display: "inline" }}>
+          <input type="hidden" name="action" value="edit" />
+          <input type="hidden" name="id" value={row.original.id} />
+          <Button
+            type="submit"
+            onClick={() => editAction(row.original.id)}
+            variant="secondary"
+            disabled={navigation.state === "submitting"}
+          >
+            Edit
+          </Button>
+        </Form>
+        <Form method="post" style={{ display: "inline" }}>
+          <input type="hidden" name="action" value="delete" />
+          <input type="hidden" name="id" value={row.original.id} />
+          <Button
+            type="submit"
+            variant="destructive"
+            disabled={navigation.state === "submitting"}
+          >
+            {navigation.state === "submitting" &&
+            navigation.formData?.get("id") === row.original.id
+              ? "Deleting..."
+              : "Delete"}
+          </Button>
+        </Form>
+      </div>
+    ),
+  },
+];
+
+function getStatusColor(status: TransactionStatus) {
+  switch (status) {
+    case TransactionStatus.InProgress:
+      return "text-yellow-600";
+    case TransactionStatus.Approved:
+      return "text-green-600";
+    case TransactionStatus.Denied:
+      return "text-red-600";
+    default:
+      return "";
+  }
+}
