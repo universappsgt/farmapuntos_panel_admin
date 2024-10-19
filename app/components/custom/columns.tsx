@@ -1,7 +1,16 @@
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import { ColumnDef } from "@tanstack/react-table";
-import { FidelityCard, Laboratory, Survey, User, Transaction, TransactionStatus, TransactionType } from "~/models/types";
+import {
+  FidelityCard,
+  Laboratory,
+  Survey,
+  User,
+  Transaction,
+  TransactionStatus,
+  TransactionType,
+  Reward,
+} from "~/models/types";
 import { Button } from "../ui/button";
 import { Form } from "@remix-run/react";
 
@@ -397,7 +406,9 @@ export const transactionColumns = ({
   {
     accessorKey: "createdAt",
     header: "Created At",
-    cell: ({ row }) => <div>{new Date(row.getValue("createdAt")).toLocaleString()}</div>,
+    cell: ({ row }) => (
+      <div>{new Date(row.getValue("createdAt")).toLocaleString()}</div>
+    ),
   },
   {
     accessorKey: "userId",
@@ -415,7 +426,11 @@ export const transactionColumns = ({
     accessorKey: "transactionStatus",
     header: "Status",
     cell: ({ row }) => (
-      <div className={`capitalize ${getStatusColor(row.getValue("transactionStatus"))}`}>
+      <div
+        className={`capitalize ${getStatusColor(
+          row.getValue("transactionStatus")
+        )}`}
+      >
         {row.getValue("transactionStatus")}
       </div>
     ),
@@ -423,7 +438,9 @@ export const transactionColumns = ({
   {
     accessorKey: "transactionType",
     header: "Type",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("transactionType")}</div>,
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("transactionType")}</div>
+    ),
   },
   {
     id: "actions",
@@ -472,3 +489,76 @@ function getStatusColor(status: TransactionStatus) {
       return "";
   }
 }
+
+export const rewardColumns = ({
+  editAction,
+  navigation,
+}: {
+  editAction: (id: string) => void;
+  navigation: { state: string; formData?: FormData };
+}): ColumnDef<Reward>[] => [
+  {
+    accessorKey: "name",
+    header: "Name",
+  },
+  {
+    accessorKey: "imageUrl",
+    header: "Image",
+    cell: ({ row }) => (
+      <div className="relative w-10 h-10">
+        <img
+          src={row.original.imageUrl}
+          alt={row.original.name}
+          className="rounded-full object-cover w-full h-full"
+        />
+      </div>
+    ),
+  },
+  {
+    accessorKey: "expirationDate",
+    header: "Expiration Date",
+    cell: ({ row }) =>
+      new Date(row.original.expirationDate).toLocaleDateString(),
+  },
+  {
+    accessorKey: "worthPoints",
+    header: "Worth Points",
+  },
+  {
+    accessorKey: "stock",
+    header: "Stock",
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => (
+      <div className="flex space-x-2">
+        <Form method="post" style={{ display: "inline" }}>
+          <input type="hidden" name="action" value="edit" />
+          <input type="hidden" name="id" value={row.original.id} />
+          <Button
+            type="submit"
+            onClick={() => editAction(row.original.id)}
+            variant="secondary"
+            disabled={navigation.state === "submitting"}
+          >
+            Edit
+          </Button>
+        </Form>
+        <Form method="post" style={{ display: "inline" }}>
+          <input type="hidden" name="action" value="delete" />
+          <input type="hidden" name="id" value={row.original.id} />
+          <Button
+            type="submit"
+            variant="destructive"
+            disabled={navigation.state === "submitting"}
+          >
+            {navigation.state === "submitting" &&
+            navigation.formData?.get("id") === row.original.id
+              ? "Deleting..."
+              : "Delete"}
+          </Button>
+        </Form>
+      </div>
+    ),
+  },
+];

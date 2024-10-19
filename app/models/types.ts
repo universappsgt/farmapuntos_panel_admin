@@ -88,3 +88,12 @@ export interface Transaction {
   transactionStatus: TransactionStatus;
   transactionType: TransactionType;
 }
+
+export interface Reward {
+  id: string;
+  imageUrl: string;
+  name: string;
+  expirationDate: Date;
+  worthPoints: number;
+  stock: number;
+}
