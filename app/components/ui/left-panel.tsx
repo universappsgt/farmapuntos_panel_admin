@@ -33,6 +33,7 @@ import { Theme, useTheme } from "remix-themes";
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Agentes", href: "/agents", icon: Users },
+  { name: "Users", href: "/users", icon: User },
   { name: "Wallet", href: "/wallet", icon: Wallet },
   { name: "Laboratorios", href: "/laboratories", icon: FlaskConical },
   { name: "Encuestas", href: "/surveys", icon: ClipboardList },

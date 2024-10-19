@@ -8,16 +8,15 @@ export interface Laboratory  {
 
 export interface User {
   id: string;
-  email: string;
-  backgroundPictureUrl: string;
-  isAgent: boolean;
-  isEnabled: boolean;
-  laboratories: string[];
   name: string;
-  notificationTokens: string[];
-  phoneNumber: string;
+  email: string;
   points: number;
+  phoneNumber: string;
   profilePictureUrl: string;
+  notificationTokens: string[];
+  backgroundPictureUrl: string;
+  isEnabled: boolean;
+  isAgent: boolean;
 }
 
 export interface FidelityCard {

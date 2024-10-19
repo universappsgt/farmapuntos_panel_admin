@@ -7,17 +7,6 @@ import {
   useNavigation,
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "~/components/ui/sheet";
 import { User } from "~/models/types";
 import {
   createDocument,
@@ -27,16 +16,16 @@ import {
 } from "~/services/firestore.server";
 import { toast } from "~/hooks/use-toast";
 import { DataTable } from "~/components/ui/data-table";
-import { agentColumns } from "~/components/custom/columns";
-import { AgentForm } from "~/lib/features/agents/agent-form";
+import { userColumns } from "~/components/custom/columns";
+import { UserForm } from "~/lib/features/users/user-form";
 
 export const loader: LoaderFunction = async () => {
-  const agents: User[] = await fetchDocuments<User>("users", [
+  const users: User[] = await fetchDocuments<User>("users", [
     "isAgent",
     "==",
-    true,
+    false,
   ]);
-  return { agents };
+  return { users };
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -46,7 +35,7 @@ export const action: ActionFunction = async ({ request }) => {
   try {
     switch (action) {
       case "create": {
-        const agent: User = {
+        const user: User = {
           name: formData.get("name") as string,
           email: formData.get("email") as string,
           points: 0,
@@ -55,36 +44,33 @@ export const action: ActionFunction = async ({ request }) => {
           notificationTokens: [],
           backgroundPictureUrl: "",
           isEnabled: true,
-          isAgent: true,
+          isAgent: false,
           id: "",
         };
 
-        const [errors, createdAgent] = await createDocument<User>(
-          "users",
-          agent
-        );
+        const [errors, createdUser] = await createDocument<User>("users", user);
         if (errors) {
           const values = Object.fromEntries(formData);
           return json({ errors, values });
         }
         return json({
           success: true,
-          message: "Agent created successfully!",
+          message: "User created successfully!",
         });
       }
       case "edit": {
         const id = formData.get("id") as string;
-        const agent: Partial<User> = {
+        const user: Partial<User> = {
           name: formData.get("name") as string,
           email: formData.get("email") as string,
           phoneNumber: formData.get("phoneNumber") as string,
           profilePictureUrl: formData.get("profilePictureUrl") as string,
         };
 
-        await updateDocument<User>("users", id, agent);
+        await updateDocument<User>("users", id, user);
         return json({
           success: true,
-          message: "Agent updated successfully!",
+          message: "User updated successfully!",
         });
       }
       case "delete": {
@@ -92,7 +78,7 @@ export const action: ActionFunction = async ({ request }) => {
         await deleteDocument("users", id);
         return json({
           success: true,
-          message: "Agent deleted successfully!",
+          message: "User deleted successfully!",
         });
       }
     }
@@ -105,8 +91,8 @@ export const action: ActionFunction = async ({ request }) => {
   }
 };
 
-export default function Agents() {
-  const { agents } = useLoaderData<{ agents: User[] }>();
+export default function Users() {
+  const { users } = useLoaderData<{ users: User[] }>();
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -114,18 +100,18 @@ export default function Agents() {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Agentes</h1>
-      <AgentForm
+      <h1 className="text-3xl font-bold mb-6">Users</h1>
+      <UserForm
         isSheetOpen={isSheetOpen}
         setIsSheetOpen={setIsSheetOpen}
-        agentToEdit={getAgentToEdit()}
+        userToEdit={getUserToEdit()}
         isCreating={isCreating}
         setIsCreating={setIsCreating}
         editingId={editingId}
         setEditingId={setEditingId}
       />
       <DataTable
-        columns={agentColumns({
+        columns={userColumns({
           editAction: (id) => {
             setIsCreating(false);
             setEditingId(id);
@@ -133,12 +119,12 @@ export default function Agents() {
           },
           navigation,
         })}
-        data={agents}
+        data={users}
       />
     </div>
   );
 
-  function getAgentToEdit() {
-    return agents.find((agent) => agent.id === editingId);
+  function getUserToEdit() {
+    return users.find((user) => user.id === editingId);
   }
 }

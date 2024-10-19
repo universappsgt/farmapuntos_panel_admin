@@ -1,24 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   useLoaderData,
-  Form,
-  useActionData,
   json,
   useNavigation,
   useRouteError,
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "~/components/ui/sheet";
+
 import { FidelityCard } from "~/models/types";
 import {
   createDocument,
@@ -31,6 +20,7 @@ import { Trash } from "lucide-react";
 import { DataTable } from "~/components/ui/data-table";
 import { fidelityCardColumns } from "~/components/custom/columns";
 import { Skeleton } from "~/components/ui/skeleton";
+import { FidelityCardForm } from "~/lib/features/wallet/fidelity-card-form";
 
 export const loader: LoaderFunction = async () => {
   const fidelityCards: FidelityCard[] = await fetchDocuments<FidelityCard>(
@@ -184,81 +174,18 @@ export default function Wallet() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const navigation = useNavigation();
 
-  const data = useActionData<typeof action>();
-
-  useEffect(() => {
-    if (data && data.success) {
-      setIsSheetOpen(false);
-      toast({
-        title: data.message,
-        variant: data.success ? "default" : "destructive",
-      });
-    }
-  }, [data]);
-
   return (
     <div className="container mx-auto">
       <h1 className="text-3xl font-bold mb-6">Wallet</h1>
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetTrigger asChild>
-          <Button
-            className="mb-4"
-            onClick={() => {
-              setIsCreating(true);
-              setEditingId(null);
-            }}
-          >
-            + Add Fidelity Card
-          </Button>
-        </SheetTrigger>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>
-              {isCreating ? "Create New Fidelity Card" : "Edit Fidelity Card"}
-            </SheetTitle>
-          </SheetHeader>
-          <Form method="post" className="space-y-4">
-            <fieldset disabled={navigation.state === "submitting"}>
-              <input
-                type="hidden"
-                name="action"
-                value={isCreating ? "create" : "edit"}
-              />
-              {!isCreating && (
-                <input type="hidden" name="id" value={editingId || ""} />
-              )}
-              {/* Add form fields for FidelityCard properties */}
-              {/* Example: */}
-              <div className="mb-4">
-                <Label htmlFor="cardTitle">Card Title</Label>
-                <Input
-                  id="cardTitle"
-                  name="cardTitle"
-                  required
-                  defaultValue={
-                    !isCreating
-                      ? fidelityCards.find(
-                          (card) => card.laboratoryId === editingId
-                        )?.cardTitle
-                      : ""
-                  }
-                />
-              </div>
-              {/* Add more form fields for other FidelityCard properties */}
-              <SheetFooter>
-                <Button type="submit">
-                  {navigation.state === "submitting"
-                    ? "Saving..."
-                    : isCreating
-                    ? "Create"
-                    : "Save"}
-                </Button>
-              </SheetFooter>
-            </fieldset>
-          </Form>
-        </SheetContent>
-      </Sheet>
-
+      <FidelityCardForm
+        isSheetOpen={isSheetOpen}
+        setIsSheetOpen={setIsSheetOpen}
+        fidelityCardToEdit={getFidelityCardToEdit()}
+        isCreating={isCreating}
+        setIsCreating={setIsCreating}
+        editingId={editingId}
+        setEditingId={setEditingId}
+      />
       <DataTable
         columns={fidelityCardColumns({
           editAction: (id) => {
@@ -271,4 +198,8 @@ export default function Wallet() {
       />
     </div>
   );
+
+  function getFidelityCardToEdit() {
+    return fidelityCards.find((card) => card.id === editingId);
+  }
 }
