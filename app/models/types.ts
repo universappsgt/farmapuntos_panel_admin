@@ -22,10 +22,11 @@ export interface User {
 
 export interface FidelityCard {
   id: string;
+  cardTitle: string;
   cardDesign: {
     backgroundImage: string;
     logo: string;
-    cardTitle: string;
+    
   };
   contact: {
     locationUrl: string;

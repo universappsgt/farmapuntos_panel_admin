@@ -5,6 +5,7 @@ import {
   useActionData,
   json,
   useNavigation,
+  useRouteError,
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { Button } from "~/components/ui/button";
@@ -33,11 +34,38 @@ import { Skeleton } from "~/components/ui/skeleton";
 
 export const loader: LoaderFunction = async () => {
   const fidelityCards: FidelityCard[] = await fetchDocuments<FidelityCard>(
-    "fidelityCards"
+    "cards"
   );
 
+  console.log(fidelityCards);
   return { fidelityCards };
 };
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background">
+      <div className="p-8 bg-card rounded-lg shadow-lg">
+        <h1 className="text-4xl font-bold text-destructive mb-4">
+          Oops! Something went wrong
+        </h1>
+        <p className="text-xl text-muted-foreground mb-6">
+          We're sorry, but an error occurred while processing your request.
+        </p>
+        <div
+          className="bg-destructive/10 border-l-4 border-destructive text-destructive p-4 mb-6 rounded"
+          role="alert"
+        >
+          <p className="font-bold">Error details:</p>
+          <p>{(error as Error).message || "Unknown error"}</p>
+        </div>
+        <Button onClick={() => window.location.reload()} variant="default">
+          Try Again
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
@@ -49,10 +77,10 @@ export const action: ActionFunction = async ({ request }) => {
         const id = formData.get("id");
 
         const fidelityCard: FidelityCard = {
+          cardTitle: formData.get("cardTitle") as string,
           cardDesign: {
             backgroundImage: formData.get("backgroundImage") as string,
             logo: formData.get("logo") as string,
-            cardTitle: formData.get("cardTitle") as string,
           },
           contact: {
             locationUrl: formData.get("locationUrl") as string,
@@ -87,10 +115,10 @@ export const action: ActionFunction = async ({ request }) => {
       case "edit": {
         const id = formData.get("id");
         const fidelityCard: FidelityCard = {
+          cardTitle: formData.get("cardTitle") as string,
           cardDesign: {
             backgroundImage: formData.get("backgroundImage") as string,
             logo: formData.get("logo") as string,
-            cardTitle: formData.get("cardTitle") as string,
           },
           contact: {
             locationUrl: formData.get("locationUrl") as string,
@@ -211,7 +239,7 @@ export default function Wallet() {
                     !isCreating
                       ? fidelityCards.find(
                           (card) => card.laboratoryId === editingId
-                        )?.cardDesign.cardTitle
+                        )?.cardTitle
                       : ""
                   }
                 />
@@ -234,7 +262,6 @@ export default function Wallet() {
       <DataTable
         columns={fidelityCardColumns({
           editAction: (id) => {
-            console.log("Editing ID:", id);
             setEditingId(id);
             setIsSheetOpen(true);
           },

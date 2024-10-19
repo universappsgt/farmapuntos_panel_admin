@@ -114,17 +114,47 @@ export const fidelityCardColumns = ({
   navigation: { state: string; formData?: FormData };
 }): ColumnDef<FidelityCard>[] => [
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
+    accessorKey: "cardTitle",
+    header: "Card Title",
+    cell: ({ row }) => <div>{row.original.cardTitle}</div>,
+  },
+  {
+    accessorKey: "description",
+    header: "Description",
+    cell: ({ row }) => <div>{row.original.description}</div>,
+  },
+  {
+    accessorKey: "contact.phoneNumber",
+    header: "Phone Number",
+    cell: ({ row }) => <div>{row.original.contact.phoneNumber}</div>,
+  },
+  {
+    accessorKey: "contact.website",
+    header: "Website",
+    cell: ({ row }) => <div>{row.original.contact.website}</div>,
+  },
+  {
+    accessorKey: "rules.currency",
+    header: "Currency",
+    cell: ({ row }) => <div>{row.original.rules.currency}</div>,
+  },
+  {
+    accessorKey: "rules.forPurchasePrice",
+    header: "Purchase Price",
+    cell: ({ row }) => <div>{row.original.rules.forPurchasePrice}</div>,
+  },
+  {
+    accessorKey: "rules.initialCredits",
+    header: "Initial Credits",
+    cell: ({ row }) => <div>{row.original.rules.initialCredits}</div>,
+  },
+  {
+    accessorKey: "rules.status",
+    header: "Status",
+    cell: ({ row }) => <div>{row.original.rules.status}</div>,
+  },
+  {
+    id: "actions",
     cell: ({ row }) => (
       <div className="flex space-x-2">
         <Form method="post" style={{ display: "inline" }}>
@@ -136,12 +166,22 @@ export const fidelityCardColumns = ({
             variant="secondary"
             disabled={navigation.state === "submitting"}
           >
-            Editar
+            Edit
           </Button>
         </Form>
         <Form method="post" style={{ display: "inline" }}>
           <input type="hidden" name="action" value="delete" />
           <input type="hidden" name="id" value={row.original.id} />
+          <Button
+            type="submit"
+            variant="destructive"
+            disabled={navigation.state === "submitting"}
+          >
+            {navigation.state === "submitting" &&
+            navigation.formData?.get("id") === row.original.id
+              ? "Deleting..."
+              : "Delete"}
+          </Button>
         </Form>
       </div>
     ),
