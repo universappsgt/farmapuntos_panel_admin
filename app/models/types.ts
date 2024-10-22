@@ -97,3 +97,17 @@ export interface Reward {
   worthPoints: number;
   stock: number;
 }
+
+export interface Pharmacy {
+  id: string;
+  name: string;
+  address: string;
+  phoneNumber: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  worthPoints: number;
+}

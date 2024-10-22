@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
-import { useLoaderData, json, useNavigation } from "@remix-run/react";
+import {
+  useLoaderData,
+  Form,
+  useActionData,
+  json,
+  useNavigation,
+} from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
-import { Reward } from "~/models/types";
+import { Pharmacy } from "~/models/types";
 import {
   createDocument,
   deleteDocument,
@@ -9,14 +15,12 @@ import {
   updateDocument,
 } from "~/services/firestore.server";
 import { DataTable } from "~/components/ui/data-table";
-import { rewardColumns } from "~/components/custom/columns";
-import { RewardForm } from "~/lib/features/rewards/reward-form";
-
-import { parseISO } from "date-fns";
+import { pharmacyColumns } from "~/components/custom/columns";
+import { PharmacyForm } from "~/lib/features/pharmacies/pharmacy-form";
 
 export const loader: LoaderFunction = async () => {
-  const rewards: Reward[] = await fetchDocuments<Reward>("rewards");
-  return { rewards };
+  const pharmacies: Pharmacy[] = await fetchDocuments<Pharmacy>("pharmacies");
+  return { pharmacies };
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -26,50 +30,43 @@ export const action: ActionFunction = async ({ request }) => {
   try {
     switch (action) {
       case "create": {
-        const reward: Reward = {
+        const pharmacy: Pharmacy = {
           name: formData.get("name") as string,
-          imageUrl: formData.get("imageUrl") as string,
-          expirationDate: new Date(formData.get("expirationDate") as string),
-          worthPoints: Number(formData.get("worthPoints")),
-          stock: Number(formData.get("stock")),
+          address: formData.get("address") as string,
+          phoneNumber: formData.get("phoneNumber") as string,
           id: "",
         };
 
-        const [errors, createdReward] = await createDocument<Reward>(
-          "rewards",
-          reward
-        );
+        const [errors, createdPharmacy] = await createDocument<Pharmacy>("pharmacies", pharmacy);
         if (errors) {
           const values = Object.fromEntries(formData);
           return json({ errors, values });
         }
         return json({
           success: true,
-          message: "Reward created successfully!",
+          message: "Pharmacy created successfully!",
         });
       }
       case "edit": {
         const id = formData.get("id") as string;
-        const reward: Partial<Reward> = {
+        const pharmacy: Partial<Pharmacy> = {
           name: formData.get("name") as string,
-          imageUrl: formData.get("imageUrl") as string,
-          expirationDate: new Date(formData.get("expirationDate") as string),
-          worthPoints: Number(formData.get("worthPoints")),
-          stock: Number(formData.get("stock")),
+          address: formData.get("address") as string,
+          phoneNumber: formData.get("phoneNumber") as string,
         };
 
-        await updateDocument<Reward>("rewards", id, reward);
+        await updateDocument<Pharmacy>("pharmacies", id, pharmacy);
         return json({
           success: true,
-          message: "Reward updated successfully!",
+          message: "Pharmacy updated successfully!",
         });
       }
       case "delete": {
         const id = formData.get("id") as string;
-        await deleteDocument("rewards", id);
+        await deleteDocument("pharmacies", id);
         return json({
           success: true,
-          message: "Reward deleted successfully!",
+          message: "Pharmacy deleted successfully!",
         });
       }
     }
@@ -82,8 +79,8 @@ export const action: ActionFunction = async ({ request }) => {
   }
 };
 
-export default function Rewards() {
-  const { rewards } = useLoaderData<{ rewards: Reward[] }>();
+export default function Pharmacies() {
+  const { pharmacies } = useLoaderData<{ pharmacies: Pharmacy[] }>();
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -91,18 +88,18 @@ export default function Rewards() {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Rewards</h1>
-      <RewardForm
+      <h1 className="text-3xl font-bold mb-6">Pharmacies</h1>
+      <PharmacyForm
         isSheetOpen={isSheetOpen}
         setIsSheetOpen={setIsSheetOpen}
-        rewardToEdit={getRewardToEdit()}
+        pharmacyToEdit={getPharmacyToEdit()}
         isCreating={isCreating}
         setIsCreating={setIsCreating}
         editingId={editingId}
         setEditingId={setEditingId}
       />
       <DataTable
-        columns={rewardColumns({
+        columns={pharmacyColumns({
           editAction: (id) => {
             setIsCreating(false);
             setEditingId(id);
@@ -110,18 +107,12 @@ export default function Rewards() {
           },
           navigation,
         })}
-        data={rewards}
+        data={pharmacies}
       />
     </div>
   );
 
-  function getRewardToEdit() {
-    const reward = rewards.find((reward) => reward.id === editingId);
-    return reward
-      ? {
-          ...reward,
-          expirationDate: parseISO(reward.expirationDate as unknown as string),
-        }
-      : undefined;
+  function getPharmacyToEdit() {
+    return pharmacies.find((pharmacy) => pharmacy.id === editingId);
   }
 }

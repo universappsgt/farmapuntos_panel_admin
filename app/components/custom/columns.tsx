@@ -10,6 +10,8 @@ import {
   TransactionStatus,
   TransactionType,
   Reward,
+  Product,
+  Pharmacy,
 } from "~/models/types";
 import { Button } from "../ui/button";
 import { Form } from "@remix-run/react";
@@ -515,18 +517,123 @@ export const rewardColumns = ({
     ),
   },
   {
-    accessorKey: "expirationDate",
-    header: "Expiration Date",
-    cell: ({ row }) =>
-      new Date(row.original.expirationDate).toLocaleDateString(),
-  },
-  {
     accessorKey: "worthPoints",
     header: "Worth Points",
   },
   {
     accessorKey: "stock",
     header: "Stock",
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => (
+      <div className="flex space-x-2">
+        <Form method="post" style={{ display: "inline" }}>
+          <input type="hidden" name="action" value="edit" />
+          <input type="hidden" name="id" value={row.original.id} />
+          <Button
+            type="submit"
+            onClick={() => editAction(row.original.id)}
+            variant="secondary"
+            disabled={navigation.state === "submitting"}
+          >
+            Edit
+          </Button>
+        </Form>
+        <Form method="post" style={{ display: "inline" }}>
+          <input type="hidden" name="action" value="delete" />
+          <input type="hidden" name="id" value={row.original.id} />
+          <Button
+            type="submit"
+            variant="destructive"
+            disabled={navigation.state === "submitting"}
+          >
+            {navigation.state === "submitting" &&
+            navigation.formData?.get("id") === row.original.id
+              ? "Deleting..."
+              : "Delete"}
+          </Button>
+        </Form>
+      </div>
+    ),
+  },
+];
+
+export const productColumns = ({
+  editAction,
+  navigation,
+}: {
+  editAction: (id: string) => void;
+  navigation: { state: string; formData?: FormData };
+}): ColumnDef<Product>[] => [
+  {
+    accessorKey: "name",
+    header: "Name",
+    cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
+  },
+  {
+    accessorKey: "price",
+    header: "Price",
+    cell: ({ row }) => <div>${row.getValue("price")}</div>,
+  },
+  {
+    accessorKey: "worthPoints",
+    header: "Worth Points",
+    cell: ({ row }) => <div>{row.getValue("worthPoints")}</div>,
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => (
+      <div className="flex space-x-2">
+        <Form method="post" style={{ display: "inline" }}>
+          <input type="hidden" name="action" value="edit" />
+          <input type="hidden" name="id" value={row.original.id} />
+          <Button
+            type="submit"
+            onClick={() => editAction(row.original.id)}
+            variant="secondary"
+            disabled={navigation.state === "submitting"}
+          >
+            Edit
+          </Button>
+        </Form>
+        <Form method="post" style={{ display: "inline" }}>
+          <input type="hidden" name="action" value="delete" />
+          <input type="hidden" name="id" value={row.original.id} />
+          <Button
+            type="submit"
+            variant="destructive"
+            disabled={navigation.state === "submitting"}
+          >
+            {navigation.state === "submitting" &&
+            navigation.formData?.get("id") === row.original.id
+              ? "Deleting..."
+              : "Delete"}
+          </Button>
+        </Form>
+      </div>
+    ),
+  },
+];
+
+export const pharmacyColumns = ({
+  editAction,
+  navigation,
+}: {
+  editAction: (id: string) => void;
+  navigation: { state: string; formData?: FormData };
+}): ColumnDef<Pharmacy>[] => [
+  {
+    accessorKey: "name",
+    header: "Name",
+  },
+  {
+    accessorKey: "address",
+    header: "Address",
+  },
+  {
+    accessorKey: "phoneNumber",
+    header: "Phone Number",
   },
   {
     id: "actions",

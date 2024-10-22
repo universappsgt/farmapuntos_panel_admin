@@ -20,6 +20,8 @@ import {
   LogOut,
   CreditCard,
   Gift,
+  Package, // Add this import for the Products icon
+  Pill, // Add this import for the Pharmacies icon
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
@@ -41,6 +43,8 @@ const navigation = [
   { name: "Encuestas", href: "/surveys", icon: ClipboardList },
   { name: "Transactions", href: "/transactions", icon: CreditCard },
   { name: "Rewards", href: "/rewards", icon: Gift },
+  { name: "Products", href: "/products", icon: Package }, // Add this line for Products
+  { name: "Pharmacies", href: "/pharmacies", icon: Pill }, // Add this line for Pharmacies
 ];
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}

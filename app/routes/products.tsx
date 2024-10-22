@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
-import { useLoaderData, json, useNavigation } from "@remix-run/react";
+import {
+  useLoaderData,
+  Form,
+  useActionData,
+  json,
+  useNavigation,
+} from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
-import { Reward } from "~/models/types";
+import { Product } from "~/models/types";
 import {
   createDocument,
   deleteDocument,
@@ -9,14 +15,13 @@ import {
   updateDocument,
 } from "~/services/firestore.server";
 import { DataTable } from "~/components/ui/data-table";
-import { rewardColumns } from "~/components/custom/columns";
-import { RewardForm } from "~/lib/features/rewards/reward-form";
+import { productColumns } from "~/components/custom/columns";
+import { ProductForm } from "~/lib/features/products/product-form";
 
-import { parseISO } from "date-fns";
 
 export const loader: LoaderFunction = async () => {
-  const rewards: Reward[] = await fetchDocuments<Reward>("rewards");
-  return { rewards };
+  const products: Product[] = await fetchDocuments<Product>("products");
+  return { products };
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -26,50 +31,43 @@ export const action: ActionFunction = async ({ request }) => {
   try {
     switch (action) {
       case "create": {
-        const reward: Reward = {
+        const product: Product = {
           name: formData.get("name") as string,
-          imageUrl: formData.get("imageUrl") as string,
-          expirationDate: new Date(formData.get("expirationDate") as string),
+          price: Number(formData.get("price")),
           worthPoints: Number(formData.get("worthPoints")),
-          stock: Number(formData.get("stock")),
           id: "",
         };
 
-        const [errors, createdReward] = await createDocument<Reward>(
-          "rewards",
-          reward
-        );
+        const [errors, createdProduct] = await createDocument<Product>("products", product);
         if (errors) {
           const values = Object.fromEntries(formData);
           return json({ errors, values });
         }
         return json({
           success: true,
-          message: "Reward created successfully!",
+          message: "Product created successfully!",
         });
       }
       case "edit": {
         const id = formData.get("id") as string;
-        const reward: Partial<Reward> = {
+        const product: Partial<Product> = {
           name: formData.get("name") as string,
-          imageUrl: formData.get("imageUrl") as string,
-          expirationDate: new Date(formData.get("expirationDate") as string),
+          price: Number(formData.get("price")),
           worthPoints: Number(formData.get("worthPoints")),
-          stock: Number(formData.get("stock")),
         };
 
-        await updateDocument<Reward>("rewards", id, reward);
+        await updateDocument<Product>("products", id, product);
         return json({
           success: true,
-          message: "Reward updated successfully!",
+          message: "Product updated successfully!",
         });
       }
       case "delete": {
         const id = formData.get("id") as string;
-        await deleteDocument("rewards", id);
+        await deleteDocument("products", id);
         return json({
           success: true,
-          message: "Reward deleted successfully!",
+          message: "Product deleted successfully!",
         });
       }
     }
@@ -82,8 +80,8 @@ export const action: ActionFunction = async ({ request }) => {
   }
 };
 
-export default function Rewards() {
-  const { rewards } = useLoaderData<{ rewards: Reward[] }>();
+export default function Products() {
+  const { products } = useLoaderData<{ products: Product[] }>();
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -91,18 +89,18 @@ export default function Rewards() {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Rewards</h1>
-      <RewardForm
+      <h1 className="text-3xl font-bold mb-6">Products</h1>
+      <ProductForm
         isSheetOpen={isSheetOpen}
         setIsSheetOpen={setIsSheetOpen}
-        rewardToEdit={getRewardToEdit()}
+        productToEdit={getProductToEdit()}
         isCreating={isCreating}
         setIsCreating={setIsCreating}
         editingId={editingId}
         setEditingId={setEditingId}
       />
       <DataTable
-        columns={rewardColumns({
+        columns={productColumns({
           editAction: (id) => {
             setIsCreating(false);
             setEditingId(id);
@@ -110,18 +108,12 @@ export default function Rewards() {
           },
           navigation,
         })}
-        data={rewards}
+        data={products}
       />
     </div>
   );
 
-  function getRewardToEdit() {
-    const reward = rewards.find((reward) => reward.id === editingId);
-    return reward
-      ? {
-          ...reward,
-          expirationDate: parseISO(reward.expirationDate as unknown as string),
-        }
-      : undefined;
+  function getProductToEdit() {
+    return products.find((product) => product.id === editingId);
   }
 }
