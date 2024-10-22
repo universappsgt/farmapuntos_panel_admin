@@ -15,8 +15,6 @@ import {
   fetchDocuments,
   updateDocument,
 } from "~/services/firestore.server";
-import { toast } from "~/hooks/use-toast";
-import { Trash } from "lucide-react";
 import { DataTable } from "~/components/ui/data-table";
 import { fidelityCardColumns } from "~/components/custom/columns";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -90,7 +88,7 @@ export const action: ActionFunction = async ({ request }) => {
         };
 
         const [errors, card] = await createDocument<FidelityCard>(
-          "fidelityCards",
+          "cards",
           fidelityCard
         );
         if (errors) {
@@ -127,11 +125,7 @@ export const action: ActionFunction = async ({ request }) => {
           id: "",
         };
 
-        await updateDocument<FidelityCard>(
-          "fidelityCards",
-          id as string,
-          fidelityCard
-        );
+        await updateDocument<FidelityCard>("cards", id as string, fidelityCard);
         return json({
           success: true,
           message: "Fidelity card updated successfully!",
@@ -139,7 +133,7 @@ export const action: ActionFunction = async ({ request }) => {
       }
       case "delete": {
         const id = formData.get("id");
-        await deleteDocument("fidelityCards", id as string);
+        await deleteDocument("cards", id as string);
         return json({
           success: true,
           message: "Fidelity card deleted successfully!",
