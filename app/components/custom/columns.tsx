@@ -15,6 +15,7 @@ import {
 } from "~/models/types";
 import { Button } from "../ui/button";
 import { Form } from "@remix-run/react";
+import { Badge } from "../ui/badge";
 
 export const laboratoryColumns = ({
   editAction,
@@ -362,6 +363,18 @@ export const userColumns = ({
     accessorKey: "points",
     header: "Points",
     cell: ({ row }) => <div>{row.getValue("points")}</div>,
+  },
+  {
+    accessorKey: "isEnabled",
+    header: "Status",
+    cell: ({ row }) => {
+      const isEnabled = row.getValue("isEnabled");
+      return (
+        <Badge variant={isEnabled ? "default" : "secondary"}>
+          {isEnabled ? "Active" : "Disabled"}
+        </Badge>
+      );
+    },
   },
   {
     id: "actions",

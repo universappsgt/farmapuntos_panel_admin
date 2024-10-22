@@ -13,6 +13,8 @@ import {
 } from "~/components/ui/sheet";
 import { User } from "~/models/types";
 import { toast } from "~/hooks/use-toast";
+import { Switch } from "~/components/ui/switch";
+
 
 interface UserFormProps {
   userToEdit: User | undefined;
@@ -109,6 +111,14 @@ export function UserForm({
                 id="profilePictureUrl"
                 name="profilePictureUrl"
                 defaultValue={userToEdit?.profilePictureUrl || ""}
+              />
+            </div>
+            <div className="mb-4 flex items-center justify-between">
+              <Label htmlFor="isEnabled">Enabled</Label>
+              <Switch
+                id="isEnabled"
+                name="isEnabled"
+                defaultChecked={userToEdit?.isEnabled ?? true}
               />
             </div>
             <SheetFooter>

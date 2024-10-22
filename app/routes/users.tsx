@@ -43,7 +43,7 @@ export const action: ActionFunction = async ({ request }) => {
           profilePictureUrl: formData.get("profilePictureUrl") as string,
           notificationTokens: [],
           backgroundPictureUrl: "",
-          isEnabled: true,
+          isEnabled: formData.get("isEnabled") === "on",
           isAgent: false,
           id: "",
         };
@@ -65,6 +65,7 @@ export const action: ActionFunction = async ({ request }) => {
           email: formData.get("email") as string,
           phoneNumber: formData.get("phoneNumber") as string,
           profilePictureUrl: formData.get("profilePictureUrl") as string,
+          isEnabled: formData.get("isEnabled") === "on",
         };
 
         await updateDocument<User>("users", id, user);
