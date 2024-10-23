@@ -13,6 +13,7 @@ import {
 } from "~/components/ui/sheet";
 import { User } from "~/models/types";
 import { toast } from "~/hooks/use-toast";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 
 interface AgentFormProps {
   agentToEdit: User | undefined;
@@ -75,6 +76,16 @@ export function AgentForm({
             {!isCreating && (
               <input type="hidden" name="id" value={editingId || ""} />
             )}
+            <div className="flex items-center space-x-4">
+              <Avatar className="w-20 h-20">
+                <AvatarImage
+                  src={agentToEdit?.profilePictureUrl || undefined}
+                  alt="Profile picture"
+                />
+                <AvatarFallback>{agentToEdit?.name?.[0] || "U"}</AvatarFallback>
+              </Avatar>
+            </div>
+
             <div className="mb-4">
               <Label htmlFor="name">Name</Label>
               <Input
@@ -101,14 +112,6 @@ export function AgentForm({
                 name="phoneNumber"
                 required
                 defaultValue={agentToEdit?.phoneNumber || ""}
-              />
-            </div>
-            <div className="mb-4">
-              <Label htmlFor="profilePictureUrl">Profile Picture URL</Label>
-              <Input
-                id="profilePictureUrl"
-                name="profilePictureUrl"
-                defaultValue={agentToEdit?.profilePictureUrl || ""}
               />
             </div>
             <SheetFooter>
