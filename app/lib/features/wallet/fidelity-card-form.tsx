@@ -22,6 +22,8 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { ImageUpload } from "~/components/custom/image-upload";
+import { Card, CardContent } from "~/components/ui/card";
 
 interface FidelityCardFormProps {
   fidelityCardToEdit: FidelityCard | undefined;
@@ -44,6 +46,8 @@ export function FidelityCardForm({
 }: FidelityCardFormProps) {
   const navigation = useNavigation();
   const actionData = useActionData<{ success: boolean; message: string }>();
+  const [backgroundImage, setBackgroundImage] = useState<File | null>(null);
+  const [logoImage, setLogoImage] = useState<File | null>(null);
 
   useEffect(() => {
     if (actionData && actionData.success) {
@@ -55,8 +59,17 @@ export function FidelityCardForm({
     }
   }, [actionData, setIsSheetOpen]);
 
+  const handleSheetOpenChange = (open: boolean) => {
+    if (!open) {
+      // Clear the images when the sheet is dismissed
+      setBackgroundImage(null);
+      setLogoImage(null);
+    }
+    setIsSheetOpen(open);
+  };
+
   return (
-    <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+    <Sheet open={isSheetOpen} onOpenChange={handleSheetOpenChange}>
       <SheetTrigger asChild>
         <Button
           className="mb-4"
@@ -77,7 +90,7 @@ export function FidelityCardForm({
             {isCreating ? "Create New Fidelity Card" : "Edit Fidelity Card"}
           </SheetTitle>
         </SheetHeader>
-        <Form method="post" className="space-y-4">
+        <Form method="post" className="space-y-4" encType="multipart/form-data">
           <fieldset disabled={navigation.state === "submitting"}>
             <input
               type="hidden"
@@ -114,23 +127,58 @@ export function FidelityCardForm({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="backgroundImage">
-                      Background Image URL
-                    </Label>
-                    <Input
+                    <Label htmlFor="backgroundImage">Background Image</Label>
+                    <Card className="mt-2">
+                      <CardContent className="p-4">
+                        {backgroundImage ||
+                        fidelityCardToEdit?.cardDesign.backgroundImage ? (
+                          <img
+                            src={
+                              backgroundImage
+                                ? URL.createObjectURL(backgroundImage)
+                                : fidelityCardToEdit?.cardDesign.backgroundImage
+                            }
+                            alt="Background Preview"
+                            className="w-full h-40 object-cover rounded-md"
+                          />
+                        ) : (
+                          <div className="w-full h-40 bg-muted flex items-center justify-center rounded-md">
+                            No image
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                    <ImageUpload
                       id="backgroundImage"
-                      name="cardDesign.backgroundImage"
-                      defaultValue={
-                        fidelityCardToEdit?.cardDesign.backgroundImage || ""
-                      }
+                      name="backgroundImage"
+                      onImageUpload={(file) => setBackgroundImage(file)}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="logo">Logo URL</Label>
-                    <Input
+                    <Label htmlFor="logo">Logo</Label>
+                    <Card className="mt-2">
+                      <CardContent className="p-4">
+                        {logoImage || fidelityCardToEdit?.cardDesign.logo ? (
+                          <img
+                            src={
+                              logoImage
+                                ? URL.createObjectURL(logoImage)
+                                : fidelityCardToEdit?.cardDesign.logo
+                            }
+                            alt="Logo Preview"
+                            className="w-32 h-32 object-contain"
+                          />
+                        ) : (
+                          <div className="w-32 h-32 bg-muted flex items-center justify-center rounded-md">
+                            No logo
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                    <ImageUpload
                       id="logo"
-                      name="cardDesign.logo"
-                      defaultValue={fidelityCardToEdit?.cardDesign.logo || ""}
+                      name="logo"
+                      onImageUpload={(file) => setLogoImage(file)}
                     />
                   </div>
                 </div>

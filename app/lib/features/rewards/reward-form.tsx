@@ -13,6 +13,8 @@ import {
 } from "~/components/ui/sheet";
 import { Reward } from "~/models/types";
 import { toast } from "~/hooks/use-toast";
+import { Card, CardContent } from "~/components/ui/card";
+import { ImageUpload } from "~/components/custom/image-upload";
 
 interface RewardFormProps {
   rewardToEdit: Reward | undefined;
@@ -35,6 +37,7 @@ export function RewardForm({
 }: RewardFormProps) {
   const navigation = useNavigation();
   const actionData = useActionData<{ success: boolean; message: string }>();
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (actionData && actionData.success) {
@@ -65,7 +68,7 @@ export function RewardForm({
             {isCreating ? "Create New Reward" : "Edit Reward"}
           </SheetTitle>
         </SheetHeader>
-        <Form method="post" className="space-y-4">
+        <Form method="post" className="space-y-4" encType="multipart/form-data">
           <fieldset disabled={navigation.state === "submitting"}>
             <input
               type="hidden"
@@ -85,12 +88,30 @@ export function RewardForm({
               />
             </div>
             <div className="mb-4">
-              <Label htmlFor="imageUrl">Image URL</Label>
-              <Input
+              <Label htmlFor="imageUrl">Image</Label>
+              <Card className="mt-2">
+                <CardContent className="p-4">
+                  {imageFile || rewardToEdit?.imageUrl ? (
+                    <img
+                      src={
+                        imageFile
+                          ? URL.createObjectURL(imageFile)
+                          : rewardToEdit?.imageUrl
+                      }
+                      alt="Image Preview"
+                      className="w-full h-40 object-cover rounded-md"
+                    />
+                  ) : (
+                    <div className="w-full h-40 bg-muted flex items-center justify-center rounded-md">
+                      No image
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              <ImageUpload
                 id="imageUrl"
                 name="imageUrl"
-                required
-                defaultValue={rewardToEdit?.imageUrl || ""}
+                onImageUpload={(file) => setImageFile(file)}
               />
             </div>
             <div className="mb-4">
@@ -100,7 +121,9 @@ export function RewardForm({
                 name="expirationDate"
                 type="date"
                 required
-                defaultValue={rewardToEdit?.expirationDate.toISOString().split('T')[0] || ""}
+                defaultValue={
+                  rewardToEdit?.expirationDate.toISOString().split("T")[0] || ""
+                }
               />
             </div>
             <div className="mb-4">

@@ -13,6 +13,7 @@ import { rewardColumns } from "~/components/custom/columns";
 import { RewardForm } from "~/lib/features/rewards/reward-form";
 
 import { parseISO } from "date-fns";
+import { uploadImage } from "~/services/firebase-storage.server";
 
 export const loader: LoaderFunction = async () => {
   const rewards: Reward[] = await fetchDocuments<Reward>("rewards");
@@ -26,9 +27,18 @@ export const action: ActionFunction = async ({ request }) => {
   try {
     switch (action) {
       case "create": {
+        const imageFile = formData.get("imageUrl") as File;
+        let imageUrl = "";
+
+        if (imageFile.size > 0) {
+          const arrayBuffer = await imageFile.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          imageUrl = await uploadImage(buffer, imageFile.name, "rewards");
+        }
+
         const reward: Reward = {
           name: formData.get("name") as string,
-          imageUrl: formData.get("imageUrl") as string,
+          imageUrl,
           expirationDate: new Date(formData.get("expirationDate") as string),
           worthPoints: Number(formData.get("worthPoints")),
           stock: Number(formData.get("stock")),
@@ -50,9 +60,18 @@ export const action: ActionFunction = async ({ request }) => {
       }
       case "edit": {
         const id = formData.get("id") as string;
+        const imageFile = formData.get("imageUrl") as File;
+        let imageUrl = formData.get("imageUrl") as string;
+
+        if (imageFile.size > 0) {
+          const arrayBuffer = await imageFile.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          imageUrl = await uploadImage(buffer, imageFile.name, "rewards");
+        }
+
         const reward: Partial<Reward> = {
           name: formData.get("name") as string,
-          imageUrl: formData.get("imageUrl") as string,
+          imageUrl,
           expirationDate: new Date(formData.get("expirationDate") as string),
           worthPoints: Number(formData.get("worthPoints")),
           stock: Number(formData.get("stock")),
