@@ -11,9 +11,19 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "~/components/ui/sheet";
-import { Transaction, TransactionStatus, TransactionType } from "~/models/types";
+import {
+  Transaction,
+  TransactionStatus,
+  TransactionType,
+} from "~/models/types";
 import { toast } from "~/hooks/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 interface TransactionFormProps {
   transactionToEdit: Transaction | undefined;
@@ -49,18 +59,7 @@ export function TransactionForm({
 
   return (
     <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-      <SheetTrigger asChild>
-        <Button
-          className="mb-4"
-          onClick={() => {
-            setIsCreating(true);
-            setEditingId(null);
-          }}
-        >
-          + Add Transaction
-        </Button>
-      </SheetTrigger>
-      <SheetContent>
+      <SheetContent className="overflow-y-auto">
         <SheetHeader>
           <SheetTitle>
             {isCreating ? "Create New Transaction" : "Edit Transaction"}
@@ -77,36 +76,26 @@ export function TransactionForm({
               <input type="hidden" name="id" value={editingId || ""} />
             )}
             <div className="mb-4">
-              <Label htmlFor="userId">User ID</Label>
-              <Input
-                id="userId"
-                name="userId"
-                required
-                defaultValue={transactionToEdit?.userId || ""}
-              />
+              <Label>User</Label>
+              <div>{transactionToEdit?.client.name || "N/A"}</div>
             </div>
             <div className="mb-4">
-              <Label htmlFor="agentId">Agent ID</Label>
-              <Input
-                id="agentId"
-                name="agentId"
-                required
-                defaultValue={transactionToEdit?.agentId || ""}
-              />
+              <Label>Agent</Label>
+              <div>{transactionToEdit?.agent.name || "N/A"}</div>
             </div>
             <div className="mb-4">
-              <Label htmlFor="rewardPoints">Reward Points</Label>
-              <Input
-                id="rewardPoints"
-                name="rewardPoints"
-                type="number"
-                required
-                defaultValue={transactionToEdit?.rewardPoints || 0}
-              />
+              <Label>Reward Points</Label>
+              <div>{transactionToEdit?.rewardPoints || 0}</div>
             </div>
             <div className="mb-4">
               <Label htmlFor="transactionStatus">Transaction Status</Label>
-              <Select name="transactionStatus" defaultValue={transactionToEdit?.transactionStatus || TransactionStatus.InProgress}>
+              <Select
+                name="transactionStatus"
+                defaultValue={
+                  transactionToEdit?.transactionStatus ||
+                  TransactionStatus.InProgress
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
@@ -121,7 +110,12 @@ export function TransactionForm({
             </div>
             <div className="mb-4">
               <Label htmlFor="transactionType">Transaction Type</Label>
-              <Select name="transactionType" defaultValue={transactionToEdit?.transactionType || TransactionType.Credit}>
+              <Select
+                name="transactionType"
+                defaultValue={
+                  transactionToEdit?.transactionType || TransactionType.Credit
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
@@ -135,28 +129,37 @@ export function TransactionForm({
               </Select>
             </div>
             <div className="mb-4">
-              <Label htmlFor="agentSignatureUrl">Agent Signature URL</Label>
-              <Input
-                id="agentSignatureUrl"
-                name="agentSignatureUrl"
-                defaultValue={transactionToEdit?.agentSignatureUrl || ""}
-              />
+              <Label>Agent Signature URL</Label>
+              {transactionToEdit?.agentSignatureUrl && (
+                <img
+                  src={transactionToEdit.agentSignatureUrl}
+                  alt="Agent Signature"
+                  className="w-full h-40 object-cover rounded-md"
+                  style={{ objectFit: "contain" }}
+                />
+              )}
             </div>
             <div className="mb-4">
-              <Label htmlFor="clientSignatureUrl">Client Signature URL</Label>
-              <Input
-                id="clientSignatureUrl"
-                name="clientSignatureUrl"
-                defaultValue={transactionToEdit?.clientSignatureUrl || ""}
-              />
+              <Label>Client Signature URL</Label>
+              {transactionToEdit?.clientSignatureUrl && (
+                <img
+                  src={transactionToEdit.clientSignatureUrl}
+                  alt="Client Signature"
+                  className="w-full h-40 object-cover rounded-md"
+                  style={{ objectFit: "contain" }}
+                />
+              )}
             </div>
             <div className="mb-4">
-              <Label htmlFor="evidenceImageUrl">Evidence Image URL</Label>
-              <Input
-                id="evidenceImageUrl"
-                name="evidenceImageUrl"
-                defaultValue={transactionToEdit?.evidenceImageUrl || ""}
-              />
+              <Label>Evidence Image URL</Label>
+              {transactionToEdit?.evidenceImageUrl && (
+                <img
+                  src={transactionToEdit.evidenceImageUrl}
+                  alt="Evidence"
+                  className="w-full h-40 object-cover rounded-md"
+                  style={{ objectFit: "contain" }}
+                />
+              )}
             </div>
             <SheetFooter>
               <Button type="submit">

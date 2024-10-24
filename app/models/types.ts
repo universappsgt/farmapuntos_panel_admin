@@ -84,9 +84,11 @@ export interface Transaction {
   agentSignatureUrl: string;
   clientSignatureUrl: string;
   evidenceImageUrl: string;
-  rewardPoints: number;
+  rewardPoins: number;
   transactionStatus: TransactionStatus;
   transactionType: TransactionType;
+  agent: User; // Ensure this field is present
+  client: User; // Ensure this field is present
 }
 
 export interface Reward {

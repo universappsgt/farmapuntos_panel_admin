@@ -8,7 +8,6 @@ import {
   User,
   Transaction,
   TransactionStatus,
-  TransactionType,
   Reward,
   Product,
   Pharmacy,
@@ -16,6 +15,7 @@ import {
 import { Button } from "../ui/button";
 import { Form } from "@remix-run/react";
 import { Badge } from "../ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 
 export const laboratoryColumns = ({
   editAction,
@@ -426,29 +426,47 @@ export const transactionColumns = ({
     ),
   },
   {
-    accessorKey: "userId",
-    header: "User ID",
+    accessorKey: "client.name",
+    header: "Client",
+    cell: ({ row }) => (
+      <div className="flex items-center space-x-2">
+        <Avatar className="w-8 h-8">
+          <AvatarImage src={row.original.client.profilePictureUrl} alt={row.original.client.name} />
+          <AvatarFallback>{row.original.client.name.charAt(0)}</AvatarFallback>
+        </Avatar>
+        <span>{row.original.client.name}</span>
+      </div>
+    ),
   },
   {
-    accessorKey: "agentId",
-    header: "Agent ID",
+    accessorKey: "agent.name",
+    header: "Agent",
+    cell: ({ row }) => (
+      <div className="flex items-center space-x-2">
+        <Avatar className="w-8 h-8">
+          <AvatarImage src={row.original.agent.profilePictureUrl} alt={row.original.agent.name} />
+          <AvatarFallback>{row.original.agent.name.charAt(0)}</AvatarFallback>
+        </Avatar>
+        <span>{row.original.agent.name}</span>
+      </div>
+    ),
   },
   {
-    accessorKey: "rewardPoints",
+    accessorKey: "rewardPoins",
     header: "Reward Points",
   },
   {
     accessorKey: "transactionStatus",
     header: "Status",
-    cell: ({ row }) => (
-      <div
-        className={`capitalize ${getStatusColor(
-          row.getValue("transactionStatus")
-        )}`}
-      >
-        {row.getValue("transactionStatus")}
-      </div>
-    ),
+    cell: ({ row }) => {
+      const status = row.getValue("transactionStatus") as TransactionStatus;
+      const variant = getStatusVariant(status);
+      return (
+        <Badge variant={variant} className="capitalize">
+          {status}
+        </Badge>
+      );
+    },
   },
   {
     accessorKey: "transactionType",
@@ -492,16 +510,16 @@ export const transactionColumns = ({
   },
 ];
 
-function getStatusColor(status: TransactionStatus) {
+function getStatusVariant(status: TransactionStatus) {
   switch (status) {
     case TransactionStatus.InProgress:
-      return "text-yellow-600";
+      return "secondary";
     case TransactionStatus.Approved:
-      return "text-green-600";
+      return "default";
     case TransactionStatus.Denied:
-      return "text-red-600";
+      return "destructive";
     default:
-      return "";
+      return "outline";
   }
 }
 

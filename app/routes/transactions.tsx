@@ -1,27 +1,28 @@
-import { useEffect, useState } from "react";
-import {
-  useLoaderData,
-  Form,
-  useActionData,
-  json,
-  useNavigation,
-} from "@remix-run/react";
+import { useState } from "react";
+import { useLoaderData, json, useNavigation } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
-import { Button } from "~/components/ui/button";
-import { Transaction } from "~/models/types";
+import {
+  Transaction,
+  TransactionStatus,
+  TransactionType,
+  User,
+} from "~/models/types";
 import {
   createDocument,
   deleteDocument,
   fetchDocuments,
   updateDocument,
 } from "~/services/firestore.server";
-import { toast } from "~/hooks/use-toast";
 import { DataTable } from "~/components/ui/data-table";
 import { transactionColumns } from "~/components/custom/columns";
 import { TransactionForm } from "~/lib/features/transactions/transaction-form";
 
 export const loader: LoaderFunction = async () => {
-  const transactions: Transaction[] = await fetchDocuments<Transaction>("transactions");
+  const transactions: Transaction[] = await fetchDocuments<Transaction>(
+    "transactions"
+  );
+
+  console.log(transactions);
   return { transactions };
 };
 
@@ -40,9 +41,13 @@ export const action: ActionFunction = async ({ request }) => {
           clientSignatureUrl: formData.get("clientSignatureUrl") as string,
           evidenceImageUrl: formData.get("evidenceImageUrl") as string,
           rewardPoints: Number(formData.get("rewardPoints")),
-          transactionStatus: formData.get("transactionStatus") as TransactionStatus,
+          transactionStatus: formData.get(
+            "transactionStatus"
+          ) as TransactionStatus,
           transactionType: formData.get("transactionType") as TransactionType,
           id: "",
+          agent: {} as User,
+          client: {} as User,
         };
 
         const [errors, createdTransaction] = await createDocument<Transaction>(
@@ -67,7 +72,9 @@ export const action: ActionFunction = async ({ request }) => {
           clientSignatureUrl: formData.get("clientSignatureUrl") as string,
           evidenceImageUrl: formData.get("evidenceImageUrl") as string,
           rewardPoints: Number(formData.get("rewardPoints")),
-          transactionStatus: formData.get("transactionStatus") as TransactionStatus,
+          transactionStatus: formData.get(
+            "transactionStatus"
+          ) as TransactionStatus,
           transactionType: formData.get("transactionType") as TransactionType,
         };
 
