@@ -14,7 +14,7 @@ import {
 import { User } from "~/models/types";
 import { toast } from "~/hooks/use-toast";
 import { Switch } from "~/components/ui/switch";
-
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 
 interface UserFormProps {
   userToEdit: User | undefined;
@@ -78,6 +78,20 @@ export function UserForm({
               <input type="hidden" name="id" value={editingId || ""} />
             )}
             <div className="mb-4">
+              <Label>Profile Picture</Label>
+              <div className="flex items-center space-x-4">
+                <Avatar className="w-20 h-20">
+                  <AvatarImage
+                    src={userToEdit?.profilePictureUrl || undefined}
+                    alt="Profile picture"
+                  />
+                  <AvatarFallback>
+                    {userToEdit?.name?.[0] || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+            </div>
+            <div className="mb-4">
               <Label htmlFor="name">Name</Label>
               <Input
                 id="name"
@@ -105,14 +119,7 @@ export function UserForm({
                 defaultValue={userToEdit?.phoneNumber || ""}
               />
             </div>
-            <div className="mb-4">
-              <Label htmlFor="profilePictureUrl">Profile Picture URL</Label>
-              <Input
-                id="profilePictureUrl"
-                name="profilePictureUrl"
-                defaultValue={userToEdit?.profilePictureUrl || ""}
-              />
-            </div>
+
             <div className="mb-4 flex items-center justify-between">
               <Label htmlFor="isEnabled">Enabled</Label>
               <Switch

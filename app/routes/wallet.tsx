@@ -19,6 +19,8 @@ import { DataTable } from "~/components/ui/data-table";
 import { fidelityCardColumns } from "~/components/custom/columns";
 import { Skeleton } from "~/components/ui/skeleton";
 import { FidelityCardForm } from "~/lib/features/wallet/fidelity-card-form";
+import { uploadImage } from "~/services/firebase-storage.server";
+import { Buffer } from "buffer";
 
 export const loader: LoaderFunction = async () => {
   const fidelityCards: FidelityCard[] = await fetchDocuments<FidelityCard>(
@@ -61,75 +63,80 @@ export const action: ActionFunction = async ({ request }) => {
 
   try {
     switch (action) {
-      case "create": {
+      case "create":
+      case "edit": {
         const id = formData.get("id");
+        const backgroundImageFile = formData.get("backgroundImage") as File;
+        const logoFile = formData.get("logo") as File;
+
+        let backgroundImageUrl = formData.get(
+          "cardDesign.backgroundImage"
+        ) as string;
+        let logoUrl = formData.get("cardDesign.logo") as string;
+
+        if (backgroundImageFile.size > 0) {
+          const arrayBuffer = await backgroundImageFile.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          backgroundImageUrl = await uploadImage(
+            buffer,
+            backgroundImageFile.name,
+            "cards"
+          );
+        }
+
+        if (logoFile.size > 0) {
+          const arrayBuffer = await logoFile.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          logoUrl = await uploadImage(buffer, logoFile.name, "cards");
+        }
 
         const fidelityCard: FidelityCard = {
           cardTitle: formData.get("cardTitle") as string,
           cardDesign: {
-            backgroundImage: formData.get("backgroundImage") as string,
-            logo: formData.get("logo") as string,
+            backgroundImage: backgroundImageUrl,
+            logo: logoUrl,
           },
           contact: {
-            locationUrl: formData.get("locationUrl") as string,
-            phoneNumber: formData.get("phoneNumber") as string,
-            website: formData.get("website") as string,
+            locationUrl: formData.get("contact.locationUrl") as string,
+            phoneNumber: formData.get("contact.phoneNumber") as string,
+            website: formData.get("contact.website") as string,
           },
           description: formData.get("description") as string,
           laboratoryId: formData.get("laboratoryId") as string,
           rules: {
-            currency: formData.get("currency") as string,
-            forPurchasePrice: Number(formData.get("forPurchasePrice")),
-            initialCredits: Number(formData.get("initialCredits")),
-            rewardPoints: formData.get("rewardPoints") as string,
-            status: formData.get("status") as string,
+            currency: formData.get("rules.currency") as string,
+            forPurchasePrice: Number(formData.get("rules.forPurchasePrice")),
+            initialCredits: Number(formData.get("rules.initialCredits")),
+            rewardPoints: formData.get("rules.rewardPoints") as string,
+            status: formData.get("rules.status") as string,
           },
           id: id as string,
         };
 
-        const [errors, card] = await createDocument<FidelityCard>(
-          "cards",
-          fidelityCard
-        );
-        if (errors) {
-          const values = Object.fromEntries(formData);
-          return json({ errors, values });
+        if (action === "create") {
+          const [errors, card] = await createDocument<FidelityCard>(
+            "cards",
+            fidelityCard
+          );
+          if (errors) {
+            const values = Object.fromEntries(formData);
+            return json({ errors, values });
+          }
+          return json({
+            success: true,
+            message: "Fidelity card created successfully!",
+          });
+        } else {
+          await updateDocument<FidelityCard>(
+            "cards",
+            id as string,
+            fidelityCard
+          );
+          return json({
+            success: true,
+            message: "Fidelity card updated successfully!",
+          });
         }
-        return json({
-          success: true,
-          message: "Fidelity card created successfully!",
-        });
-      }
-      case "edit": {
-        const id = formData.get("id");
-        const fidelityCard: FidelityCard = {
-          cardTitle: formData.get("cardTitle") as string,
-          cardDesign: {
-            backgroundImage: formData.get("backgroundImage") as string,
-            logo: formData.get("logo") as string,
-          },
-          contact: {
-            locationUrl: formData.get("locationUrl") as string,
-            phoneNumber: formData.get("phoneNumber") as string,
-            website: formData.get("website") as string,
-          },
-          description: formData.get("description") as string,
-          laboratoryId: formData.get("laboratoryId") as string,
-          rules: {
-            currency: formData.get("currency") as string,
-            forPurchasePrice: Number(formData.get("forPurchasePrice")),
-            initialCredits: Number(formData.get("initialCredits")),
-            rewardPoints: formData.get("rewardPoints") as string,
-            status: formData.get("status") as string,
-          },
-          id: "",
-        };
-
-        await updateDocument<FidelityCard>("cards", id as string, fidelityCard);
-        return json({
-          success: true,
-          message: "Fidelity card updated successfully!",
-        });
       }
       case "delete": {
         const id = formData.get("id");

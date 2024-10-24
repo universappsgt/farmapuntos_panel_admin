@@ -1,12 +1,6 @@
-import { useEffect, useState } from "react";
-import {
-  useLoaderData,
-  Form,
-  useActionData,
-  json,
-  useNavigation,
-} from "@remix-run/react";
-import type { LoaderFunction, ActionFunction } from "@remix-run/node";
+import { useState } from "react";
+import { useLoaderData, json, useNavigation } from "@remix-run/react";
+import { type LoaderFunction, type ActionFunction } from "@remix-run/node";
 import { User } from "~/models/types";
 import {
   createDocument,
@@ -14,7 +8,6 @@ import {
   fetchDocuments,
   updateDocument,
 } from "~/services/firestore.server";
-import { toast } from "~/hooks/use-toast";
 import { DataTable } from "~/components/ui/data-table";
 import { userColumns } from "~/components/custom/columns";
 import { UserForm } from "~/lib/features/users/user-form";
@@ -40,7 +33,7 @@ export const action: ActionFunction = async ({ request }) => {
           email: formData.get("email") as string,
           points: 0,
           phoneNumber: formData.get("phoneNumber") as string,
-          profilePictureUrl: formData.get("profilePictureUrl") as string,
+          profilePictureUrl: "",
           notificationTokens: [],
           backgroundPictureUrl: "",
           isEnabled: formData.get("isEnabled") === "on",
@@ -50,8 +43,7 @@ export const action: ActionFunction = async ({ request }) => {
 
         const [errors, createdUser] = await createDocument<User>("users", user);
         if (errors) {
-          const values = Object.fromEntries(formData);
-          return json({ errors, values });
+          return json({ errors, values: Object.fromEntries(formData) });
         }
         return json({
           success: true,
@@ -64,7 +56,6 @@ export const action: ActionFunction = async ({ request }) => {
           name: formData.get("name") as string,
           email: formData.get("email") as string,
           phoneNumber: formData.get("phoneNumber") as string,
-          profilePictureUrl: formData.get("profilePictureUrl") as string,
           isEnabled: formData.get("isEnabled") === "on",
         };
 
