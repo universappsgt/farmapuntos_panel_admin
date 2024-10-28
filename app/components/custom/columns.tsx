@@ -309,7 +309,7 @@ export const surveyColumns = ({
     ),
   },
   {
-    accessorKey: "rewardedPoints",
+    accessorKey: "awardedPoints",
     header: ({ column }) => {
       return (
         <Button
@@ -321,7 +321,7 @@ export const surveyColumns = ({
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("rewardedPoints")}</div>,
+    cell: ({ row }) => <div>{row.getValue("awardedPoints")}</div>,
   },
   {
     accessorKey: "videoUrl",
@@ -443,32 +443,32 @@ export const userColumns = ({
 }): ColumnDef<User>[] => [
   {
     accessorKey: "name",
-    header: "Name",
+    header: "Nombre",
     cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
   },
   {
     accessorKey: "email",
-    header: "Email",
+    header: "Correo",
     cell: ({ row }) => <div>{row.getValue("email")}</div>,
   },
   {
     accessorKey: "phoneNumber",
-    header: "Phone Number",
+    header: "Teléfono",
     cell: ({ row }) => <div>{row.getValue("phoneNumber")}</div>,
   },
   {
     accessorKey: "points",
-    header: "Points",
+    header: "Puntos",
     cell: ({ row }) => <div>{row.getValue("points")}</div>,
   },
   {
     accessorKey: "isEnabled",
-    header: "Status",
+    header: "Estado",
     cell: ({ row }) => {
       const isEnabled = row.getValue("isEnabled");
       return (
         <Badge variant={isEnabled ? "default" : "secondary"}>
-          {isEnabled ? "Active" : "Disabled"}
+          {isEnabled ? "Activo" : "Desactivado"}
         </Badge>
       );
     },
@@ -486,7 +486,7 @@ export const userColumns = ({
             variant="secondary"
             disabled={navigation.state === "submitting"}
           >
-            Edit
+            Editar
           </Button>
         </Form>
         <Form method="post" style={{ display: "inline" }}>
@@ -499,8 +499,8 @@ export const userColumns = ({
           >
             {navigation.state === "submitting" &&
             navigation.formData?.get("id") === row.original.id
-              ? "Deleting..."
-              : "Delete"}
+              ? "Eliminando..."
+              : "Eliminar"}
           </Button>
         </Form>
       </div>
@@ -517,14 +517,14 @@ export const transactionColumns = ({
 }): ColumnDef<Transaction>[] => [
   {
     accessorKey: "createdAt",
-    header: "Created At",
+    header: "Fecha de Creación",
     cell: ({ row }) => (
       <div>{new Date(row.getValue("createdAt")).toLocaleString()}</div>
     ),
   },
   {
     accessorKey: "client.name",
-    header: "Client",
+    header: "Cliente",
     cell: ({ row }) => (
       <div className="flex items-center space-x-2">
         <Avatar className="w-8 h-8">
@@ -540,7 +540,7 @@ export const transactionColumns = ({
   },
   {
     accessorKey: "agent.name",
-    header: "Agent",
+    header: "Agente",
     cell: ({ row }) => (
       <div className="flex items-center space-x-2">
         <Avatar className="w-8 h-8">
@@ -556,11 +556,11 @@ export const transactionColumns = ({
   },
   {
     accessorKey: "rewardPoins",
-    header: "Reward Points",
+    header: "Puntos de Recompensa",
   },
   {
     accessorKey: "transactionStatus",
-    header: "Status",
+    header: "Estado",
     cell: ({ row }) => {
       const status = row.getValue("transactionStatus") as TransactionStatus;
       const variant = getStatusVariant(status);
@@ -573,7 +573,7 @@ export const transactionColumns = ({
   },
   {
     accessorKey: "transactionType",
-    header: "Type",
+    header: "Tipo",
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("transactionType")}</div>
     ),
@@ -591,7 +591,7 @@ export const transactionColumns = ({
             variant="secondary"
             disabled={navigation.state === "submitting"}
           >
-            Edit
+            Editar
           </Button>
         </Form>
         <Form method="post" style={{ display: "inline" }}>
@@ -604,8 +604,8 @@ export const transactionColumns = ({
           >
             {navigation.state === "submitting" &&
             navigation.formData?.get("id") === row.original.id
-              ? "Deleting..."
-              : "Delete"}
+              ? "Eliminando..."
+              : "Eliminar"}
           </Button>
         </Form>
       </div>
@@ -635,11 +635,11 @@ export const rewardColumns = ({
 }): ColumnDef<Reward>[] => [
   {
     accessorKey: "name",
-    header: "Name",
+    header: "Nombre",
   },
   {
     accessorKey: "imageUrl",
-    header: "Image",
+    header: "Imagen",
     cell: ({ row }) => (
       <div className="relative w-10 h-10">
         <img
@@ -651,12 +651,12 @@ export const rewardColumns = ({
     ),
   },
   {
-    accessorKey: "worthPoints",
-    header: "Worth Points",
+    accessorKey: "awardedPoints",
+    header: "Puntos Requeridos",
   },
   {
     accessorKey: "stock",
-    header: "Stock",
+    header: "Existencias",
   },
   {
     id: "actions",
@@ -671,7 +671,7 @@ export const rewardColumns = ({
             variant="secondary"
             disabled={navigation.state === "submitting"}
           >
-            Edit
+            Editar
           </Button>
         </Form>
         <Form method="post" style={{ display: "inline" }}>
@@ -684,8 +684,8 @@ export const rewardColumns = ({
           >
             {navigation.state === "submitting" &&
             navigation.formData?.get("id") === row.original.id
-              ? "Deleting..."
-              : "Delete"}
+              ? "Eliminando..."
+              : "Eliminar"}
           </Button>
         </Form>
       </div>
@@ -702,18 +702,18 @@ export const productColumns = ({
 }): ColumnDef<Product>[] => [
   {
     accessorKey: "name",
-    header: "Name",
+    header: "Nombre",
     cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
   },
   {
     accessorKey: "price",
-    header: "Price",
+    header: "Precio",
     cell: ({ row }) => <div>${row.getValue("price")}</div>,
   },
   {
-    accessorKey: "worthPoints",
-    header: "Worth Points",
-    cell: ({ row }) => <div>{row.getValue("worthPoints")}</div>,
+    accessorKey: "awardedPoints",
+    header: "Puntos",
+    cell: ({ row }) => <div>{row.getValue("awardedPoints")}</div>,
   },
   {
     id: "actions",
@@ -728,7 +728,7 @@ export const productColumns = ({
             variant="secondary"
             disabled={navigation.state === "submitting"}
           >
-            Edit
+            Editar
           </Button>
         </Form>
         <Form method="post" style={{ display: "inline" }}>
@@ -741,8 +741,8 @@ export const productColumns = ({
           >
             {navigation.state === "submitting" &&
             navigation.formData?.get("id") === row.original.id
-              ? "Deleting..."
-              : "Delete"}
+              ? "Eliminando..."
+              : "Eliminar"}
           </Button>
         </Form>
       </div>
@@ -759,15 +759,15 @@ export const pharmacyColumns = ({
 }): ColumnDef<Pharmacy>[] => [
   {
     accessorKey: "name",
-    header: "Name",
+    header: "Nombre",
   },
   {
     accessorKey: "address",
-    header: "Address",
+    header: "Dirección",
   },
   {
     accessorKey: "phoneNumber",
-    header: "Phone Number",
+    header: "Teléfono",
   },
   {
     id: "actions",
@@ -782,7 +782,7 @@ export const pharmacyColumns = ({
             variant="secondary"
             disabled={navigation.state === "submitting"}
           >
-            Edit
+            Editar
           </Button>
         </Form>
         <Form method="post" style={{ display: "inline" }}>
@@ -795,8 +795,8 @@ export const pharmacyColumns = ({
           >
             {navigation.state === "submitting" &&
             navigation.formData?.get("id") === row.original.id
-              ? "Deleting..."
-              : "Delete"}
+              ? "Eliminando..."
+              : "Eliminar"}
           </Button>
         </Form>
       </div>

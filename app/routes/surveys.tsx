@@ -7,9 +7,8 @@ import {
   useNavigation,
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
-import { Survey, Question } from "~/models/types";
+import { Survey, Question, FidelityCard } from "~/models/types";
 import {
-  createDocument,
   deleteDocument,
   fetchDocuments,
   updateDocument,
@@ -22,8 +21,11 @@ import { db } from "firebase";
 import { collection, addDoc, writeBatch, doc } from "firebase/firestore";
 
 export const loader: LoaderFunction = async () => {
-  const surveys: Survey[] = await fetchDocuments<Survey>("surveys");
-  return { surveys };
+  const [surveys, cards] = await Promise.all([
+    fetchDocuments<Survey>("surveys"),
+    fetchDocuments<FidelityCard>("cards"),
+  ]);
+  return { surveys, cards };
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -52,7 +54,7 @@ export const action: ActionFunction = async ({ request }) => {
           status,
           videoUrl,
           createdAt: new Date(),
-          rewardedPoints: 0,
+          awardedPoints: 0,
         });
 
         // 2. Batch create questions in the survey subcollection
@@ -82,19 +84,56 @@ export const action: ActionFunction = async ({ request }) => {
         const id = formData.get("id");
         const title = formData.get("title");
         const description = formData.get("description");
+        const cardId = formData.get("cardId");
+        const deadline = new Date(formData.get("deadline") as string);
+        const status = formData.get("status") as
+          | "active"
+          | "inactive"
+          | "completed";
+        const videoUrl = formData.get("videoUrl") as string;
+        const awardedPoints = parseInt(formData.get("awardedPoints") as string);
+        const questionsJson = formData.get("questions") as string;
+        const questions = JSON.parse(questionsJson) as Question[];
+
         const survey: Survey = {
+          id: id as string,
           title: title as string,
           description: description as string,
-          cardId: "",
-          deadline: new Date(formData.get("deadline") as string),
-          rewardedPoints: 0,
-          status: "active",
-          videoUrl: "",
-          createdAt: new Date(formData.get("createdAt") as string),
-          id: id as string,
+          cardId: cardId as string,
+          deadline,
+          status,
+          videoUrl,
+          awardedPoints,
+          createdAt: new Date(),
         };
 
+        // 1. Update the survey document
         await updateDocument<Survey>("surveys", id as string, survey);
+
+        // 2. Update questions in the survey subcollection
+        const batch = writeBatch(db);
+        const questionsRef = collection(db, `surveys/${id}/questions`);
+
+        // First delete existing questions
+        const existingQuestions = await fetchDocuments<Question>(
+          `surveys/${id}/questions`
+        );
+        existingQuestions.forEach((question) => {
+          const questionRef = doc(questionsRef, question.id);
+          batch.delete(questionRef);
+        });
+
+        // Then create new questions
+        questions.forEach((question) => {
+          const newQuestionRef = doc(questionsRef);
+          batch.set(newQuestionRef, {
+            ...question,
+            updatedAt: new Date(),
+          });
+        });
+
+        await batch.commit();
+
         return json({
           success: true,
           message: "Survey updated successfully!",
@@ -119,7 +158,10 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function Surveys() {
-  const { surveys } = useLoaderData<{ surveys: Survey[] }>();
+  const { surveys, cards } = useLoaderData<{
+    surveys: Survey[];
+    cards: FidelityCard[];
+  }>();
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -162,7 +204,7 @@ export default function Surveys() {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Surveys</h1>
+      <h1 className="text-3xl font-bold mb-6">Encuestas</h1>
       <SurveyForm
         isSheetOpen={isSheetOpen}
         setIsSheetOpen={setIsSheetOpen}
@@ -171,6 +213,7 @@ export default function Surveys() {
         setIsCreating={setIsCreating}
         editingId={editingId}
         setEditingId={setEditingId}
+        cards={cards}
       />
       <DataTable
         columns={surveyColumns({

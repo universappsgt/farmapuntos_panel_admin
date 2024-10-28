@@ -206,7 +206,7 @@ export default function Wallet() {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Wallet</h1>
+      <h1 className="text-3xl font-bold mb-6">Billetera</h1>
       <FidelityCardForm
         isSheetOpen={isSheetOpen}
         setIsSheetOpen={setIsSheetOpen}

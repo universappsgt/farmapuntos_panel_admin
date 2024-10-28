@@ -57,13 +57,13 @@ export function AgentForm({
             setEditingId(null);
           }}
         >
-          + Add Agent
+          + Agregar Agente
         </Button>
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
           <SheetTitle>
-            {isCreating ? "Create New Agent" : "Edit Agent"}
+            {isCreating ? "Crear Nuevo Agente" : "Editar Agente"}
           </SheetTitle>
         </SheetHeader>
         <Form method="post" className="space-y-4">
@@ -87,7 +87,7 @@ export function AgentForm({
             </div>
 
             <div className="mb-4">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">Nombre</Label>
               <Input
                 id="name"
                 name="name"
@@ -96,7 +96,7 @@ export function AgentForm({
               />
             </div>
             <div className="mb-4">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Correo Electrónico</Label>
               <Input
                 id="email"
                 name="email"
@@ -106,7 +106,7 @@ export function AgentForm({
               />
             </div>
             <div className="mb-4">
-              <Label htmlFor="phoneNumber">Phone Number</Label>
+              <Label htmlFor="phoneNumber">Teléfono</Label>
               <Input
                 id="phoneNumber"
                 name="phoneNumber"
@@ -117,10 +117,10 @@ export function AgentForm({
             <SheetFooter>
               <Button type="submit">
                 {navigation.state === "submitting"
-                  ? "Saving..."
+                  ? "Guardando..."
                   : isCreating
-                  ? "Create"
-                  : "Save"}
+                  ? "Crear"
+                  : "Guardar"}
               </Button>
             </SheetFooter>
           </fieldset>

@@ -51,7 +51,7 @@ export interface Survey {
   cardId: string;
   createdAt: Date;
   description: string;
-  rewardedPoints: number;
+  awardedPoints: number;
   status: 'active' | 'inactive' | 'completed';
 }
 
@@ -96,7 +96,7 @@ export interface Reward {
   imageUrl: string;
   name: string;
   expirationDate: Date;
-  worthPoints: number;
+  awardedPoints: number;
   stock: number;
 }
 
@@ -111,5 +111,5 @@ export interface Product {
   id: string;
   name: string;
   price: number;
-  worthPoints: number;
+  awardedPoints: number;
 }

@@ -117,7 +117,7 @@ export default function QuestionList({
 
   return (
     <div className="space-y-4 pb-4">
-      <h2 className="text-xl font-semibold">Questions</h2>
+      <h2 className="text-xl font-semibold">Preguntas</h2>
       {questions.map((question) => (
         <Card key={question.id} className="hover:shadow-md transition-shadow">
           <CardContent className="p-4">
@@ -184,17 +184,17 @@ export default function QuestionList({
       ))}
       <Button onClick={addNewQuestion} variant="outline">
         <Plus className="h-4 w-4 mr-2" />
-        Add New Question
+        Agregar Nueva Pregunta
       </Button>
       {editingQuestion && (
         <Card className="mt-4">
           <CardContent className="p-4">
             <h3 className="text-lg font-semibold mb-4">
-              {editingQuestion.id.startsWith("new-") ? "Add New Question" : "Edit Question"}
+              {editingQuestion.id.startsWith("new-") ? "Agregar Nueva Pregunta" : "Editar Pregunta"}
             </h3>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="questionText">Question Text</Label>
+                <Label htmlFor="questionText">Texto de la Pregunta</Label>
                 <Textarea
                   id="questionText"
                   name="questionText"
@@ -205,7 +205,7 @@ export default function QuestionList({
                 />
               </div>
               <div className="space-y-2">
-                <Label>Answers</Label>
+                <Label>Respuestas</Label>
                 <RadioGroup
                   value={editingQuestion.correctAnswerIndex.toString()}
                   onValueChange={(value) =>
@@ -224,7 +224,7 @@ export default function QuestionList({
                           handleAnswerChange(index, e.target.value)
                         }
                         className="flex-grow"
-                        placeholder={`Answer ${index + 1}`}
+                        placeholder={`Respuesta ${index + 1}`}
                         required
                       />
                       <Button
@@ -243,13 +243,13 @@ export default function QuestionList({
               </div>
               <Button type="button" variant="outline" onClick={addAnswer}>
                 <Plus className="h-4 w-4 mr-2" />
-                Add Answer
+                Agregar Respuesta
               </Button>
               <div className="flex justify-end space-x-2">
                 <Button variant="outline" onClick={handleCancel}>
-                  Cancel
+                  Cancelar
                 </Button>
-                <Button onClick={handleSave}>Save Changes</Button>
+                <Button onClick={handleSave}>Guardar Cambios</Button>
               </div>
             </div>
           </CardContent>

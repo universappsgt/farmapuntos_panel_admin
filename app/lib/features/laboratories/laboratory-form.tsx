@@ -59,13 +59,13 @@ export function LaboratoryForm({
             setIsSheetOpen(true);
           }}
         >
-          + Agregar
+          + Agregar Laboratorio
         </Button>
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
           <SheetTitle>
-            {isCreating ? "Create New Laboratory" : "Edit Laboratory"}
+            {isCreating ? "Crear Nuevo Laboratorio" : "Editar Laboratorio"}
           </SheetTitle>
         </SheetHeader>
         <Form method="post" className="space-y-8">
@@ -79,7 +79,7 @@ export function LaboratoryForm({
               <input type="hidden" name="id" value={editingId || ""} />
             )}
             <div className="mb-4">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">Nombre</Label>
               <Input
                 id="name"
                 name="name"
@@ -88,7 +88,7 @@ export function LaboratoryForm({
               />
             </div>
             <div className="mb-4">
-              <Label htmlFor="location">Location</Label>
+              <Label htmlFor="location">Ubicación</Label>
               <Input
                 id="location"
                 name="location"
@@ -97,7 +97,7 @@ export function LaboratoryForm({
               />
             </div>
             <div className="mb-4">
-              <Label htmlFor="specialization">Specialization</Label>
+              <Label htmlFor="specialization">Especialización</Label>
               <Input
                 id="specialization"
                 name="specialization"
@@ -108,7 +108,7 @@ export function LaboratoryForm({
               />
             </div>
             <div className="mb-4">
-              <Label htmlFor="contactNumber">Contact Number</Label>
+              <Label htmlFor="contactNumber">Teléfono de Contacto</Label>
               <Input
                 id="contactNumber"
                 name="contactNumber"

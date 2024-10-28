@@ -56,13 +56,13 @@ export function PharmacyForm({
             setEditingId(null);
           }}
         >
-          + Add Pharmacy
+          + Agregar Farmacia
         </Button>
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
           <SheetTitle>
-            {isCreating ? "Create New Pharmacy" : "Edit Pharmacy"}
+            {isCreating ? "Crear Nueva Farmacia" : "Editar Farmacia"}
           </SheetTitle>
         </SheetHeader>
         <Form method="post" className="space-y-4">
@@ -76,7 +76,7 @@ export function PharmacyForm({
               <input type="hidden" name="id" value={editingId || ""} />
             )}
             <div className="mb-4">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">Nombre</Label>
               <Input
                 id="name"
                 name="name"
@@ -85,7 +85,7 @@ export function PharmacyForm({
               />
             </div>
             <div className="mb-4">
-              <Label htmlFor="address">Address</Label>
+              <Label htmlFor="address">Dirección</Label>
               <Input
                 id="address"
                 name="address"
@@ -94,7 +94,7 @@ export function PharmacyForm({
               />
             </div>
             <div className="mb-4">
-              <Label htmlFor="phoneNumber">Phone Number</Label>
+              <Label htmlFor="phoneNumber">Teléfono</Label>
               <Input
                 id="phoneNumber"
                 name="phoneNumber"
@@ -105,10 +105,10 @@ export function PharmacyForm({
             <SheetFooter>
               <Button type="submit">
                 {navigation.state === "submitting"
-                  ? "Saving..."
+                  ? "Guardando..."
                   : isCreating
-                  ? "Create"
-                  : "Save"}
+                  ? "Crear"
+                  : "Guardar"}
               </Button>
             </SheetFooter>
           </fieldset>

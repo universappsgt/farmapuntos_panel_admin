@@ -59,13 +59,13 @@ export function RewardForm({
             setEditingId(null);
           }}
         >
-          + Add Reward
+          + Agregar Recompensa
         </Button>
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
           <SheetTitle>
-            {isCreating ? "Create New Reward" : "Edit Reward"}
+            {isCreating ? "Crear Nueva Recompensa" : "Editar Recompensa"}
           </SheetTitle>
         </SheetHeader>
         <Form method="post" className="space-y-4" encType="multipart/form-data">
@@ -79,7 +79,7 @@ export function RewardForm({
               <input type="hidden" name="id" value={editingId || ""} />
             )}
             <div className="mb-4">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">Nombre</Label>
               <Input
                 id="name"
                 name="name"
@@ -88,7 +88,7 @@ export function RewardForm({
               />
             </div>
             <div className="mb-4">
-              <Label htmlFor="imageUrl">Image</Label>
+              <Label htmlFor="imageUrl">Imagen</Label>
               <Card className="mt-2">
                 <CardContent className="p-4">
                   {imageFile || rewardToEdit?.imageUrl ? (
@@ -103,7 +103,7 @@ export function RewardForm({
                     />
                   ) : (
                     <div className="w-full h-40 bg-muted flex items-center justify-center rounded-md">
-                      No image
+                      Sin imagen
                     </div>
                   )}
                 </CardContent>
@@ -115,7 +115,7 @@ export function RewardForm({
               />
             </div>
             <div className="mb-4">
-              <Label htmlFor="expirationDate">Expiration Date</Label>
+              <Label htmlFor="expirationDate">Fecha de Vencimiento</Label>
               <Input
                 id="expirationDate"
                 name="expirationDate"
@@ -127,17 +127,17 @@ export function RewardForm({
               />
             </div>
             <div className="mb-4">
-              <Label htmlFor="worthPoints">Worth Points</Label>
+              <Label htmlFor="awardedPoints">Puntos Otorgados</Label>
               <Input
-                id="worthPoints"
-                name="worthPoints"
+                id="awardedPoints"
+                name="awardedPoints"
                 type="number"
                 required
-                defaultValue={rewardToEdit?.worthPoints || 0}
+                defaultValue={rewardToEdit?.awardedPoints || 0}
               />
             </div>
             <div className="mb-4">
-              <Label htmlFor="stock">Stock</Label>
+              <Label htmlFor="stock">Existencias</Label>
               <Input
                 id="stock"
                 name="stock"
@@ -149,10 +149,10 @@ export function RewardForm({
             <SheetFooter>
               <Button type="submit">
                 {navigation.state === "submitting"
-                  ? "Saving..."
+                  ? "Guardando..."
                   : isCreating
-                  ? "Create"
-                  : "Save"}
+                  ? "Crear"
+                  : "Guardar"}
               </Button>
             </SheetFooter>
           </fieldset>

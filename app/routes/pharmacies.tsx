@@ -116,7 +116,7 @@ export default function Pharmacies() {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Pharmacies</h1>
+      <h1 className="text-3xl font-bold mb-6">Farmacias</h1>
       <PharmacyForm
         isSheetOpen={isSheetOpen}
         setIsSheetOpen={setIsSheetOpen}

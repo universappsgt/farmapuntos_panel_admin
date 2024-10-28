@@ -46,7 +46,7 @@ export const action: ActionFunction = async ({ request }) => {
           name: formData.get("name") as string,
           imageUrl,
           expirationDate: new Date(formData.get("expirationDate") as string),
-          worthPoints: Number(formData.get("worthPoints")),
+          awardedPoints: Number(formData.get("awardedPoints")),
           stock: Number(formData.get("stock")),
           id: "",
         };
@@ -79,7 +79,7 @@ export const action: ActionFunction = async ({ request }) => {
           name: formData.get("name") as string,
           imageUrl,
           expirationDate: new Date(formData.get("expirationDate") as string),
-          worthPoints: Number(formData.get("worthPoints")),
+          awardedPoints: Number(formData.get("awardedPoints")),
           stock: Number(formData.get("stock")),
         };
 
@@ -143,7 +143,7 @@ export default function Rewards() {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Rewards</h1>
+      <h1 className="text-3xl font-bold mb-6">Recompensas</h1>
       <RewardForm
         isSheetOpen={isSheetOpen}
         setIsSheetOpen={setIsSheetOpen}

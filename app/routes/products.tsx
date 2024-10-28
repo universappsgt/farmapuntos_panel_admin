@@ -33,7 +33,7 @@ export const action: ActionFunction = async ({ request }) => {
         const product: Product = {
           name: formData.get("name") as string,
           price: Number(formData.get("price")),
-          worthPoints: Number(formData.get("worthPoints")),
+          awardedPoints: Number(formData.get("awardedPoints")),
           id: "",
         };
 
@@ -64,7 +64,7 @@ export const action: ActionFunction = async ({ request }) => {
         const product: Partial<Product> = {
           name: formData.get("name") as string,
           price: Number(formData.get("price")),
-          worthPoints: Number(formData.get("worthPoints")),
+          awardedPoints: Number(formData.get("awardedPoints")),
         };
 
         await updateDocument<Product>("products", id, product);
@@ -142,7 +142,7 @@ export default function Products() {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Products</h1>
+      <h1 className="text-3xl font-bold mb-6">Productos</h1>
       <ProductForm
         isSheetOpen={isSheetOpen}
         setIsSheetOpen={setIsSheetOpen}

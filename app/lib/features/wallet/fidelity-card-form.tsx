@@ -103,13 +103,13 @@ export function FidelityCardForm({
             <Tabs defaultValue="general" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="general">General</TabsTrigger>
-                <TabsTrigger value="contact">Contact</TabsTrigger>
-                <TabsTrigger value="rules">Rules</TabsTrigger>
+                <TabsTrigger value="contact">Contacto</TabsTrigger>
+                <TabsTrigger value="rules">Reglas</TabsTrigger>
               </TabsList>
               <TabsContent value="general">
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="cardTitle">Card Title</Label>
+                    <Label htmlFor="cardTitle">Título de la Tarjeta</Label>
                     <Input
                       id="cardTitle"
                       name="cardTitle"
@@ -118,7 +118,7 @@ export function FidelityCardForm({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="description">Description</Label>
+                    <Label htmlFor="description">Descripción</Label>
                     <Textarea
                       id="description"
                       name="description"
@@ -127,7 +127,7 @@ export function FidelityCardForm({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="backgroundImage">Background Image</Label>
+                    <Label htmlFor="backgroundImage">Imagen de Fondo</Label>
                     <Card className="mt-2">
                       <CardContent className="p-4">
                         {backgroundImage ||
@@ -143,7 +143,7 @@ export function FidelityCardForm({
                           />
                         ) : (
                           <div className="w-full h-40 bg-muted flex items-center justify-center rounded-md">
-                            No image
+                            Sin imagen
                           </div>
                         )}
                       </CardContent>
@@ -170,7 +170,7 @@ export function FidelityCardForm({
                           />
                         ) : (
                           <div className="w-32 h-32 bg-muted flex items-center justify-center rounded-md">
-                            No logo
+                            Sin logo
                           </div>
                         )}
                       </CardContent>
@@ -186,7 +186,7 @@ export function FidelityCardForm({
               <TabsContent value="contact">
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="locationUrl">Location URL</Label>
+                    <Label htmlFor="locationUrl">URL de Ubicación</Label>
                     <Input
                       id="locationUrl"
                       name="contact.locationUrl"
@@ -196,7 +196,7 @@ export function FidelityCardForm({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="phoneNumber">Phone Number</Label>
+                    <Label htmlFor="phoneNumber">Teléfono</Label>
                     <Input
                       id="phoneNumber"
                       name="contact.phoneNumber"
@@ -206,7 +206,7 @@ export function FidelityCardForm({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="website">Website</Label>
+                    <Label htmlFor="website">Sitio Web</Label>
                     <Input
                       id="website"
                       name="contact.website"
@@ -218,7 +218,7 @@ export function FidelityCardForm({
               <TabsContent value="rules">
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="currency">Currency</Label>
+                    <Label htmlFor="currency">Moneda</Label>
                     <Input
                       id="currency"
                       name="rules.currency"
@@ -226,7 +226,7 @@ export function FidelityCardForm({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="forPurchasePrice">For Purchase Price</Label>
+                    <Label htmlFor="forPurchasePrice">Precio de Compra</Label>
                     <Input
                       id="forPurchasePrice"
                       name="rules.forPurchasePrice"
@@ -237,7 +237,7 @@ export function FidelityCardForm({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="initialCredits">Initial Credits</Label>
+                    <Label htmlFor="initialCredits">Créditos Iniciales</Label>
                     <Input
                       id="initialCredits"
                       name="rules.initialCredits"
@@ -248,7 +248,7 @@ export function FidelityCardForm({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="rewardPoints">Reward Points</Label>
+                    <Label htmlFor="rewardPoints">Puntos de Recompensa</Label>
                     <Input
                       id="rewardPoints"
                       name="rules.rewardPoints"
@@ -258,18 +258,18 @@ export function FidelityCardForm({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="status">Status</Label>
+                    <Label htmlFor="status">Estado</Label>
                     <Select
                       name="rules.status"
                       defaultValue={fidelityCardToEdit?.rules.status || ""}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
+                        <SelectValue placeholder="Seleccionar estado" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="active">Activo</SelectItem>
+                        <SelectItem value="inactive">Inactivo</SelectItem>
+                        <SelectItem value="pending">Pendiente</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

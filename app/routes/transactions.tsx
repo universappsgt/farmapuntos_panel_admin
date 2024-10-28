@@ -144,7 +144,7 @@ export default function Transactions() {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Transactions</h1>
+      <h1 className="text-3xl font-bold mb-6">Transacciones</h1>
       <TransactionForm
         isSheetOpen={isSheetOpen}
         setIsSheetOpen={setIsSheetOpen}

@@ -18,7 +18,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "~/components/ui/sheet";
-import { Survey, Question } from "~/models/types";
+import { Survey, Question, FidelityCard } from "~/models/types";
 import { toast } from "~/hooks/use-toast";
 import {
   Popover,
@@ -45,6 +45,7 @@ interface SurveyFormProps {
   setEditingId: (value: string | null) => void;
   isSheetOpen: boolean;
   setIsSheetOpen: (value: boolean) => void;
+  cards: FidelityCard[];
 }
 
 export function SurveyForm({
@@ -55,6 +56,7 @@ export function SurveyForm({
   setEditingId,
   isSheetOpen,
   setIsSheetOpen,
+  cards,
 }: SurveyFormProps) {
   const navigation = useNavigation();
   const actionData = useActionData<{ success: boolean; message: string }>();
@@ -62,6 +64,7 @@ export function SurveyForm({
 
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [isLoadingCards, setIsLoadingCards] = useState(false);
 
   // Reset form state when sheet is closed
   const handleSheetOpenChange = useCallback(
@@ -153,13 +156,30 @@ export function SurveyForm({
               />
             </div>
             <div className="mb-4">
-              <Label htmlFor="cardId">ID de Tarjeta</Label>
-              <Input
-                id="cardId"
+              <Label htmlFor="cardId">Tarjeta de Fidelidad</Label>
+              <Select
                 name="cardId"
                 required
                 defaultValue={isCreating ? "" : surveyToEdit?.cardId}
-              />
+                disabled={isLoadingCards}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={
+                      isLoadingCards
+                        ? "Cargando tarjetas..."
+                        : "Selecciona una tarjeta"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {cards.map((card) => (
+                    <SelectItem key={card.id} value={card.id}>
+                      {card.cardTitle}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="mb-4">
               <Label htmlFor="deadline">Fecha Límite</Label>
@@ -177,7 +197,7 @@ export function SurveyForm({
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date ? format(date, "PPP") : <span>Pick a date</span>}
+                        {date ? format(date, "PPP") : <span>Seleccionar fecha</span>}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -191,7 +211,7 @@ export function SurveyForm({
                   </Popover>
                 </div>
                 <div className="flex-1">
-                  <Label htmlFor="time">Time</Label>
+                  <Label htmlFor="time">Hora</Label>
                   <Input
                     id="time"
                     type="time"
@@ -219,7 +239,7 @@ export function SurveyForm({
                 defaultValue={isCreating ? "" : surveyToEdit?.status}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un estado" />
+                  <SelectValue placeholder="Seleccionar estado" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="active">Activo</SelectItem>

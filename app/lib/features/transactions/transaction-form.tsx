@@ -62,7 +62,7 @@ export function TransactionForm({
       <SheetContent className="overflow-y-auto">
         <SheetHeader>
           <SheetTitle>
-            {isCreating ? "Create New Transaction" : "Edit Transaction"}
+            {isCreating ? "Crear Nueva Transacción" : "Editar Transacción"}
           </SheetTitle>
         </SheetHeader>
         <Form method="post" className="space-y-4">
@@ -76,19 +76,19 @@ export function TransactionForm({
               <input type="hidden" name="id" value={editingId || ""} />
             )}
             <div className="mb-4">
-              <Label>User</Label>
+              <Label>Usuario</Label>
               <div>{transactionToEdit?.client.name || "N/A"}</div>
             </div>
             <div className="mb-4">
-              <Label>Agent</Label>
+              <Label>Agente</Label>
               <div>{transactionToEdit?.agent.name || "N/A"}</div>
             </div>
             <div className="mb-4">
-              <Label>Reward Points</Label>
+              <Label>Puntos de Recompensa</Label>
               <div>{transactionToEdit?.rewardPoins || 0}</div>
             </div>
             <div className="mb-4">
-              <Label htmlFor="transactionStatus">Transaction Status</Label>
+              <Label htmlFor="transactionStatus">Estado de la Transacción</Label>
               <Select
                 name="transactionStatus"
                 defaultValue={
@@ -97,7 +97,7 @@ export function TransactionForm({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
+                  <SelectValue placeholder="Seleccionar estado" />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.values(TransactionStatus).map((status) => (
@@ -109,7 +109,7 @@ export function TransactionForm({
               </Select>
             </div>
             <div className="mb-4">
-              <Label htmlFor="transactionType">Transaction Type</Label>
+              <Label htmlFor="transactionType">Tipo de Transacción</Label>
               <Select
                 name="transactionType"
                 defaultValue={
@@ -117,7 +117,7 @@ export function TransactionForm({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
+                  <SelectValue placeholder="Seleccionar tipo" />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.values(TransactionType).map((type) => (
@@ -129,33 +129,33 @@ export function TransactionForm({
               </Select>
             </div>
             <div className="mb-4">
-              <Label>Agent Signature URL</Label>
+              <Label>Firma del Agente</Label>
               {transactionToEdit?.agentSignatureUrl && (
                 <img
                   src={transactionToEdit.agentSignatureUrl}
-                  alt="Agent Signature"
+                  alt="Firma del Agente"
                   className="w-full h-40 object-cover rounded-md"
                   style={{ objectFit: "contain" }}
                 />
               )}
             </div>
             <div className="mb-4">
-              <Label>Client Signature URL</Label>
+              <Label>Firma del Cliente</Label>
               {transactionToEdit?.clientSignatureUrl && (
                 <img
                   src={transactionToEdit.clientSignatureUrl}
-                  alt="Client Signature"
+                  alt="Firma del Cliente"
                   className="w-full h-40 object-cover rounded-md"
                   style={{ objectFit: "contain" }}
                 />
               )}
             </div>
             <div className="mb-4">
-              <Label>Evidence Image URL</Label>
+              <Label>Imagen de Evidencia</Label>
               {transactionToEdit?.evidenceImageUrl && (
                 <img
                   src={transactionToEdit.evidenceImageUrl}
-                  alt="Evidence"
+                  alt="Evidencia"
                   className="w-full h-40 object-cover rounded-md"
                   style={{ objectFit: "contain" }}
                 />
@@ -164,10 +164,10 @@ export function TransactionForm({
             <SheetFooter>
               <Button type="submit">
                 {navigation.state === "submitting"
-                  ? "Saving..."
+                  ? "Guardando..."
                   : isCreating
-                  ? "Create"
-                  : "Save"}
+                  ? "Crear"
+                  : "Guardar"}
               </Button>
             </SheetFooter>
           </fieldset>

@@ -54,7 +54,7 @@ export const action: ActionFunction = async ({ request }) => {
         }
         return json({
           success: true,
-          message: "Laboratory created successfully!",
+          message: "¡Laboratorio creado exitosamente!",
         });
       }
       case "edit": {
@@ -76,7 +76,7 @@ export const action: ActionFunction = async ({ request }) => {
         );
         return json({
           success: true,
-          message: "Laboratory updated successfully!",
+          message: "¡Laboratorio actualizado exitosamente!",
         });
       }
       case "delete": {
@@ -134,7 +134,7 @@ export default function Laboratories() {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Laboratories</h1>
+      <h1 className="text-3xl font-bold mb-6">Laboratorios</h1>
       <LaboratoryForm
         isSheetOpen={isSheetOpen}
         setIsSheetOpen={setIsSheetOpen}

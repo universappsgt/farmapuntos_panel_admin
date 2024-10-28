@@ -56,13 +56,13 @@ export function ProductForm({
             setEditingId(null);
           }}
         >
-          + Add Product
+          + Agregar Producto
         </Button>
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
           <SheetTitle>
-            {isCreating ? "Create New Product" : "Edit Product"}
+            {isCreating ? "Crear Nuevo Producto" : "Editar Producto"}
           </SheetTitle>
         </SheetHeader>
         <Form method="post" className="space-y-4">
@@ -76,7 +76,7 @@ export function ProductForm({
               <input type="hidden" name="id" value={editingId || ""} />
             )}
             <div className="mb-4">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">Nombre</Label>
               <Input
                 id="name"
                 name="name"
@@ -85,7 +85,7 @@ export function ProductForm({
               />
             </div>
             <div className="mb-4">
-              <Label htmlFor="price">Price</Label>
+              <Label htmlFor="price">Precio</Label>
               <Input
                 id="price"
                 name="price"
@@ -96,22 +96,22 @@ export function ProductForm({
               />
             </div>
             <div className="mb-4">
-              <Label htmlFor="worthPoints">Worth Points</Label>
+              <Label htmlFor="awardedPoints">Puntos Otorgados</Label>
               <Input
-                id="worthPoints"
-                name="worthPoints"
+                id="awardedPoints"
+                name="awardedPoints"
                 type="number"
                 required
-                defaultValue={productToEdit?.worthPoints || 0}
+                defaultValue={productToEdit?.awardedPoints || 0}
               />
             </div>
             <SheetFooter>
               <Button type="submit">
                 {navigation.state === "submitting"
-                  ? "Saving..."
+                  ? "Guardando..."
                   : isCreating
-                  ? "Create"
-                  : "Save"}
+                  ? "Crear"
+                  : "Guardar"}
               </Button>
             </SheetFooter>
           </fieldset>
