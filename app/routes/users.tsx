@@ -1,5 +1,10 @@
-import { useState } from "react";
-import { useLoaderData, json, useNavigation } from "@remix-run/react";
+import { useEffect, useState } from "react";
+import {
+  useLoaderData,
+  json,
+  useNavigation,
+  useActionData,
+} from "@remix-run/react";
 import { type LoaderFunction, type ActionFunction } from "@remix-run/node";
 import { User } from "~/models/types";
 import {
@@ -11,6 +16,7 @@ import {
 import { DataTable } from "~/components/ui/data-table";
 import { userColumns } from "~/components/custom/columns";
 import { UserForm } from "~/lib/features/users/user-form";
+import { toast } from "sonner";
 
 export const loader: LoaderFunction = async () => {
   const users: User[] = await fetchDocuments<User>("users", [
@@ -89,6 +95,33 @@ export default function Users() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const navigation = useNavigation();
+  const actionData = useActionData<{ success: boolean; message: string }>();
+
+  useEffect(() => {
+    if (actionData) {
+      if (actionData.success) {
+        toast.success(actionData.message, {
+          duration: 3000,
+          className: "bg-background border-green-500",
+          position: "bottom-right",
+          icon: "✅",
+          style: {
+            color: "hsl(var(--foreground))",
+          },
+        });
+      } else {
+        toast.error(actionData.message, {
+          duration: 3000,
+          className: "bg-background border-destructive",
+          position: "bottom-right",
+          icon: "❌",
+          style: {
+            color: "hsl(var(--foreground))",
+          },
+        });
+      }
+    }
+  }, [actionData]);
 
   return (
     <div className="container mx-auto">

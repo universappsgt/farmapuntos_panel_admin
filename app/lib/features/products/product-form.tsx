@@ -37,7 +37,7 @@ export function ProductForm({
   const actionData = useActionData<{ success: boolean; message: string }>();
 
   useEffect(() => {
-    if (actionData && actionData.success) {
+    if (actionData) {
       setIsSheetOpen(false);
       toast({
         title: actionData.message,

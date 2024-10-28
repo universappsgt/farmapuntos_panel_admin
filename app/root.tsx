@@ -21,6 +21,7 @@ import { themeSessionResolver } from "./services/sessions.server";
 import { clsx } from "clsx";
 import { MainNavigation } from "./components/ui/main-navigation";
 import { SidebarProvider, SidebarTrigger } from "./components/ui/sidebar";
+import { Toaster } from "./components/ui/sonner";
 
 export const links: LinksFunction = () => [{ rel: "stylesheet", href: styles }];
 
@@ -66,6 +67,7 @@ export function App() {
                 </div>
               </div>
             </main>
+            <Toaster />
           </div>
         </SidebarProvider>
         <ScrollRestoration />

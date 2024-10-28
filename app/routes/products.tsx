@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import {
   useLoaderData,
-  Form,
   useActionData,
   json,
   useNavigation,
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { Product } from "~/models/types";
+import { toast } from "sonner";
 import {
   createDocument,
   deleteDocument,
@@ -17,7 +17,6 @@ import {
 import { DataTable } from "~/components/ui/data-table";
 import { productColumns } from "~/components/custom/columns";
 import { ProductForm } from "~/lib/features/products/product-form";
-
 
 export const loader: LoaderFunction = async () => {
   const products: Product[] = await fetchDocuments<Product>("products");
@@ -38,10 +37,15 @@ export const action: ActionFunction = async ({ request }) => {
           id: "",
         };
 
-        const [errors, createdProduct] = await createDocument<Product>("products", product);
+        const [errors, createdProduct] = await createDocument<Product>(
+          "products",
+          product
+        );
         if (errors) {
-          const values = Object.fromEntries(formData);
-          return json({ errors, values });
+          return json({
+            success: false,
+            message: "Failed to create product. Please check your input.",
+          });
         }
         return json({
           success: true,
@@ -50,6 +54,13 @@ export const action: ActionFunction = async ({ request }) => {
       }
       case "edit": {
         const id = formData.get("id") as string;
+        if (!id) {
+          return json({
+            success: false,
+            message: "Product ID is required for editing.",
+          });
+        }
+
         const product: Partial<Product> = {
           name: formData.get("name") as string,
           price: Number(formData.get("price")),
@@ -64,18 +75,33 @@ export const action: ActionFunction = async ({ request }) => {
       }
       case "delete": {
         const id = formData.get("id") as string;
+        if (!id) {
+          return json({
+            success: false,
+            message: "Product ID is required for deletion.",
+          });
+        }
+
         await deleteDocument("products", id);
         return json({
           success: true,
           message: "Product deleted successfully!",
         });
       }
+      default:
+        return json({
+          success: false,
+          message: "Invalid action specified.",
+        });
     }
   } catch (error) {
     console.error("Error handling action:", error);
     return json({
       success: false,
-      message: "An error occurred. Please try again.",
+      message:
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred. Please try again.",
     });
   }
 };
@@ -86,6 +112,33 @@ export default function Products() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const navigation = useNavigation();
+  const actionData = useActionData<{ success: boolean; message: string }>();
+
+  useEffect(() => {
+    if (actionData) {
+      if (actionData.success) {
+        toast.success(actionData.message, {
+          duration: 3000,
+          className: "bg-background border-green-500",
+          position: "bottom-right",
+          icon: "✅",
+          style: {
+            color: "hsl(var(--foreground))",
+          },
+        });
+      } else {
+        toast.error(actionData.message, {
+          duration: 3000,
+          className: "bg-background border-destructive",
+          position: "bottom-right",
+          icon: "❌",
+          style: {
+            color: "hsl(var(--foreground))",
+          },
+        });
+      }
+    }
+  }, [actionData]);
 
   return (
     <div className="container mx-auto">

@@ -7,17 +7,7 @@ import {
   useNavigation,
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "~/components/ui/sheet";
+
 import { User } from "~/models/types";
 import {
   createDocument,
@@ -25,10 +15,10 @@ import {
   fetchDocuments,
   updateDocument,
 } from "~/services/firestore.server";
-import { toast } from "~/hooks/use-toast";
 import { DataTable } from "~/components/ui/data-table";
 import { agentColumns } from "~/components/custom/columns";
 import { AgentForm } from "~/lib/features/agents/agent-form";
+import { toast } from "sonner";
 
 export const loader: LoaderFunction = async () => {
   const agents: User[] = await fetchDocuments<User>("users", [
@@ -111,6 +101,33 @@ export default function Agents() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const navigation = useNavigation();
+  const actionData = useActionData<{ success: boolean; message: string }>();
+
+  useEffect(() => {
+    if (actionData) {
+      if (actionData.success) {
+        toast.success(actionData.message, {
+          duration: 3000,
+          className: "bg-background border-green-500",
+          position: "bottom-right",
+          icon: "✅",
+          style: {
+            color: "hsl(var(--foreground))",
+          },
+        });
+      } else {
+        toast.error(actionData.message, {
+          duration: 3000,
+          className: "bg-background border-destructive",
+          position: "bottom-right",
+          icon: "❌",
+          style: {
+            color: "hsl(var(--foreground))",
+          },
+        });
+      }
+    }
+  }, [actionData]);
 
   return (
     <div className="container mx-auto">

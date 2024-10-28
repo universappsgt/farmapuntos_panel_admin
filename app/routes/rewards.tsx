@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { useLoaderData, json, useNavigation } from "@remix-run/react";
+import {
+  useLoaderData,
+  json,
+  useNavigation,
+  useActionData,
+} from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { Reward } from "~/models/types";
 import {
@@ -11,6 +16,7 @@ import {
 import { DataTable } from "~/components/ui/data-table";
 import { rewardColumns } from "~/components/custom/columns";
 import { RewardForm } from "~/lib/features/rewards/reward-form";
+import { toast } from "sonner";
 
 import { parseISO } from "date-fns";
 import { uploadImage } from "~/services/firebase-storage.server";
@@ -107,6 +113,33 @@ export default function Rewards() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const navigation = useNavigation();
+  const actionData = useActionData<{ success: boolean; message: string }>();
+
+  useEffect(() => {
+    if (actionData) {
+      if (actionData.success) {
+        toast.success(actionData.message, {
+          duration: 3000,
+          className: "bg-background border-green-500",
+          position: "bottom-right",
+          icon: "✅",
+          style: {
+            color: "hsl(var(--foreground))",
+          },
+        });
+      } else {
+        toast.error(actionData.message, {
+          duration: 3000,
+          className: "bg-background border-destructive",
+          position: "bottom-right",
+          icon: "❌",
+          style: {
+            color: "hsl(var(--foreground))",
+          },
+        });
+      }
+    }
+  }, [actionData]);
 
   return (
     <div className="container mx-auto">
