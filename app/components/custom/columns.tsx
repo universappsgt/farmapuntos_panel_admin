@@ -208,42 +208,139 @@ export const surveyColumns = ({
   navigation: { state: string; formData?: FormData };
 }): ColumnDef<Survey>[] => [
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
     accessorKey: "title",
-    header: "Título",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Título
+          <CaretSortIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("title")}</div>
     ),
   },
   {
     accessorKey: "description",
-    header: "Descripción",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Descripción
+          <CaretSortIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div>{row.getValue("description")}</div>,
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Estado
+          <CaretSortIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const status = row.getValue("status") as
+        | "active"
+        | "inactive"
+        | "completed";
+      const variant =
+        status === "active"
+          ? "default"
+          : status === "inactive"
+          ? "secondary"
+          : "outline";
+      return (
+        <Badge variant={variant} className="capitalize">
+          {status === "active"
+            ? "Activo"
+            : status === "inactive"
+            ? "Inactivo"
+            : "Completado"}
+        </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "deadline",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Fecha Límite
+          <CaretSortIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("description")}</div>
+      <div>{new Date(row.getValue("deadline")).toLocaleString()}</div>
     ),
   },
-
+  {
+    accessorKey: "createdAt",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Fecha Creación
+          <CaretSortIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => (
+      <div>{new Date(row.getValue("createdAt")).toLocaleString()}</div>
+    ),
+  },
+  {
+    accessorKey: "rewardedPoints",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Puntos
+          <CaretSortIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div>{row.getValue("rewardedPoints")}</div>,
+  },
+  {
+    accessorKey: "videoUrl",
+    header: "Video",
+    cell: ({ row }) => {
+      const videoUrl = row.getValue("videoUrl") as string;
+      return videoUrl ? (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => window.open(videoUrl, "_blank")}
+        >
+          Ver Video
+        </Button>
+      ) : (
+        <div>No disponible</div>
+      );
+    },
+  },
   {
     header: "Acciones",
     id: "actions",
@@ -272,7 +369,7 @@ export const surveyColumns = ({
             {navigation.state === "submitting" &&
             navigation.formData?.get("id") === row.original.id
               ? "Eliminando..."
-              : `Eliminar`}
+              : "Eliminar"}
           </Button>
         </Form>
       </div>
@@ -431,7 +528,10 @@ export const transactionColumns = ({
     cell: ({ row }) => (
       <div className="flex items-center space-x-2">
         <Avatar className="w-8 h-8">
-          <AvatarImage src={row.original.client.profilePictureUrl} alt={row.original.client.name} />
+          <AvatarImage
+            src={row.original.client.profilePictureUrl}
+            alt={row.original.client.name}
+          />
           <AvatarFallback>{row.original.client.name.charAt(0)}</AvatarFallback>
         </Avatar>
         <span>{row.original.client.name}</span>
@@ -444,7 +544,10 @@ export const transactionColumns = ({
     cell: ({ row }) => (
       <div className="flex items-center space-x-2">
         <Avatar className="w-8 h-8">
-          <AvatarImage src={row.original.agent.profilePictureUrl} alt={row.original.agent.name} />
+          <AvatarImage
+            src={row.original.agent.profilePictureUrl}
+            alt={row.original.agent.name}
+          />
           <AvatarFallback>{row.original.agent.name.charAt(0)}</AvatarFallback>
         </Avatar>
         <span>{row.original.agent.name}</span>

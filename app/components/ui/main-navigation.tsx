@@ -48,7 +48,7 @@ const currentUser: User = {
   email: "john@example.com",
   points: 100,
   phoneNumber: "+1234567890",
-  profilePictureUrl: "/path/to/avatar.jpg",
+  profilePictureUrl: "https://picsum.photos/200/300",
   notificationTokens: [],
   backgroundPictureUrl: "",
   isEnabled: true,
@@ -117,13 +117,15 @@ export function MainNavigation() {
     <Sidebar className="border-r bg-background">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-foreground/70">Becofarma</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-foreground/70">
+            Becofarma
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild 
+                  <SidebarMenuButton
+                    asChild
                     isActive={pathname === item.url}
                     className="text-foreground hover:bg-accent hover:text-accent-foreground"
                   >

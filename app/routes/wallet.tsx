@@ -225,6 +225,7 @@ export default function Wallet() {
           navigation,
         })}
         data={fidelityCards}
+        filterColumn="cardTitle"
       />
     </div>
   );

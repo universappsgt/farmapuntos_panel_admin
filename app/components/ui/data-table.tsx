@@ -43,9 +43,11 @@ import {
 export function DataTable<T>({
   data,
   columns,
+  filterColumn = "name", // Set default value to "name"
 }: {
   data: T[];
   columns: ColumnDef<T>[];
+  filterColumn?: string;
 }) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -79,9 +81,9 @@ export function DataTable<T>({
       <div className="flex items-center justify-between gap-4">
         <Input
           placeholder="Filtrar..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          value={(table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
+            table.getColumn(filterColumn)?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />

@@ -60,55 +60,48 @@ export function SurveyForm({
   const actionData = useActionData<{ success: boolean; message: string }>();
   const questionsFetcher = useFetcher();
 
-  useEffect(() => {
-    if (actionData && actionData.success) {
-      setIsSheetOpen(false);
-      toast({
-        title: actionData.message,
-        variant: actionData.success ? "default" : "destructive",
-      });
-    }
-  }, [actionData, setIsSheetOpen]);
-
   const [date, setDate] = useState<Date | undefined>(undefined);
-
   const [questions, setQuestions] = useState<Question[]>([]);
 
+  // Reset form state when sheet is closed
+  const handleSheetOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        setQuestions([]);
+        setDate(undefined);
+      }
+      setIsSheetOpen(open);
+    },
+    [setIsSheetOpen]
+  );
+
+  // Handle survey to edit changes
   useEffect(() => {
     if (surveyToEdit) {
       setDate(surveyToEdit.deadline);
-      setQuestions([]);
-    } else {
-      setDate(undefined);
-      setQuestions([]);
     }
   }, [surveyToEdit]);
 
+  // Handle questions fetching
   useEffect(() => {
     if (isSheetOpen && !isCreating && editingId) {
-      // Fetch questions when editing an existing survey
-      questionsFetcher.submit(
-        { surveyId: editingId },
-        { method: "get", action: "/api/fetch-questions" }
-      );
-    } else {
-      // Reset questions when creating a new survey
-      setQuestions([]);
+      questionsFetcher.load(`/api/fetch-questions?surveyId=${editingId}`);
     }
   }, [isSheetOpen, isCreating, editingId, questionsFetcher]);
 
+  // Update questions when fetcher returns data
   useEffect(() => {
-    if (questionsFetcher.data && Array.isArray(questionsFetcher.data)) {
-      setQuestions(questionsFetcher.data);
+    if (questionsFetcher.state === "idle" && questionsFetcher.data) {
+      setQuestions(questionsFetcher.data as Question[]);
     }
-  }, [questionsFetcher.data]);
+  }, [questionsFetcher.state, questionsFetcher.data]);
 
   const handleQuestionsChange = useCallback((updatedQuestions: Question[]) => {
     setQuestions(updatedQuestions);
   }, []);
 
   return (
-    <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+    <Sheet open={isSheetOpen} onOpenChange={handleSheetOpenChange}>
       <SheetTrigger asChild>
         <Button
           className="mb-4"

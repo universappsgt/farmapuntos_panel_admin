@@ -182,6 +182,7 @@ export default function Surveys() {
           navigation,
         })}
         data={surveysWithDates}
+        filterColumn="title"
       />
     </div>
   );
