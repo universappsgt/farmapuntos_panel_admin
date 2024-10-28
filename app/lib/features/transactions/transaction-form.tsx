@@ -85,7 +85,7 @@ export function TransactionForm({
             </div>
             <div className="mb-4">
               <Label>Reward Points</Label>
-              <div>{transactionToEdit?.rewardPoints || 0}</div>
+              <div>{transactionToEdit?.rewardPoins || 0}</div>
             </div>
             <div className="mb-4">
               <Label htmlFor="transactionStatus">Transaction Status</Label>

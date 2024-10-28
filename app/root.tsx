@@ -12,7 +12,6 @@ import type { LinksFunction, LoaderFunction } from "@remix-run/node";
 
 import "./tailwind.css";
 import styles from "./tailwind.css?url";
-import LeftPanelNavigation from "./components/ui/left-panel";
 import {
   PreventFlashOnWrongTheme,
   ThemeProvider,
@@ -20,7 +19,8 @@ import {
 } from "remix-themes";
 import { themeSessionResolver } from "./services/sessions.server";
 import { clsx } from "clsx";
-import { Separator } from "./components/ui/separator";
+import { MainNavigation } from "./components/ui/main-navigation";
+import { SidebarProvider, SidebarTrigger } from "./components/ui/sidebar";
 
 export const links: LinksFunction = () => [{ rel: "stylesheet", href: styles }];
 
@@ -55,15 +55,19 @@ export function App() {
         <Links />
       </head>
       <body>
-        <div className="flex h-screen">
-          <LeftPanelNavigation />
-          <Separator orientation="vertical" />
-          <div className="flex flex-1 p-6 md:p-8 lg:p-10 overflow-auto">
-            <div className="w-full max-w-7xl mx-auto">
-              <Outlet />
-            </div>
+        <SidebarProvider>
+          <div className="flex min-h-screen w-full">
+            <MainNavigation />
+            <main className="flex-1 w-full p-6">
+              <div className="flex flex-col gap-6">
+                <SidebarTrigger />
+                <div className="w-full">
+                  <Outlet />
+                </div>
+              </div>
+            </main>
           </div>
-        </div>
+        </SidebarProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

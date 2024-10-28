@@ -75,8 +75,8 @@ export function DataTable<T>({
   });
 
   return (
-    <div className="w-full">
-      <div className="flex items-center py-4">
+    <div className="w-full space-y-4">
+      <div className="flex items-center justify-between gap-4">
         <Input
           placeholder="Filtrar..."
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
@@ -87,7 +87,7 @@ export function DataTable<T>({
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
+            <Button variant="outline">
               Columnas <ChevronDownIcon className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -112,7 +112,7 @@ export function DataTable<T>({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className="rounded-md border">
+      <div className="rounded-md border w-full overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

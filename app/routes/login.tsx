@@ -3,7 +3,7 @@ import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
 import { json, redirect } from "@remix-run/node";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth, requireAuth } from "firebase";
+import { auth } from "firebase";
 import { Button } from "~/components/ui/button";
 import { Label } from "@radix-ui/react-label";
 import { Input } from "~/components/ui/input";
