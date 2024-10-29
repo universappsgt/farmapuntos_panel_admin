@@ -7,6 +7,7 @@ import {
   useNavigation,
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
 import { User } from "~/models/types";
 import {
@@ -36,9 +37,16 @@ export const action: ActionFunction = async ({ request }) => {
   try {
     switch (action) {
       case "create": {
+        const email = formData.get("email") as string;
+        const password = formData.get("password") as string;
+
+        // Create user in Firebase Auth
+        const auth = getAuth();
+        await createUserWithEmailAndPassword(auth, email, password);
+
         const agent: User = {
           name: formData.get("name") as string,
-          email: formData.get("email") as string,
+          email,
           points: 0,
           phoneNumber: formData.get("phoneNumber") as string,
           profilePictureUrl: formData.get("profilePictureUrl") as string,

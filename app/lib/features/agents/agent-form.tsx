@@ -36,6 +36,9 @@ export function AgentForm({
 }: AgentFormProps) {
   const navigation = useNavigation();
   const actionData = useActionData<{ success: boolean; message: string }>();
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   useEffect(() => {
     if (actionData && actionData.success) {
@@ -46,6 +49,15 @@ export function AgentForm({
       });
     }
   }, [actionData, setIsSheetOpen]);
+
+  const handleSubmit = (event: React.FormEvent) => {
+    if (isCreating && password !== confirmPassword) {
+      event.preventDefault();
+      setPasswordError('Las contraseñas no coinciden.');
+    } else {
+      setPasswordError('');
+    }
+  };
 
   return (
     <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -66,7 +78,7 @@ export function AgentForm({
             {isCreating ? "Crear Nuevo Agente" : "Editar Agente"}
           </SheetTitle>
         </SheetHeader>
-        <Form method="post" className="space-y-4">
+        <Form method="post" className="space-y-4" onSubmit={handleSubmit}>
           <fieldset disabled={navigation.state === "submitting"}>
             <input
               type="hidden"
@@ -114,6 +126,35 @@ export function AgentForm({
                 defaultValue={agentToEdit?.phoneNumber || ""}
               />
             </div>
+            {isCreating && (
+              <>
+                <div className="mb-4">
+                  <Label htmlFor="password">Contraseña Inicial</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <div className="mb-4">
+                  <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                </div>
+                {passwordError && (
+                  <p className="text-red-500">{passwordError}</p>
+                )}
+              </>
+            )}
             <SheetFooter>
               <Button type="submit">
                 {navigation.state === "submitting"
