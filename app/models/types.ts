@@ -1,4 +1,4 @@
-export interface Laboratory  {
+export interface Laboratory {
   id: string;
   name: string;
   location: string;
@@ -19,13 +19,19 @@ export interface User {
   isAgent: boolean;
 }
 
+export interface UserCard {
+  id: string;
+  userId: string;
+  fidelityCardId: string;
+  points: number;
+}
+
 export interface FidelityCard {
   id: string;
   cardTitle: string;
   cardDesign: {
     backgroundImage: string;
     logo: string;
-    
   };
   contact: {
     locationUrl: string;
@@ -52,7 +58,7 @@ export interface Survey {
   createdAt: Date;
   description: string;
   awardedPoints: number;
-  status: 'active' | 'inactive' | 'completed';
+  status: "active" | "inactive" | "completed";
 }
 
 export interface Question {

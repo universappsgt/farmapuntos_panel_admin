@@ -4,6 +4,8 @@ import {
   json,
   useNavigation,
   useActionData,
+  Link,
+  useNavigate,
 } from "@remix-run/react";
 import { type LoaderFunction, type ActionFunction } from "@remix-run/node";
 import { User } from "~/models/types";
@@ -96,6 +98,7 @@ export default function Users() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const navigation = useNavigation();
   const actionData = useActionData<{ success: boolean; message: string }>();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (actionData) {

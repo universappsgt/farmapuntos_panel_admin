@@ -13,7 +13,7 @@ import {
   Pharmacy,
 } from "~/models/types";
 import { Button } from "../ui/button";
-import { Form } from "@remix-run/react";
+import { Form, Link } from "@remix-run/react";
 import { Badge } from "../ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 
@@ -475,36 +475,50 @@ export const userColumns = ({
   },
   {
     id: "actions",
-    cell: ({ row }) => (
-      <div className="flex space-x-2">
-        <Form method="post" style={{ display: "inline" }}>
-          <input type="hidden" name="action" value="edit" />
-          <input type="hidden" name="id" value={row.original.id} />
-          <Button
-            type="submit"
-            onClick={() => editAction(row.original.id)}
-            variant="secondary"
-            disabled={navigation.state === "submitting"}
+    cell: ({ row }) => {
+      const user = row.original;
+
+      return (
+        <div className="flex items-center gap-2">
+          <Link
+            to={`/users/${user.id}`}
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3"
           >
-            Editar
-          </Button>
-        </Form>
-        <Form method="post" style={{ display: "inline" }}>
-          <input type="hidden" name="action" value="delete" />
-          <input type="hidden" name="id" value={row.original.id} />
-          <Button
-            type="submit"
-            variant="destructive"
-            disabled={navigation.state === "submitting"}
-          >
-            {navigation.state === "submitting" &&
-            navigation.formData?.get("id") === row.original.id
-              ? "Eliminando..."
-              : "Eliminar"}
-          </Button>
-        </Form>
-      </div>
-    ),
+            Ver
+          </Link>
+
+          <Form method="post" className="flex items-center gap-2">
+            <input type="hidden" name="action" value="edit" />
+            <input type="hidden" name="id" value={user.id} />
+            <Button
+              type="submit"
+              onClick={() => editAction(user.id)}
+              variant="secondary"
+              size="sm"
+              disabled={navigation.state === "submitting"}
+            >
+              Edit
+            </Button>
+          </Form>
+
+          <Form method="post" className="flex items-center">
+            <input type="hidden" name="action" value="delete" />
+            <input type="hidden" name="id" value={user.id} />
+            <Button
+              type="submit"
+              variant="destructive"
+              size="sm"
+              disabled={navigation.state === "submitting"}
+            >
+              {navigation.state === "submitting" &&
+              navigation.formData?.get("id") === user.id
+                ? "Deleting..."
+                : "Delete"}
+            </Button>
+          </Form>
+        </div>
+      );
+    },
   },
 ];
 
