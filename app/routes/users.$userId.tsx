@@ -2,11 +2,11 @@ import { useState } from "react";
 import {
   useLoaderData,
   json,
-  useParams,
   useRouteError,
   Link,
+  useNavigation,
 } from "@remix-run/react";
-import type { LoaderFunction } from "@remix-run/node";
+import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import {
   Card,
   CardContent,
@@ -18,21 +18,35 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "~/components/ui/sheet";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { fetchDocument, fetchDocuments } from "~/services/firestore.server";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "~/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Form } from "@remix-run/react";
+import {
+  fetchDocument,
+  fetchDocuments,
+  createDocument,
+} from "~/services/firestore.server";
 import type { User, FidelityCard, UserCard } from "~/models/types";
-import { FidelityCardForm } from "~/lib/features/wallet/fidelity-card-form";
 import { CreditCard } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { Label } from "~/components/ui/label";
 
 interface LoaderData {
   user: User;
   userFidelityCards: FidelityCard[];
+  availableFidelityCards: FidelityCard[];
 }
 
 export const loader: LoaderFunction = async ({ params }) => {
@@ -52,18 +66,75 @@ export const loader: LoaderFunction = async ({ params }) => {
     userCards.some((userCard) => userCard.fidelityCardId === fidelityCard.id)
   );
 
+  const availableFidelityCards = fidelityCards.filter(
+    (fidelityCard) =>
+      !userCards.some((userCard) => userCard.fidelityCardId === fidelityCard.id)
+  );
+
   console.log(userFidelityCards);
 
   if (!user) {
     throw new Response("User not found", { status: 404 });
   }
 
-  return json<LoaderData>({ user, userFidelityCards });
+  return json<LoaderData>({ user, userFidelityCards, availableFidelityCards });
+};
+
+export const action: ActionFunction = async ({
+  request,
+}: {
+  request: Request;
+}) => {
+  const formData = await request.formData();
+  const action = formData.get("action");
+
+  try {
+    switch (action) {
+      case "attachCard": {
+        const userId = formData.get("userId") as string;
+        const fidelityCardId = formData.get("fidelityCardId") as string;
+
+        const userCard = {
+          userId,
+          fidelityCardId,
+          createdAt: new Date().toISOString(),
+          id: "",
+        };
+
+        const [errors] = await createDocument("userCards", userCard);
+
+        if (errors) {
+          return json({
+            success: false,
+            message: "Error attaching card. Please try again.",
+          });
+        }
+
+        return json({
+          success: true,
+          message: "Card attached successfully!",
+        });
+      }
+      default:
+        return json({
+          success: false,
+          message: "Invalid action",
+        });
+    }
+  } catch (error) {
+    console.error("Error handling action:", error);
+    return json({
+      success: false,
+      message: "An error occurred. Please try again.",
+    });
+  }
 };
 
 export default function UserDetail() {
-  const { user, userFidelityCards } = useLoaderData<LoaderData>();
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const { user, userFidelityCards, availableFidelityCards } =
+    useLoaderData<LoaderData>();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const navigation = useNavigation();
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -114,27 +185,47 @@ export default function UserDetail() {
               Gestionar tarjetas de fidelidad y recompensas del usuario
             </CardDescription>
           </div>
-          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <SheetTrigger asChild>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
               <Button>Agregar Nueva Tarjeta</Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[400px]">
-              <SheetHeader>
-                <SheetTitle>Adjuntar Tarjeta de Fidelidad</SheetTitle>
-              </SheetHeader>
-              <div className="py-4">
-                <FidelityCardForm
-                  isSheetOpen={isSheetOpen}
-                  setIsSheetOpen={setIsSheetOpen}
-                  fidelityCardToEdit={undefined}
-                  isCreating={true}
-                  setIsCreating={() => {}}
-                  editingId={null}
-                  setEditingId={() => {}}
-                />
-              </div>
-            </SheetContent>
-          </Sheet>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Adjuntar Tarjeta de Fidelidad</DialogTitle>
+              </DialogHeader>
+              <Form method="post" className="space-y-4">
+                <input type="hidden" name="action" value="attachCard" />
+                <input type="hidden" name="userId" value={user.id} />
+
+                <div className="space-y-2">
+                  <Label htmlFor="fidelityCardId">Seleccionar Tarjeta</Label>
+                  <Select name="fidelityCardId" required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar una tarjeta" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableFidelityCards.map((card) => (
+                        <SelectItem key={card.id} value={card.id}>
+                          {card.cardTitle}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <DialogFooter>
+                  <Button
+                    type="submit"
+                    disabled={navigation.state === "submitting"}
+                  >
+                    {navigation.state === "submitting"
+                      ? "Adjuntando..."
+                      : "Adjuntar Tarjeta"}
+                  </Button>
+                </DialogFooter>
+              </Form>
+            </DialogContent>
+          </Dialog>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="active" className="w-full">
@@ -157,7 +248,7 @@ export default function UserDetail() {
                     <p className="text-muted-foreground mb-4">
                       Este usuario aún no tiene tarjetas de fidelidad activas.
                     </p>
-                    <Button onClick={() => setIsSheetOpen(true)}>
+                    <Button onClick={() => setIsDialogOpen(true)}>
                       Agregar Nueva Tarjeta
                     </Button>
                   </div>

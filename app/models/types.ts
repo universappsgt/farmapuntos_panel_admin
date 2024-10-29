@@ -59,6 +59,8 @@ export interface Survey {
   description: string;
   awardedPoints: number;
   status: "active" | "inactive" | "completed";
+  minimumPassingPercentage: number;
+  worthPoints: number;
 }
 
 export interface Question {

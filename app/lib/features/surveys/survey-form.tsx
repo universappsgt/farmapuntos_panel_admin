@@ -268,6 +268,31 @@ export function SurveyForm({
                 )}
               </div>
             </div>
+            <div className="mb-4">
+              <Label htmlFor="minimumPassingPercentage">Porcentaje Mínimo de Aprobación (%)</Label>
+              <Input
+                id="minimumPassingPercentage"
+                name="minimumPassingPercentage"
+                type="number"
+                min="0"
+                max="100"
+                required
+                defaultValue={isCreating ? "60" : surveyToEdit?.minimumPassingPercentage}
+              />
+            </div>
+
+            <div className="mb-4">
+              <Label htmlFor="worthPoints">Puntos a Ganar</Label>
+              <Input
+                id="worthPoints"
+                name="worthPoints"
+                type="number"
+                min="0"
+                required
+                defaultValue={isCreating ? "0" : surveyToEdit?.worthPoints}
+              />
+            </div>
+
             <QuestionList
               initialQuestions={questions}
               onQuestionsChange={handleQuestionsChange}

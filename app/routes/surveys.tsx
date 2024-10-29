@@ -43,6 +43,8 @@ export const action: ActionFunction = async ({ request }) => {
         const videoUrl = formData.get("videoUrl") as string;
         const questionsJson = formData.get("questions") as string;
         const questions = JSON.parse(questionsJson) as Question[];
+        const minimumPassingPercentage = parseInt(formData.get("minimumPassingPercentage") as string);
+        const worthPoints = parseInt(formData.get("worthPoints") as string);
 
         // 1. Create the survey in the surveys collection
         const surveysRef = collection(db, "surveys");
@@ -54,6 +56,8 @@ export const action: ActionFunction = async ({ request }) => {
           status,
           videoUrl,
           createdAt: new Date(),
+          minimumPassingPercentage,
+          worthPoints,
           awardedPoints: 0,
         });
 
@@ -94,6 +98,8 @@ export const action: ActionFunction = async ({ request }) => {
         const awardedPoints = parseInt(formData.get("awardedPoints") as string);
         const questionsJson = formData.get("questions") as string;
         const questions = JSON.parse(questionsJson) as Question[];
+        const minimumPassingPercentage = parseInt(formData.get("minimumPassingPercentage") as string);
+        const worthPoints = parseInt(formData.get("worthPoints") as string);
 
         const survey: Survey = {
           id: id as string,
@@ -103,6 +109,8 @@ export const action: ActionFunction = async ({ request }) => {
           deadline,
           status,
           videoUrl,
+          minimumPassingPercentage,
+          worthPoints,
           awardedPoints,
           createdAt: new Date(),
         };
