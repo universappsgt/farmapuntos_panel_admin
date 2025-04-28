@@ -468,13 +468,24 @@ export const userColumns = ({
     cell: ({ row }) => <div>{row.getValue("points")}</div>,
   },
   {
-    accessorKey: "isEnabled",
-    header: "Estado",
+    accessorKey: "accountStatus",
+    header: "Estado de Cuenta",
     cell: ({ row }) => {
-      const isEnabled = row.getValue("isEnabled");
+      const accountStatus = row.getValue("accountStatus");
+      let variant = "secondary";
+      let text = "Inactivo";
+
+      if (accountStatus === "active") {
+        variant = "default";
+        text = "Activo";
+      } else if (accountStatus === "newAccount") {
+        variant = "se";
+        text = "Nueva Cuenta";
+      }
+
       return (
-        <Badge variant={isEnabled ? "default" : "secondary"}>
-          {isEnabled ? "Activo" : "Desactivado"}
+        <Badge variant={variant as "default" | "secondary" | "destructive" | "outline"}>
+          {text}
         </Badge>
       );
     },
@@ -543,18 +554,18 @@ export const transactionColumns = ({
     ),
   },
   {
-    accessorKey: "client.name",
+    accessorKey: "user.name",
     header: "Cliente",
     cell: ({ row }) => (
       <div className="flex items-center space-x-2">
         <Avatar className="w-8 h-8">
           <AvatarImage
-            src={row.original.client.profilePictureUrl}
-            alt={row.original.client.name}
+            src={row.original.user.profilePictureUrl}
+            alt={row.original.user.name}
           />
-          <AvatarFallback>{row.original.client.name.charAt(0)}</AvatarFallback>
+          <AvatarFallback>{row.original.user.name.charAt(0)}</AvatarFallback>
         </Avatar>
-        <span>{row.original.client.name}</span>
+        <span>{row.original.user.name}</span>
       </div>
     ),
   },

@@ -13,8 +13,14 @@ import {
 } from "~/components/ui/sheet";
 import { User } from "~/models/types";
 import { toast } from "~/hooks/use-toast";
-import { Switch } from "~/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 interface UserFormProps {
   userToEdit: User | undefined;
@@ -121,12 +127,20 @@ export function UserForm({
             </div>
 
             <div className="mb-4 flex items-center justify-between">
-              <Label htmlFor="isEnabled">Habilitado</Label>
-              <Switch
-                id="isEnabled"
-                name="isEnabled"
-                defaultChecked={userToEdit?.isEnabled ?? true}
-              />
+              <Label htmlFor="accountStatus">Estado de Cuenta</Label>
+              <Select
+                name="accountStatus"
+                defaultValue={userToEdit?.accountStatus ?? "inactive"}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Selecciona un estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Activo</SelectItem>
+                  <SelectItem value="inactive">Inactivo</SelectItem>
+                  <SelectItem value="newAccount">Nueva Cuenta</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <SheetFooter>
               <Button type="submit">

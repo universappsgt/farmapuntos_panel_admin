@@ -101,7 +101,7 @@ export function TransactionForm({
             )}
             <div className="mb-4">
               <Label>Usuario</Label>
-              <div>{transactionToEdit?.client.name || "N/A"}</div>
+              <div>{transactionToEdit?.user.name || "N/A"}</div>
             </div>
             <div className="mb-4">
               <Label>Agente</Label>
@@ -165,9 +165,9 @@ export function TransactionForm({
             </div>
             <div className="mb-4">
               <Label>Firma del Cliente</Label>
-              {transactionToEdit?.clientSignatureUrl && (
+              {transactionToEdit?.userSignatureUrl && (
                 <img
-                  src={transactionToEdit.clientSignatureUrl}
+                  src={transactionToEdit.userSignatureUrl}
                   alt="Firma del Cliente"
                   className="w-full h-40 object-cover rounded-md"
                   style={{ objectFit: "contain" }}
