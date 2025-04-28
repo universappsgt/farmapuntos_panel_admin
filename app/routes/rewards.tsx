@@ -46,7 +46,7 @@ export const action: ActionFunction = async ({ request }) => {
           name: formData.get("name") as string,
           imageUrl,
           expirationDate: new Date(formData.get("expirationDate") as string),
-          awardedPoints: Number(formData.get("awardedPoints")),
+          requestedPoints: Number(formData.get("requestedPoints")),
           stock: Number(formData.get("stock")),
           id: "",
         };
@@ -79,7 +79,7 @@ export const action: ActionFunction = async ({ request }) => {
           name: formData.get("name") as string,
           imageUrl,
           expirationDate: new Date(formData.get("expirationDate") as string),
-          awardedPoints: Number(formData.get("awardedPoints")),
+          requestedPoints: Number(formData.get("requestedPoints")),
           stock: Number(formData.get("stock")),
         };
 

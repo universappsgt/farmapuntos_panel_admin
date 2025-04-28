@@ -73,7 +73,31 @@ export function TransactionForm({
               value={isCreating ? "create" : "edit"}
             />
             {!isCreating && (
-              <input type="hidden" name="id" value={editingId || ""} />
+              <>
+                <input type="hidden" name="id" value={editingId || ""} />
+                <input type="hidden" name="userId" value={transactionToEdit?.userId || ""} />
+                <input type="hidden" name="agentId" value={transactionToEdit?.agentId || ""} />
+                <input 
+                  type="hidden" 
+                  name="agentSignatureUrl" 
+                  value={transactionToEdit?.agentSignatureUrl || ""} 
+                />
+                <input 
+                  type="hidden" 
+                  name="clientSignatureUrl" 
+                  value={transactionToEdit?.clientSignatureUrl || ""} 
+                />
+                <input 
+                  type="hidden" 
+                  name="evidenceImageUrl" 
+                  value={transactionToEdit?.evidenceImageUrl || ""} 
+                />
+                <input 
+                  type="hidden" 
+                  name="rewardPoints" 
+                  value={transactionToEdit?.rewardPoins || 0} 
+                />
+              </>
             )}
             <div className="mb-4">
               <Label>Usuario</Label>

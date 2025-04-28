@@ -38,37 +38,6 @@ export const action: ActionFunction = async ({ request }) => {
 
   try {
     switch (action) {
-      case "create": {
-        const transaction: Transaction = {
-          createdAt: new Date(),
-          userId: formData.get("userId") as string,
-          agentId: formData.get("agentId") as string,
-          agentSignatureUrl: formData.get("agentSignatureUrl") as string,
-          clientSignatureUrl: formData.get("clientSignatureUrl") as string,
-          evidenceImageUrl: formData.get("evidenceImageUrl") as string,
-          rewardPoints: Number(formData.get("rewardPoints")),
-          transactionStatus: formData.get(
-            "transactionStatus"
-          ) as TransactionStatus,
-          transactionType: formData.get("transactionType") as TransactionType,
-          id: "",
-          agent: {} as User,
-          client: {} as User,
-        };
-
-        const [errors, createdTransaction] = await createDocument<Transaction>(
-          "transactions",
-          transaction
-        );
-        if (errors) {
-          const values = Object.fromEntries(formData);
-          return json({ errors, values });
-        }
-        return json({
-          success: true,
-          message: "Transaction created successfully!",
-        });
-      }
       case "edit": {
         const id = formData.get("id") as string;
         const transaction: Partial<Transaction> = {
@@ -77,7 +46,7 @@ export const action: ActionFunction = async ({ request }) => {
           agentSignatureUrl: formData.get("agentSignatureUrl") as string,
           clientSignatureUrl: formData.get("clientSignatureUrl") as string,
           evidenceImageUrl: formData.get("evidenceImageUrl") as string,
-          rewardPoins: Number(formData.get("rewardPoints")),
+          rewardPoints: Number(formData.get("rewardPoints")),
           transactionStatus: formData.get(
             "transactionStatus"
           ) as TransactionStatus,

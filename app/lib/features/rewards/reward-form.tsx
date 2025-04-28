@@ -127,13 +127,13 @@ export function RewardForm({
               />
             </div>
             <div className="mb-4">
-              <Label htmlFor="awardedPoints">Puntos Otorgados</Label>
+              <Label htmlFor="requestedPoints">Puntos Requeridos</Label>
               <Input
-                id="awardedPoints"
-                name="awardedPoints"
+                id="requestedPoints"
+                name="requestedPoints"
                 type="number"
                 required
-                defaultValue={rewardToEdit?.awardedPoints || 0}
+                defaultValue={rewardToEdit?.requestedPoints || 0}
               />
             </div>
             <div className="mb-4">
