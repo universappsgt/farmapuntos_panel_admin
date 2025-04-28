@@ -44,7 +44,7 @@ export const action: ActionFunction = async ({ request }) => {
           userId: formData.get("userId") as string,
           agentId: formData.get("agentId") as string,
           agentSignatureUrl: formData.get("agentSignatureUrl") as string,
-          clientSignatureUrl: formData.get("clientSignatureUrl") as string,
+          userSignatureUrl: formData.get("userSignatureUrl") as string,
           evidenceImageUrl: formData.get("evidenceImageUrl") as string,
           rewardPoints: Number(formData.get("rewardPoints")),
           transactionStatus: formData.get(
@@ -52,6 +52,15 @@ export const action: ActionFunction = async ({ request }) => {
           ) as TransactionStatus,
           transactionType: formData.get("transactionType") as TransactionType,
         };
+
+        // Remove empty, null, or undefined fields
+        Object.keys(transaction).forEach(
+          (key) =>
+            (transaction[key as keyof typeof transaction] === undefined ||
+              transaction[key as keyof typeof transaction] === null ||
+              transaction[key as keyof typeof transaction] === "") &&
+            delete transaction[key as keyof typeof transaction]
+        );
 
         await updateDocument<Transaction>("transactions", id, transaction);
         return json({

@@ -484,7 +484,11 @@ export const userColumns = ({
       }
 
       return (
-        <Badge variant={variant as "default" | "secondary" | "destructive" | "outline"}>
+        <Badge
+          variant={
+            variant as "default" | "secondary" | "destructive" | "outline"
+          }
+        >
           {text}
         </Badge>
       );
@@ -586,7 +590,7 @@ export const transactionColumns = ({
     ),
   },
   {
-    accessorKey: "rewardPoins",
+    accessorKey: "rewardPoints",
     header: "Puntos de Recompensa",
   },
   {
