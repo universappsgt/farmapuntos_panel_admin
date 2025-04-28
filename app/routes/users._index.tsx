@@ -44,9 +44,9 @@ export const action: ActionFunction = async ({ request }) => {
           profilePictureUrl: "",
           notificationTokens: [],
           backgroundPictureUrl: "",
-          isEnabled: formData.get("isEnabled") === "on",
           isAgent: false,
           id: "",
+          accountStatus: formData.get("accountStatus") as "active" | "inactive" | "newAccount",
         };
 
         const [errors, createdUser] = await createDocument<User>("users", user);
@@ -64,7 +64,7 @@ export const action: ActionFunction = async ({ request }) => {
           name: formData.get("name") as string,
           email: formData.get("email") as string,
           phoneNumber: formData.get("phoneNumber") as string,
-          isEnabled: formData.get("isEnabled") === "on",
+          accountStatus: formData.get("accountStatus") as "active" | "inactive" | "newAccount",
         };
 
         await updateDocument<User>("users", id, user);

@@ -15,8 +15,8 @@ export interface User {
   profilePictureUrl: string;
   notificationTokens: string[];
   backgroundPictureUrl: string;
-  isEnabled: boolean;
   isAgent: boolean;
+  accountStatus: "active" | "inactive" | "newAccount";
 }
 
 export interface UserCard {
@@ -90,13 +90,13 @@ export interface Transaction {
   userId: string;
   agentId: string;
   agentSignatureUrl: string;
-  clientSignatureUrl: string;
+  userSignatureUrl: string;
   evidenceImageUrl: string;
   rewardPoins: number;
   transactionStatus: TransactionStatus;
   transactionType: TransactionType;
   agent: User; // Ensure this field is present
-  client: User; // Ensure this field is present
+  user: User; // Ensure this field is present
 }
 
 export interface Reward {
