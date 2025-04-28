@@ -30,7 +30,16 @@ export const onTransactionStatusUpdate = onDocumentWritten(
     ) {
       try {
         // Get the client data from the transaction
-        const client = newData.client;
+        const client = newData.user;
+
+        // Actualizar puntos de un cliente
+        const userRef = admin
+          .firestore()
+          .collection("users")
+          .doc(client.id);
+        await userRef.update({  
+          points: admin.firestore.FieldValue.increment(newData.points),
+        });
 
         // If there are no notification tokens, exit
         if (
