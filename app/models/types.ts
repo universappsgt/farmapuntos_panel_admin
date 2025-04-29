@@ -79,9 +79,61 @@ export enum TransactionStatus {
   Denied = "denied",
 }
 
+export namespace TransactionStatus {
+  export function getName(status: TransactionStatus): string {
+    switch (status) {
+      case TransactionStatus.InProgress:
+        return "En progreso";
+      case TransactionStatus.Approved:
+        return "Aprobada";
+      case TransactionStatus.Denied:
+        return "Denegada";
+      default:
+        return "Desconocido";
+    }
+  }
+
+  export function getVariant(status: TransactionStatus): "default" | "secondary" | "destructive" | "outline" {
+    switch (status) {
+      case TransactionStatus.InProgress:
+        return "secondary";
+      case TransactionStatus.Approved:
+        return "default";
+      case TransactionStatus.Denied:
+        return "destructive";
+      default:
+        return "outline";
+    }
+  }
+
+  export function fromValue(value: string): TransactionStatus {
+    switch (value) {
+      case "inProgress":
+        return TransactionStatus.InProgress;
+      case "approved":
+        return TransactionStatus.Approved;
+      case "denied":
+        return TransactionStatus.Denied;
+      default:
+        return TransactionStatus.InProgress;
+    }
+  }
+}
+
 export enum TransactionType {
   Credit = "credit",
   Debit = "debit",
+}
+
+export namespace TransactionType {
+  export function getName(type: TransactionType): string {
+    switch (type) {
+      case TransactionType.Credit:
+        return "Crédito";
+      case TransactionType.Debit:
+        return "Débito";
+    }
+  }
 }
 
 export interface Transaction {
@@ -92,14 +144,11 @@ export interface Transaction {
   agentSignatureUrl: string | null;
   userSignatureUrl: string | null;
   evidenceImageUrl: string | null;
-  rewardPoints: number;
-  transactionStatus: TransactionStatus;
-  transactionType: TransactionType;
+  status: TransactionStatus;
+  type: TransactionType;
   agent: User;
   user: User;
   points?: number;
-  status?: string;
-  type?: string;
   pharmacyBranch?: string;
   backgroundPictureUrl?: string;
   phoneNumber?: string;

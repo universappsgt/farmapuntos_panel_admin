@@ -102,8 +102,8 @@ export function TransactionForm({
                 />
                 <input
                   type="hidden"
-                  name="rewardPoints"
-                  value={transactionToEdit?.rewardPoints || 0}
+                  name="points"
+                  value={transactionToEdit?.points || 0}
                 />
               </>
             )}
@@ -117,46 +117,50 @@ export function TransactionForm({
             </div>
             <div className="mb-4">
               <Label>Puntos de Recompensa</Label>
-              <div>{transactionToEdit?.rewardPoints || 0}</div>
+              <div>{transactionToEdit?.points || 0}</div>
             </div>
             <div className="mb-4">
-              <Label htmlFor="transactionStatus">
+              <Label htmlFor="status">
                 Estado de la Transacción
               </Label>
               <Select
-                name="transactionStatus"
+                name="status"
                 defaultValue={
-                  transactionToEdit?.transactionStatus ||
-                  TransactionStatus.InProgress
+                  transactionToEdit?.status || TransactionStatus.InProgress
                 }
+                disabled={transactionToEdit?.status === TransactionStatus.Approved}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar estado" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.values(TransactionStatus).map((status) => (
+                  {Object.values(TransactionStatus).filter((value): value is TransactionStatus => 
+                    typeof value === 'string'
+                  ).map((status) => (
                     <SelectItem key={status} value={status}>
-                      {status}
+                      {TransactionStatus.getName(status)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="mb-4">
-              <Label htmlFor="transactionType">Tipo de Transacción</Label>
+              <Label htmlFor="type">Tipo de Transacción</Label>
               <Select
-                name="transactionType"
+                name="type"
                 defaultValue={
-                  transactionToEdit?.transactionType || TransactionType.Credit
+                  transactionToEdit?.type || TransactionType.Credit
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.values(TransactionType).map((type) => (
+                  {Object.values(TransactionType).filter((value): value is TransactionType => 
+                    typeof value === 'string'
+                  ).map((type) => (
                     <SelectItem key={type} value={type}>
-                      {type}
+                      {TransactionType.getName(type)}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -551,13 +551,6 @@ export const transactionColumns = ({
   navigation: { state: string; formData?: FormData };
 }): ColumnDef<Transaction>[] => [
   {
-    accessorKey: "createdAt",
-    header: "Fecha de Creación",
-    cell: ({ row }) => (
-      <div>{new Date(row.getValue("createdAt")).toLocaleString()}</div>
-    ),
-  },
-  {
     accessorKey: "user.name",
     header: "Cliente",
     cell: ({ row }) => (
@@ -573,35 +566,45 @@ export const transactionColumns = ({
       </div>
     ),
   },
+    {
+      accessorKey: "agent.name",
+      header: "Agente",
+      cell: ({ row }) => (
+        <div className="flex items-center space-x-2">
+          <Avatar className="w-8 h-8">
+            <AvatarImage
+              src={row.original.agent.profilePictureUrl}
+              alt={row.original.agent.name}
+            />
+            <AvatarFallback>{row.original.agent.name.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <span>{row.original.agent.name}</span>
+        </div>
+      ),
+    },
   {
-    accessorKey: "agent.name",
-    header: "Agente",
+    accessorKey: "createdAt",
+    header: "Fecha de Creación",
     cell: ({ row }) => (
-      <div className="flex items-center space-x-2">
-        <Avatar className="w-8 h-8">
-          <AvatarImage
-            src={row.original.agent.profilePictureUrl}
-            alt={row.original.agent.name}
-          />
-          <AvatarFallback>{row.original.agent.name.charAt(0)}</AvatarFallback>
-        </Avatar>
-        <span>{row.original.agent.name}</span>
-      </div>
+      <div>{new Date(row.getValue("createdAt")).toLocaleString()}</div>
     ),
   },
+  
+  
   {
-    accessorKey: "rewardPoints",
+    accessorKey: "points",
     header: "Puntos de Recompensa",
+    cell: ({ row }) => <div>{row.getValue("points") as number}</div>,
   },
   {
-    accessorKey: "transactionStatus",
+    accessorKey: "status",
     header: "Estado",
     cell: ({ row }) => {
-      const status = row.getValue("transactionStatus") as TransactionStatus;
-      const variant = getStatusVariant(status);
+      const status = row.getValue("status") as TransactionStatus;
+      const variant = TransactionStatus.getVariant(status);
       return (
         <Badge variant={variant} className="capitalize">
-          {status}
+          {TransactionStatus.getName(status)}
         </Badge>
       );
     },
@@ -653,19 +656,6 @@ export const transactionColumns = ({
     ),
   },
 ];
-
-function getStatusVariant(status: TransactionStatus) {
-  switch (status) {
-    case TransactionStatus.InProgress:
-      return "secondary";
-    case TransactionStatus.Approved:
-      return "default";
-    case TransactionStatus.Denied:
-      return "destructive";
-    default:
-      return "outline";
-  }
-}
 
 export const rewardColumns = ({
   editAction,

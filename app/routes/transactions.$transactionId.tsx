@@ -33,7 +33,6 @@ import {
 } from "~/services/firestore.server";
 import { Transaction, TransactionStatus, Product } from "~/models/types";
 import { toast } from "sonner";
-import { getStatusVariant } from "~/components/custom/columns";
 
 interface TransactionProduct {
   id: string;
@@ -66,7 +65,7 @@ export const loader: LoaderFunction = async ({ params }) => {
   // Fetch full product details for each transaction product
   const productsWithDetails = await Promise.all(
     transactionProducts.map(async (tp) => {
-      const product = await fetchDocument<Product>("products", tp.productId);
+      const product = await fetchDocument<Product>("products", tp.product.id);
       return {
         ...tp,
         product,
@@ -74,9 +73,10 @@ export const loader: LoaderFunction = async ({ params }) => {
     })
   );
 
+
   return json<LoaderData>({ 
     transaction, 
-    transactionProducts: productsWithDetails 
+    transactionProducts: productsWithDetails as TransactionProduct[]
   });
 };
 
@@ -91,7 +91,7 @@ export const action: ActionFunction = async ({ request }) => {
         const status = formData.get("status") as TransactionStatus;
 
         await updateDocument<Transaction>("transactions", id, {
-          transactionStatus: status,
+          status: status,
         });
 
         return json({
@@ -160,16 +160,18 @@ export default function TransactionDetail() {
             <input type="hidden" name="id" value={transaction.id} />
             <Select 
               name="status" 
-              defaultValue={transaction.transactionStatus}
+              defaultValue={transaction.status}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                {Object.values(TransactionStatus).map((status) => (
+                {Object.values(TransactionStatus).filter((value): value is TransactionStatus => 
+                  typeof value === 'string'
+                ).map((status) => (
                   <SelectItem key={status} value={status}>
-                    <Badge variant={getStatusVariant(status)}>
-                      {status}
+                    <Badge variant={TransactionStatus.getVariant(status)}>
+                      {TransactionStatus.getName(status)}
                     </Badge>
                   </SelectItem>
                 ))}
@@ -194,15 +196,15 @@ export default function TransactionDetail() {
             <CardContent className="flex items-center space-x-4">
               <Avatar className="h-12 w-12">
                 <AvatarImage 
-                  src={transaction.client.profilePictureUrl} 
-                  alt={transaction.client.name} 
+                  src={transaction.user.profilePictureUrl} 
+                  alt={transaction.user.name} 
                 />
-                <AvatarFallback>{transaction.client.name[0]}</AvatarFallback>
+                <AvatarFallback>{transaction.user.name[0]}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium">{transaction.client.name}</p>
+                <p className="font-medium">{transaction.user.name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {transaction.client.email}
+                  {transaction.user.email}
                 </p>
               </div>
             </CardContent>
@@ -268,7 +270,7 @@ export default function TransactionDetail() {
               <div className="text-right">
                 <p className="font-semibold">${totalAmount.toFixed(2)}</p>
                 <p className="text-sm text-muted-foreground">
-                  {transaction.rewardPoins} pts
+                  {transaction.points} pts
                 </p>
               </div>
             </div>
@@ -284,7 +286,7 @@ export default function TransactionDetail() {
           </CardHeader>
           <CardContent>
             <img
-              src={transaction.clientSignatureUrl}
+              src={transaction.userSignatureUrl ?? undefined}
               alt="Client Signature"
               className="w-full h-40 object-contain rounded-md"
             />
@@ -297,7 +299,7 @@ export default function TransactionDetail() {
           </CardHeader>
           <CardContent>
             <img
-              src={transaction.agentSignatureUrl}
+              src={transaction.agentSignatureUrl ?? undefined}
               alt="Agent Signature"
               className="w-full h-40 object-contain rounded-md"
             />
@@ -310,7 +312,7 @@ export default function TransactionDetail() {
           </CardHeader>
           <CardContent>
             <img
-              src={transaction.evidenceImageUrl}
+              src={transaction.evidenceImageUrl ?? undefined}
               alt="Evidence"
               className="w-full h-40 object-contain rounded-md"
             />

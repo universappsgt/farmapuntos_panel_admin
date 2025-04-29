@@ -25,8 +25,8 @@ export const onTransactionStatusUpdate = onDocumentWritten(
 
     // Check if status was changed to approved
     if (
-      newData?.transactionStatus === "approved" &&
-      previousData?.transactionStatus !== "approved"
+      newData?.status === "approved" &&
+      previousData?.status !== "approved"
     ) {
       try {
         // Get the client data from the transaction
@@ -57,7 +57,7 @@ export const onTransactionStatusUpdate = onDocumentWritten(
             // Split long string into multiple lines
             body:
               "Tu transacción ha sido aprobada y se han acreditado " +
-              newData.rewardPoints +
+              newData.points +
               " puntos a tu cuenta.",
           },
           data: {

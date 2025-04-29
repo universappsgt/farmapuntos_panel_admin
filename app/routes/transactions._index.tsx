@@ -15,7 +15,7 @@ import {
 import {
   createDocument,
   deleteDocument,
-  fetchDocuments,
+  fetchTransactions,
   updateDocument,
 } from "~/services/firestore.server";
 import { DataTable } from "~/components/ui/data-table";
@@ -24,11 +24,10 @@ import { TransactionForm } from "~/lib/features/transactions/transaction-form";
 import { toast } from "sonner";
 
 export const loader: LoaderFunction = async () => {
-  const transactions: Transaction[] = await fetchDocuments<Transaction>(
+  const transactions: Transaction[] = await fetchTransactions(
     "transactions"
   );
 
-  console.log(transactions);
   return { transactions };
 };
 
@@ -39,6 +38,10 @@ export const action: ActionFunction = async ({ request }) => {
   try {
     switch (action) {
       case "edit": {
+
+        
+
+
         const id = formData.get("id") as string;
         const transaction: Partial<Transaction> = {
           userId: formData.get("userId") as string,
@@ -46,11 +49,9 @@ export const action: ActionFunction = async ({ request }) => {
           agentSignatureUrl: formData.get("agentSignatureUrl") as string,
           userSignatureUrl: formData.get("userSignatureUrl") as string,
           evidenceImageUrl: formData.get("evidenceImageUrl") as string,
-          rewardPoints: Number(formData.get("rewardPoints")),
-          transactionStatus: formData.get(
-            "transactionStatus"
-          ) as TransactionStatus,
-          transactionType: formData.get("transactionType") as TransactionType,
+          points: Number(formData.get("points")),
+          status: formData.get("status") as TransactionStatus,
+          type: formData.get("type") as TransactionType,
         };
 
         // Remove empty, null, or undefined fields
@@ -141,12 +142,12 @@ export default function Transactions() {
           },
           navigation,
         })}
-        data={transactions}
+        data={transactions as unknown as Transaction[]}
       />
     </div>
   );
 
   function getTransactionToEdit() {
-    return transactions.find((transaction) => transaction.id === editingId);
+    return transactions.find((transaction) => transaction.id === editingId) as unknown as Transaction | undefined;
   }
 }
