@@ -173,6 +173,7 @@ export interface Pharmacy {
   name: string;
   address: string;
   phoneNumber: string;
+  code: string;
 }
 
 export interface Product {

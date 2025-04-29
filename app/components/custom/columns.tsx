@@ -793,6 +793,10 @@ export const pharmacyColumns = ({
     header: "Nombre",
   },
   {
+    accessorKey: "code",
+    header: "Código",
+  },
+  {
     accessorKey: "address",
     header: "Dirección",
   },

@@ -35,6 +35,7 @@ export const action: ActionFunction = async ({ request }) => {
           name: formData.get("name") as string,
           address: formData.get("address") as string,
           phoneNumber: formData.get("phoneNumber") as string,
+          code: formData.get("code") as string,
           id: "",
         };
 
@@ -54,6 +55,7 @@ export const action: ActionFunction = async ({ request }) => {
           name: formData.get("name") as string,
           address: formData.get("address") as string,
           phoneNumber: formData.get("phoneNumber") as string,
+          code: formData.get("code") as string,
         };
 
         await updateDocument<Pharmacy>("pharmacies", id, pharmacy);
