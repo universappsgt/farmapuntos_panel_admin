@@ -45,6 +45,7 @@ const navigation = [
   { name: "Rewards", href: "/rewards", icon: Gift },
   { name: "Products", href: "/products", icon: Package }, // Add this line for Products
   { name: "Pharmacies", href: "/pharmacies", icon: Pill }, // Add this line for Pharmacies
+  { name: "Banners", href: "/banners", icon: Laptop },
 ];
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}

@@ -181,3 +181,8 @@ export interface Product {
   price: number;
   awardedPoints: number;
 }
+
+export interface Banner {
+  id: string;
+  img: string;
+}

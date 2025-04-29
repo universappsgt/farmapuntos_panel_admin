@@ -26,6 +26,7 @@ import {
   Sun,
   LogOut,
   Code2,
+  Laptop,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -51,7 +52,6 @@ const currentUser: User = {
   profilePictureUrl: "https://picsum.photos/200/300",
   notificationTokens: [],
   backgroundPictureUrl: "",
-  isEnabled: true,
   isAgent: false,
 };
 
@@ -105,6 +105,11 @@ const items = [
     title: "Pharmacies",
     url: "/pharmacies",
     icon: Pill,
+  },
+  {
+    title: "Banners",
+    url: "/banners",
+    icon: Laptop,
   },
 ];
 
