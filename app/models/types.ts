@@ -87,16 +87,27 @@ export enum TransactionType {
 export interface Transaction {
   id: string;
   createdAt: Date;
-  userId: string;
-  agentId: string;
-  agentSignatureUrl: string;
-  userSignatureUrl: string;
-  evidenceImageUrl: string;
-  rewardPoins: number;
+  userId: string | null;
+  agentId: string | null;
+  agentSignatureUrl: string | null;
+  userSignatureUrl: string | null;
+  evidenceImageUrl: string | null;
+  rewardPoints: number;
   transactionStatus: TransactionStatus;
   transactionType: TransactionType;
-  agent: User; // Ensure this field is present
-  user: User; // Ensure this field is present
+  agent: User;
+  user: User;
+  points?: number;
+  status?: string;
+  type?: string;
+  pharmacyBranch?: string;
+  backgroundPictureUrl?: string;
+  phoneNumber?: string;
+  profilePictureUrl?: string;
+  department?: string;
+  municipality?: string;
+  accountStatus?: string;
+  requestRewards?: string[];
 }
 
 export interface Reward {
@@ -104,7 +115,7 @@ export interface Reward {
   imageUrl: string;
   name: string;
   expirationDate: Date;
-  awardedPoints: number;
+  requestedPoints: number;
   stock: number;
 }
 

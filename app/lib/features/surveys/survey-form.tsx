@@ -65,6 +65,7 @@ export function SurveyForm({
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoadingCards, setIsLoadingCards] = useState(false);
+  const [time, setTime] = useState<string>("00:00");
 
   // Reset form state when sheet is closed
   const handleSheetOpenChange = useCallback(
@@ -72,6 +73,7 @@ export function SurveyForm({
       if (!open) {
         setQuestions([]);
         setDate(undefined);
+        setTime("00:00");
       }
       setIsSheetOpen(open);
     },
@@ -81,7 +83,15 @@ export function SurveyForm({
   // Handle survey to edit changes
   useEffect(() => {
     if (surveyToEdit) {
-      setDate(surveyToEdit.deadline);
+      const deadline = new Date(surveyToEdit.deadline);
+      setDate(deadline);
+      setTime(
+        deadline.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })
+      );
     }
   }, [surveyToEdit]);
 
@@ -102,6 +112,16 @@ export function SurveyForm({
   const handleQuestionsChange = useCallback((updatedQuestions: Question[]) => {
     setQuestions(updatedQuestions);
   }, []);
+
+  // Combine date and time into a single deadline
+  const getDeadline = useCallback(() => {
+    if (!date) return null;
+    
+    const [hours, minutes] = time.split(':').map(Number);
+    const deadline = new Date(date);
+    deadline.setHours(hours, minutes);
+    return deadline;
+  }, [date, time]);
 
   return (
     <Sheet open={isSheetOpen} onOpenChange={handleSheetOpenChange}>
@@ -215,16 +235,8 @@ export function SurveyForm({
                   <Input
                     id="time"
                     type="time"
-                    value={
-                      date
-                        ? date.toLocaleTimeString("en-US", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                          })
-                        : ""
-                    }
-                    onChange={(e) => undefined}
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
                     className="w-full"
                   />
                 </div>
@@ -301,6 +313,11 @@ export function SurveyForm({
               type="hidden"
               name="questions"
               value={JSON.stringify(questions)}
+            />
+            <input
+              type="hidden"
+              name="deadline"
+              value={getDeadline()?.toISOString() || ""}
             />
             <SheetFooter>
               <Button type="submit">

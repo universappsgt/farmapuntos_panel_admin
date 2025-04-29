@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   useLoaderData,
   json,
   useRouteError,
   Link,
   useNavigation,
+  useActionData,
 } from "@remix-run/react";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import {
@@ -42,11 +43,12 @@ import type { User, FidelityCard, UserCard } from "~/models/types";
 import { CreditCard } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Label } from "~/components/ui/label";
+import { toast } from "sonner";
 
 interface LoaderData {
   user: User;
   userFidelityCards: FidelityCard[];
-  availableFidelityCards: FidelityCard[];
+  cards: FidelityCard[];
 }
 
 export const loader: LoaderFunction = async ({ params }) => {
@@ -62,22 +64,19 @@ export const loader: LoaderFunction = async ({ params }) => {
     userId,
   ]);
 
+  const cards = await fetchDocuments<FidelityCard>("cards");
+
   const userFidelityCards = fidelityCards.filter((fidelityCard) =>
     userCards.some((userCard) => userCard.fidelityCardId === fidelityCard.id)
   );
 
-  const availableFidelityCards = fidelityCards.filter(
-    (fidelityCard) =>
-      !userCards.some((userCard) => userCard.fidelityCardId === fidelityCard.id)
-  );
-
-  console.log(userFidelityCards);
+  console.log("userFidelityCards:", userFidelityCards);
 
   if (!user) {
     throw new Response("User not found", { status: 404 });
   }
 
-  return json<LoaderData>({ user, userFidelityCards, availableFidelityCards });
+  return json<LoaderData>({ user, userFidelityCards, cards });
 };
 
 export const action: ActionFunction = async ({
@@ -131,10 +130,36 @@ export const action: ActionFunction = async ({
 };
 
 export default function UserDetail() {
-  const { user, userFidelityCards, availableFidelityCards } =
-    useLoaderData<LoaderData>();
+  const { user, userFidelityCards, cards } = useLoaderData<LoaderData>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const navigation = useNavigation();
+  const actionData = useActionData<{ success: boolean; message: string }>();
+
+  useEffect(() => {
+    if (actionData) {
+      if (actionData.success) {
+        toast.success(actionData.message, {
+          duration: 3000,
+          className: "bg-background border-green-500",
+          position: "bottom-right",
+          icon: "✅",
+          style: {
+            color: "hsl(var(--foreground))",
+          },
+        });
+      } else {
+        toast.error(actionData.message, {
+          duration: 3000,
+          className: "bg-background border-destructive",
+          position: "bottom-right",
+          icon: "❌",
+          style: {
+            color: "hsl(var(--foreground))",
+          },
+        });
+      }
+    }
+  }, [actionData]);
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -204,11 +229,18 @@ export default function UserDetail() {
                       <SelectValue placeholder="Seleccionar una tarjeta" />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableFidelityCards.map((card) => (
-                        <SelectItem key={card.id} value={card.id}>
-                          {card.cardTitle}
-                        </SelectItem>
-                      ))}
+                      {cards
+                        .filter(
+                          (card) =>
+                            !userFidelityCards.some(
+                              (userCard) => userCard.id === card.id
+                            )
+                        )
+                        .map((card) => (
+                          <SelectItem key={card.id} value={card.id}>
+                            {card.cardTitle}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -235,9 +267,7 @@ export default function UserDetail() {
             </TabsList>
             <TabsContent value="active">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {userFidelityCards.filter(
-                  (card) => card.rules.status === "active"
-                ).length === 0 ? (
+                {userFidelityCards.length === 0 ? (
                   <div className="col-span-full flex flex-col items-center justify-center p-8 text-center">
                     <div className="rounded-full bg-muted p-6 mb-4">
                       <CreditCard className="h-12 w-12 text-muted-foreground" />
@@ -253,39 +283,33 @@ export default function UserDetail() {
                     </Button>
                   </div>
                 ) : (
-                  userFidelityCards
-                    .filter((card) => card.rules.status === "active")
-                    .map((card) => (
-                      <Card key={card.id} className="overflow-hidden">
-                        <div
-                          className="h-32 bg-cover bg-center"
-                          style={{
-                            backgroundImage: `url(${card.cardDesign.backgroundImage})`,
-                          }}
-                        />
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="font-semibold">
-                                {card.cardTitle}
-                              </h3>
-                              <p className="text-sm text-muted-foreground">
-                                {card.description}
-                              </p>
-                            </div>
-                            <Badge>{card.rules.rewardPoints} pts</Badge>
+                  userFidelityCards.map((card) => (
+                    <Card key={card.id} className="overflow-hidden">
+                      <div
+                        className="h-32 bg-cover bg-center"
+                        style={{
+                          backgroundImage: `url(${card.cardDesign.backgroundImage})`,
+                        }}
+                      />
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-semibold">{card.cardTitle}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              {card.description}
+                            </p>
                           </div>
-                        </CardContent>
-                      </Card>
-                    ))
+                          <Badge>{card.rules.rewardPoints} pts</Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
                 )}
               </div>
             </TabsContent>
             <TabsContent value="inactive">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {userFidelityCards.filter(
-                  (card) => card.rules.status === "inactive"
-                ).length === 0 ? (
+                {userFidelityCards.length === 0 ? (
                   <div className="col-span-full flex flex-col items-center justify-center p-8 text-center">
                     <div className="rounded-full bg-muted p-6 mb-4">
                       <CreditCard className="h-12 w-12 text-muted-foreground" />

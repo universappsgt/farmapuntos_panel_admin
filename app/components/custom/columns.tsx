@@ -346,6 +346,12 @@ export const surveyColumns = ({
     id: "actions",
     cell: ({ row }) => (
       <div className="flex space-x-2">
+        <Link
+          to={`/transactions/${row.original.id}`}
+          className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3"
+        >
+          Ver
+        </Link>
         <Form method="post" style={{ display: "inline" }}>
           <input type="hidden" name="action" value="edit" />
           <input type="hidden" name="id" value={row.original.id} />
@@ -478,7 +484,11 @@ export const userColumns = ({
       }
 
       return (
-        <Badge variant={variant as "default" | "secondary" | "destructive" | "outline"}>
+        <Badge
+          variant={
+            variant as "default" | "secondary" | "destructive" | "outline"
+          }
+        >
           {text}
         </Badge>
       );
@@ -580,7 +590,7 @@ export const transactionColumns = ({
     ),
   },
   {
-    accessorKey: "rewardPoins",
+    accessorKey: "rewardPoints",
     header: "Puntos de Recompensa",
   },
   {
@@ -607,6 +617,12 @@ export const transactionColumns = ({
     id: "actions",
     cell: ({ row }) => (
       <div className="flex space-x-2">
+        <Link
+          to={`/transactions/${row.original.id}`}
+          className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3"
+        >
+          Ver
+        </Link>
         <Form method="post" style={{ display: "inline" }}>
           <input type="hidden" name="action" value="edit" />
           <input type="hidden" name="id" value={row.original.id} />
@@ -676,7 +692,7 @@ export const rewardColumns = ({
     ),
   },
   {
-    accessorKey: "awardedPoints",
+    accessorKey: "requestedPoints",
     header: "Puntos Requeridos",
   },
   {

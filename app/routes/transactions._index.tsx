@@ -38,51 +38,29 @@ export const action: ActionFunction = async ({ request }) => {
 
   try {
     switch (action) {
-      case "create": {
-        const transaction: Transaction = {
-          createdAt: new Date(),
-          userId: formData.get("userId") as string,
-          agentId: formData.get("agentId") as string,
-          agentSignatureUrl: formData.get("agentSignatureUrl") as string,
-          clientSignatureUrl: formData.get("clientSignatureUrl") as string,
-          evidenceImageUrl: formData.get("evidenceImageUrl") as string,
-          rewardPoints: Number(formData.get("rewardPoints")),
-          transactionStatus: formData.get(
-            "transactionStatus"
-          ) as TransactionStatus,
-          transactionType: formData.get("transactionType") as TransactionType,
-          id: "",
-          agent: {} as User,
-          client: {} as User,
-        };
-
-        const [errors, createdTransaction] = await createDocument<Transaction>(
-          "transactions",
-          transaction
-        );
-        if (errors) {
-          const values = Object.fromEntries(formData);
-          return json({ errors, values });
-        }
-        return json({
-          success: true,
-          message: "Transaction created successfully!",
-        });
-      }
       case "edit": {
         const id = formData.get("id") as string;
         const transaction: Partial<Transaction> = {
           userId: formData.get("userId") as string,
           agentId: formData.get("agentId") as string,
           agentSignatureUrl: formData.get("agentSignatureUrl") as string,
-          clientSignatureUrl: formData.get("clientSignatureUrl") as string,
+          userSignatureUrl: formData.get("userSignatureUrl") as string,
           evidenceImageUrl: formData.get("evidenceImageUrl") as string,
-          rewardPoins: Number(formData.get("rewardPoints")),
+          rewardPoints: Number(formData.get("rewardPoints")),
           transactionStatus: formData.get(
             "transactionStatus"
           ) as TransactionStatus,
           transactionType: formData.get("transactionType") as TransactionType,
         };
+
+        // Remove empty, null, or undefined fields
+        Object.keys(transaction).forEach(
+          (key) =>
+            (transaction[key as keyof typeof transaction] === undefined ||
+              transaction[key as keyof typeof transaction] === null ||
+              transaction[key as keyof typeof transaction] === "") &&
+            delete transaction[key as keyof typeof transaction]
+        );
 
         await updateDocument<Transaction>("transactions", id, transaction);
         return json({
