@@ -33,11 +33,11 @@ export const onTransactionStatusUpdate = onDocumentWritten(
         const client = newData.user;
 
         // Actualizar puntos de un cliente
-        const userRef = admin
+        const userCardRef = admin
           .firestore()
-          .collection("users")
-          .doc(client.id);
-        await userRef.update({  
+          .collection("userCards")
+          .doc(newData.userCard.id);
+        await userCardRef.update({
           points: admin.firestore.FieldValue.increment(newData.points),
         });
 
