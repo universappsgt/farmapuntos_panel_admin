@@ -751,6 +751,17 @@ export const productColumns = ({
     cell: ({ row }) => (
       <div className="flex space-x-2">
         <Form method="post" style={{ display: "inline" }}>
+          <input type="hidden" name="action" value="viewQR" />
+          <input type="hidden" name="id" value={row.original.id} />
+          <Button
+            type="submit"
+            variant="outline"
+            disabled={navigation.state === "submitting"}
+          >
+            Ver QR
+          </Button>
+        </Form>
+        <Form method="post" style={{ display: "inline" }}>
           <input type="hidden" name="action" value="edit" />
           <input type="hidden" name="id" value={row.original.id} />
           <Button

@@ -67,18 +67,13 @@ const items = [
     icon: Users,
   },
   {
-    title: "Users",
+    title: "Usuarios",
     url: "/users",
     icon: UserIcon,
   },
   {
-    title: "Wallet",
-    url: "/wallet",
-    icon: Wallet,
-  },
-  {
     title: "Laboratorios",
-    url: "/laboratories",
+    url: "/wallet",
     icon: FlaskConical,
   },
   {
@@ -87,27 +82,27 @@ const items = [
     icon: ClipboardList,
   },
   {
-    title: "Transactions",
+    title: "Transacciones",
     url: "/transactions",
     icon: CreditCard,
   },
   {
-    title: "Rewards",
+    title: "Recompensas",
     url: "/rewards",
     icon: Gift,
   },
   {
-    title: "Products",
+    title: "Productos",
     url: "/products",
     icon: Package,
   },
   {
-    title: "Pharmacies",
+    title: "Farmacias",
     url: "/pharmacies",
     icon: Pill,
   },
   {
-    title: "Banners",
+    title: "Banners",  
     url: "/banners",
     icon: Laptop,
   },
