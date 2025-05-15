@@ -4,6 +4,7 @@ import {
   json,
   useNavigation,
   useActionData,
+  Form,
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { Banner } from "~/models/types";
@@ -165,6 +166,11 @@ export default function Banners() {
         data={banners}
         showFilter={false}
       />
+      
+      {/* Formulario para eliminar banners */}
+      <Form id="delete-form" method="post">
+        <input type="hidden" name="action" value="delete" />
+      </Form>
     </div>
   );
 
