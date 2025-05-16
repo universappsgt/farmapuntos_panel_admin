@@ -105,7 +105,7 @@ export function FidelityCardForm({
   const addOrUpdateLevel = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+
     const newLevel: LoyaltyLevel = {
       id: isEditingLevel && currentLevel?.id ? currentLevel.id : `temp-${Date.now()}`,
       level: parseInt(formData.get("level") as string) || 0,
@@ -114,7 +114,7 @@ export function FidelityCardForm({
     };
 
     if (isEditingLevel) {
-      setLoyaltyLevels(prev => 
+      setLoyaltyLevels(prev =>
         prev.map(level => level.id === newLevel.id ? newLevel : level)
       );
     } else {
@@ -161,7 +161,7 @@ export function FidelityCardForm({
               {!isCreating && (
                 <input type="hidden" name="id" value={editingId || ""} />
               )}
-              
+
               {/* Add hidden inputs for loyalty levels */}
               {loyaltyLevels.map((level, index) => (
                 <div key={level.id}>
@@ -194,34 +194,7 @@ export function FidelityCardForm({
                       defaultValue={fidelityCardToEdit?.description || ""}
                     />
                   </div>
-                  {/* <div>
-                    <Label htmlFor="backgroundImage">Imagen de Fondo</Label>
-                    <Card className="mt-2">
-                      <CardContent className="p-4">
-                        {backgroundImage ||
-                        fidelityCardToEdit?.cardDesign.backgroundImage ? (
-                          <img
-                            src={
-                              backgroundImage
-                                ? URL.createObjectURL(backgroundImage)
-                                : fidelityCardToEdit?.cardDesign.backgroundImage
-                            }
-                            alt="Background Preview"
-                            className="w-full h-40 object-cover rounded-md"
-                          />
-                        ) : (
-                          <div className="w-full h-40 bg-muted flex items-center justify-center rounded-md">
-                            Sin imagen
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                    <ImageUpload
-                      id="backgroundImage"
-                      name="backgroundImage"
-                      onImageUpload={(file) => setBackgroundImage(file)}
-                    />
-                  </div> */}
+
                   <div>
                     <Label htmlFor="logo">Logo</Label>
                     <Card className="mt-2">
@@ -248,6 +221,35 @@ export function FidelityCardForm({
                       id="logo"
                       name="logo"
                       onImageUpload={(file) => setLogoImage(file)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="backgroundImage">Imagen de Fondo</Label>
+                    <Card className="mt-2">
+                      <CardContent className="p-4">
+                        {backgroundImage ||
+                          fidelityCardToEdit?.cardDesign.backgroundImage ? (
+                          <img
+                            src={
+                              backgroundImage
+                                ? URL.createObjectURL(backgroundImage)
+                                : fidelityCardToEdit?.cardDesign.backgroundImage
+                            }
+                            alt="Background Preview"
+                            className="w-full h-40 object-cover rounded-md"
+                          />
+                        ) : (
+                          <div className="w-full h-40 bg-muted flex items-center justify-center rounded-md">
+                            Sin imagen
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                    <br />
+                    <ImageUpload
+                      id="backgroundImage"
+                      name="backgroundImage"
+                      onImageUpload={(file) => setBackgroundImage(file)}
                     />
                   </div>
                 </div>
@@ -350,16 +352,16 @@ export function FidelityCardForm({
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold">Niveles de Lealtad</h3>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
+                    <Button
+                      type="button"
+                      variant="outline"
                       size="sm"
                       onClick={() => openLevelDialog()}
                     >
                       <Plus className="h-4 w-4 mr-2" /> Agregar Nivel
                     </Button>
                   </div>
-                  
+
                   {loyaltyLevels.length === 0 ? (
                     <div className="text-center p-4 border border-dashed rounded-md">
                       <p className="text-muted-foreground">No hay niveles definidos</p>
@@ -378,17 +380,17 @@ export function FidelityCardForm({
                                 </p>
                               </div>
                               <div className="flex space-x-2">
-                                <Button 
-                                  type="button" 
-                                  variant="ghost" 
+                                <Button
+                                  type="button"
+                                  variant="ghost"
                                   size="icon"
                                   onClick={() => openLevelDialog(level)}
                                 >
                                   <Edit className="h-4 w-4" />
                                 </Button>
-                                <Button 
-                                  type="button" 
-                                  variant="ghost" 
+                                <Button
+                                  type="button"
+                                  variant="ghost"
                                   size="icon"
                                   onClick={() => removeLevel(level.id as string)}
                                 >
@@ -407,8 +409,8 @@ export function FidelityCardForm({
                   {navigation.state === "submitting"
                     ? "Saving..."
                     : isCreating
-                    ? "Create"
-                    : "Save"}
+                      ? "Create"
+                      : "Save"}
                 </Button>
               </SheetFooter>
             </fieldset>

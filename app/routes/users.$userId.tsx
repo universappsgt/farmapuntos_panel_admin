@@ -38,16 +38,17 @@ import {
   fetchDocument,
   fetchDocuments,
   createDocument,
+  deleteDocument,
 } from "~/services/firestore.server";
 import type { User, FidelityCard, UserCard } from "~/models/types";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Trash2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Label } from "~/components/ui/label";
 import { toast } from "sonner";
 
 interface LoaderData {
   user: User;
-  userFidelityCards: FidelityCard[];
+  userFidelityCards: (FidelityCard & { userPoints: number })[];
   cards: FidelityCard[];
 }
 
@@ -66,9 +67,19 @@ export const loader: LoaderFunction = async ({ params }) => {
 
   const cards = await fetchDocuments<FidelityCard>("cards");
 
-  const userFidelityCards = fidelityCards.filter((fidelityCard) =>
-    userCards.some((userCard) => userCard.fidelityCardId === fidelityCard.id)
-  );
+  const userFidelityCards = fidelityCards
+    .filter((fidelityCard) =>
+      userCards.some((userCard) => userCard.fidelityCardId === fidelityCard.id)
+    )
+    .map((fidelityCard) => {
+      const userCard = userCards.find(
+        (uc) => uc.fidelityCardId === fidelityCard.id
+      );
+      return {
+        ...fidelityCard,
+        userPoints: userCard?.points || 0,
+      };
+    });
 
   console.log("userFidelityCards:", userFidelityCards);
 
@@ -92,12 +103,13 @@ export const action: ActionFunction = async ({
       case "attachCard": {
         const userId = formData.get("userId") as string;
         const fidelityCardId = formData.get("fidelityCardId") as string;
+        const fidelityCard = await fetchDocument<FidelityCard>("cards", fidelityCardId);
 
         const userCard = {
           userId,
           fidelityCardId,
-          createdAt: new Date().toISOString(),
-          id: "",
+          createdAt: new Date(),
+          points: fidelityCard?.rules.rewardPoints || 10,
         };
 
         const [errors] = await createDocument("userCards", userCard);
@@ -112,6 +124,33 @@ export const action: ActionFunction = async ({
         return json({
           success: true,
           message: "Card attached successfully!",
+        });
+      }
+      case "deleteCard": {
+        const userId = formData.get("userId") as string;
+        const fidelityCardId = formData.get("fidelityCardId") as string;
+        
+        // Buscar el userCard correspondiente
+        const userCards = await fetchDocuments<UserCard>("userCards", [
+          "userId",
+          "==",
+          userId
+        ]);
+
+        const userCard = userCards.find(card => card.fidelityCardId === fidelityCardId);
+
+        if (!userCard) {
+          return json({
+            success: false,
+            message: "No se encontró la tarjeta para eliminar.",
+          });
+        }
+
+        await deleteDocument("userCards", userCard.id);
+
+        return json({
+          success: true,
+          message: "Tarjeta eliminada exitosamente!",
         });
       }
       default:
@@ -132,6 +171,8 @@ export const action: ActionFunction = async ({
 export default function UserDetail() {
   const { user, userFidelityCards, cards } = useLoaderData<LoaderData>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const navigation = useNavigation();
   const actionData = useActionData<{ success: boolean; message: string }>();
 
@@ -147,6 +188,8 @@ export default function UserDetail() {
             color: "hsl(var(--foreground))",
           },
         });
+        setIsDialogOpen(false);
+        setIsDeleteDialogOpen(false);
       } else {
         toast.error(actionData.message, {
           duration: 3000,
@@ -184,8 +227,8 @@ export default function UserDetail() {
             <CardTitle className="text-2xl">{user.name}</CardTitle>
             <CardDescription>{user.email}</CardDescription>
             <div className="flex items-center space-x-2 mt-2">
-              <Badge variant={user.isEnabled ? "default" : "destructive"}>
-                {user.isEnabled ? "Activo" : "Desactivado"}
+              <Badge variant={user.accountStatus === "active" ? "default" : "destructive"}>
+                {user.accountStatus === "active" ? "Activo" : user.accountStatus === "newAccount" ? "Nueva Cuenta" : "Inactivo"}
               </Badge>
               <Badge variant="outline">{user.points} Puntos</Badge>
             </div>
@@ -263,7 +306,6 @@ export default function UserDetail() {
           <Tabs defaultValue="active" className="w-full">
             <TabsList>
               <TabsTrigger value="active">Tarjetas Activas</TabsTrigger>
-              <TabsTrigger value="inactive">Tarjetas Inactivas</TabsTrigger>
             </TabsList>
             <TabsContent value="active">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -299,7 +341,20 @@ export default function UserDetail() {
                               {card.description}
                             </p>
                           </div>
-                          <Badge>{card.rules.rewardPoints} pts</Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge>{card.userPoints} pts</Badge>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={() => {
+                                setSelectedCardId(card.id);
+                                setIsDeleteDialogOpen(true);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -338,6 +393,39 @@ export default function UserDetail() {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Eliminar Tarjeta</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            ¿Está seguro que desea eliminar esta tarjeta? Esta acción no se puede deshacer.
+          </p>
+          <DialogFooter>
+            <Form method="post" className="flex gap-2">
+              <input type="hidden" name="action" value="deleteCard" />
+              <input type="hidden" name="userId" value={user.id} />
+              <input type="hidden" name="fidelityCardId" value={selectedCardId || ""} />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsDeleteDialogOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                variant="destructive"
+                disabled={navigation.state === "submitting"}
+              >
+                {navigation.state === "submitting" ? "Eliminando..." : "Eliminar"}
+              </Button>
+            </Form>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

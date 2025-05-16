@@ -89,15 +89,15 @@ export const action: ActionFunction = async ({ request }) => {
         ) as string;
         let logoUrl = formData.get("cardDesign.logo") as string;
 
-        // if (backgroundImageFile && backgroundImageFile.size > 0) {
-        //   const arrayBuffer = await backgroundImageFile.arrayBuffer();
-        //   const buffer = Buffer.from(arrayBuffer);
-        //   backgroundImageUrl = await uploadImage(
-        //     buffer,
-        //     backgroundImageFile.name,
-        //     "cards"
-        //   );
-        // }
+        console.log("Logo URL existente:", logoUrl);
+        console.log("Logo File nuevo:", logoFile);
+        console.log("¿Hay nuevo archivo?:", logoFile && logoFile.size > 0);
+
+        if (backgroundImageFile && backgroundImageFile.size > 0) {
+          const arrayBuffer = await backgroundImageFile.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          backgroundImageUrl = await uploadImage(buffer, backgroundImageFile.name, "cards");
+        }
 
         if (logoFile && logoFile.size > 0) {
           const arrayBuffer = await logoFile.arrayBuffer();
@@ -121,7 +121,6 @@ export const action: ActionFunction = async ({ request }) => {
           .map(key => {
             const match = key.match(/\[(\d+)\]/);
             const index = match ? match[1] : null;
-            console.log(match);
             if (!index) return null;
 
             return {
@@ -139,8 +138,8 @@ export const action: ActionFunction = async ({ request }) => {
         const fidelityCard: FidelityCard = {
           cardTitle: formData.get("cardTitle") as string,
           cardDesign: {
-            backgroundImage: backgroundImageUrl,
-            logo: logoUrl,
+            backgroundImage: backgroundImageUrl || "",
+            logo: logoUrl || "",
           },
           contact: {
             locationUrl: formData.get("contact.locationUrl") as string,
