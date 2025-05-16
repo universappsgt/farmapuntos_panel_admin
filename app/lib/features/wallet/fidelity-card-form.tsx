@@ -172,239 +172,236 @@ export function FidelityCardForm({
                 </div>
               ))}
 
-              <Tabs defaultValue="general" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="general">General</TabsTrigger>
-                  <TabsTrigger value="contact">Contacto</TabsTrigger>
-                  <TabsTrigger value="rules">Reglas</TabsTrigger>
-                  <TabsTrigger value="levels">Niveles</TabsTrigger>
-                </TabsList>
-                <TabsContent value="general">
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="cardTitle">Título de la Tarjeta</Label>
-                      <Input
-                        id="cardTitle"
-                        name="cardTitle"
-                        required
-                        defaultValue={fidelityCardToEdit?.cardTitle || ""}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="description">Descripción</Label>
-                      <Textarea
-                        id="description"
-                        name="description"
-                        required
-                        defaultValue={fidelityCardToEdit?.description || ""}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="backgroundImage">Imagen de Fondo</Label>
-                      <Card className="mt-2">
-                        <CardContent className="p-4">
-                          {backgroundImage ||
-                          fidelityCardToEdit?.cardDesign.backgroundImage ? (
-                            <img
-                              src={
-                                backgroundImage
-                                  ? URL.createObjectURL(backgroundImage)
-                                  : fidelityCardToEdit?.cardDesign.backgroundImage
-                              }
-                              alt="Background Preview"
-                              className="w-full h-40 object-cover rounded-md"
-                            />
-                          ) : (
-                            <div className="w-full h-40 bg-muted flex items-center justify-center rounded-md">
-                              Sin imagen
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                      <ImageUpload
-                        id="backgroundImage"
-                        name="backgroundImage"
-                        onImageUpload={(file) => setBackgroundImage(file)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="logo">Logo</Label>
-                      <Card className="mt-2">
-                        <CardContent className="p-4">
-                          {logoImage || fidelityCardToEdit?.cardDesign.logo ? (
-                            <img
-                              src={
-                                logoImage
-                                  ? URL.createObjectURL(logoImage)
-                                  : fidelityCardToEdit?.cardDesign.logo
-                              }
-                              alt="Logo Preview"
-                              className="w-32 h-32 object-contain"
-                            />
-                          ) : (
-                            <div className="w-32 h-32 bg-muted flex items-center justify-center rounded-md">
-                              Sin logo
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                      <ImageUpload
-                        id="logo"
-                        name="logo"
-                        onImageUpload={(file) => setLogoImage(file)}
-                      />
-                    </div>
+              <div className="space-y-8">
+                {/* Sección General */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Información General</h3>
+                  <div>
+                    <Label htmlFor="cardTitle">Título de la Tarjeta</Label>
+                    <Input
+                      id="cardTitle"
+                      name="cardTitle"
+                      required
+                      defaultValue={fidelityCardToEdit?.cardTitle || ""}
+                    />
                   </div>
-                </TabsContent>
-                <TabsContent value="contact">
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="locationUrl">URL de Ubicación</Label>
-                      <Input
-                        id="locationUrl"
-                        name="contact.locationUrl"
-                        defaultValue={
-                          fidelityCardToEdit?.contact.locationUrl || ""
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="phoneNumber">Teléfono</Label>
-                      <Input
-                        id="phoneNumber"
-                        name="contact.phoneNumber"
-                        defaultValue={
-                          fidelityCardToEdit?.contact.phoneNumber || ""
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="website">Sitio Web</Label>
-                      <Input
-                        id="website"
-                        name="contact.website"
-                        defaultValue={fidelityCardToEdit?.contact.website || ""}
-                      />
-                    </div>
+                  <div>
+                    <Label htmlFor="description">Descripción</Label>
+                    <Textarea
+                      id="description"
+                      name="description"
+                      required
+                      defaultValue={fidelityCardToEdit?.description || ""}
+                    />
                   </div>
-                </TabsContent>
-                <TabsContent value="rules">
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="currency">Moneda</Label>
-                      <Input
-                        id="currency"
-                        name="rules.currency"
-                        defaultValue={fidelityCardToEdit?.rules.currency || ""}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="forPurchasePrice">Precio de Compra</Label>
-                      <Input
-                        id="forPurchasePrice"
-                        name="rules.forPurchasePrice"
-                        type="number"
-                        defaultValue={
-                          fidelityCardToEdit?.rules.forPurchasePrice || 0
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="initialCredits">Créditos Iniciales</Label>
-                      <Input
-                        id="initialCredits"
-                        name="rules.initialCredits"
-                        type="number"
-                        defaultValue={
-                          fidelityCardToEdit?.rules.initialCredits || 0
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="rewardPoints">Puntos de Recompensa</Label>
-                      <Input
-                        id="rewardPoints"
-                        name="rules.rewardPoints"
-                        defaultValue={
-                          fidelityCardToEdit?.rules.rewardPoints || ""
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="status">Estado</Label>
-                      <Select
-                        name="rules.status"
-                        defaultValue={fidelityCardToEdit?.rules.status || ""}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar estado" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Activo</SelectItem>
-                          <SelectItem value="inactive">Inactivo</SelectItem>
-                          <SelectItem value="pending">Pendiente</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  {/* <div>
+                    <Label htmlFor="backgroundImage">Imagen de Fondo</Label>
+                    <Card className="mt-2">
+                      <CardContent className="p-4">
+                        {backgroundImage ||
+                        fidelityCardToEdit?.cardDesign.backgroundImage ? (
+                          <img
+                            src={
+                              backgroundImage
+                                ? URL.createObjectURL(backgroundImage)
+                                : fidelityCardToEdit?.cardDesign.backgroundImage
+                            }
+                            alt="Background Preview"
+                            className="w-full h-40 object-cover rounded-md"
+                          />
+                        ) : (
+                          <div className="w-full h-40 bg-muted flex items-center justify-center rounded-md">
+                            Sin imagen
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                    <ImageUpload
+                      id="backgroundImage"
+                      name="backgroundImage"
+                      onImageUpload={(file) => setBackgroundImage(file)}
+                    />
+                  </div> */}
+                  <div>
+                    <Label htmlFor="logo">Logo</Label>
+                    <Card className="mt-2">
+                      <CardContent className="p-4">
+                        {logoImage || fidelityCardToEdit?.cardDesign.logo ? (
+                          <img
+                            src={
+                              logoImage
+                                ? URL.createObjectURL(logoImage)
+                                : fidelityCardToEdit?.cardDesign.logo
+                            }
+                            alt="Logo Preview"
+                            className="w-32 h-32 object-contain"
+                          />
+                        ) : (
+                          <div className="w-32 h-32 bg-muted flex items-center justify-center rounded-md">
+                            Sin logo
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                    <br />
+                    <ImageUpload
+                      id="logo"
+                      name="logo"
+                      onImageUpload={(file) => setLogoImage(file)}
+                    />
                   </div>
-                </TabsContent>
-                <TabsContent value="levels">
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <h3 className="text-lg font-medium">Niveles de Lealtad</h3>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => openLevelDialog()}
-                      >
-                        <Plus className="h-4 w-4 mr-2" /> Agregar Nivel
-                      </Button>
-                    </div>
-                    
-                    {loyaltyLevels.length === 0 ? (
-                      <div className="text-center p-4 border border-dashed rounded-md">
-                        <p className="text-muted-foreground">No hay niveles definidos</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        {loyaltyLevels
-                          .sort((a, b) => a.level - b.level)
-                          .map((level) => (
-                            <Card key={level.id} className="p-0">
-                              <CardContent className="p-4 flex justify-between items-center">
-                                <div>
-                                  <h4 className="font-medium">Nivel {level.level}: {level.name}</h4>
-                                  <p className="text-sm text-muted-foreground">
-                                    Puntos requeridos: {level.requiredPoints}
-                                  </p>
-                                </div>
-                                <div className="flex space-x-2">
-                                  <Button 
-                                    type="button" 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => openLevelDialog(level)}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    type="button" 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => removeLevel(level.id as string)}
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                      </div>
-                    )}
+                </div>
+
+                {/* Sección de Contacto */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Información de Contacto</h3>
+                  {/* <div>
+                    <Label htmlFor="locationUrl">URL de Ubicación</Label>
+                    <Input
+                      id="locationUrl"
+                      name="contact.locationUrl"
+                      defaultValue={
+                        fidelityCardToEdit?.contact.locationUrl || ""
+                      }
+                    />
+                  </div> */}
+                  <div>
+                    <Label htmlFor="phoneNumber">Teléfono</Label>
+                    <Input
+                      id="phoneNumber"
+                      name="contact.phoneNumber"
+                      defaultValue={
+                        fidelityCardToEdit?.contact.phoneNumber || ""
+                      }
+                    />
                   </div>
-                </TabsContent>
-              </Tabs>
+                  <div>
+                    <Label htmlFor="website">Sitio Web</Label>
+                    <Input
+                      id="website"
+                      name="contact.website"
+                      defaultValue={fidelityCardToEdit?.contact.website || ""}
+                    />
+                  </div>
+                </div>
+
+                {/* Sección de Reglas */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Reglas del Programa</h3>
+                  {/* <div>
+                    <Label htmlFor="currency">Moneda</Label>
+                    <Input
+                      id="currency"
+                      name="rules.currency"
+                      defaultValue={fidelityCardToEdit?.rules.currency || ""}
+                    />
+                  </div> */}
+                  {/* <div>
+                    <Label htmlFor="forPurchasePrice">Precio de Compra</Label>
+                    <Input
+                      id="forPurchasePrice"
+                      name="rules.forPurchasePrice"
+                      type="number"
+                      defaultValue={
+                        fidelityCardToEdit?.rules.forPurchasePrice || 0
+                      }
+                    />
+                  </div> */}
+                  <div>
+                    <Label htmlFor="initialCredits">Créditos Iniciales</Label>
+                    <Input
+                      id="initialCredits"
+                      name="rules.initialCredits"
+                      type="number"
+                      defaultValue={
+                        fidelityCardToEdit?.rules.initialCredits || 0
+                      }
+                    />
+                  </div>
+                  {/* <div>
+                    <Label htmlFor="rewardPoints">Puntos de Recompensa</Label>
+                    <Input
+                      id="rewardPoints"
+                      name="rules.rewardPoints"
+                      defaultValue={
+                        fidelityCardToEdit?.rules.rewardPoints || ""
+                      }
+                    />
+                  </div> */}
+                  {/* <div>
+                    <Label htmlFor="status">Estado</Label>
+                    <Select
+                      name="rules.status"
+                      defaultValue={fidelityCardToEdit?.rules.status || ""}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Activo</SelectItem>
+                        <SelectItem value="inactive">Inactivo</SelectItem>
+                        <SelectItem value="pending">Pendiente</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div> */}
+                </div>
+
+                {/* Sección de Niveles */}
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold">Niveles de Lealtad</h3>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => openLevelDialog()}
+                    >
+                      <Plus className="h-4 w-4 mr-2" /> Agregar Nivel
+                    </Button>
+                  </div>
+                  
+                  {loyaltyLevels.length === 0 ? (
+                    <div className="text-center p-4 border border-dashed rounded-md">
+                      <p className="text-muted-foreground">No hay niveles definidos</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {loyaltyLevels
+                        .sort((a, b) => a.level - b.level)
+                        .map((level) => (
+                          <Card key={level.id} className="p-0">
+                            <CardContent className="p-4 flex justify-between items-center">
+                              <div>
+                                <h4 className="font-medium">Nivel {level.level}: {level.name}</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  Puntos requeridos: {level.requiredPoints}
+                                </p>
+                              </div>
+                              <div className="flex space-x-2">
+                                <Button 
+                                  type="button" 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => openLevelDialog(level)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  type="button" 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => removeLevel(level.id as string)}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              </div>
               <SheetFooter>
                 <Button type="submit">
                   {navigation.state === "submitting"

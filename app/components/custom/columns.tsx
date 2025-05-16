@@ -126,45 +126,64 @@ export const fidelityCardColumns = ({
   navigation: { state: string; formData?: FormData };
 }): ColumnDef<FidelityCard>[] => [
   {
-    accessorKey: "cardTitle",
-    header: "Card Title",
+    accessorKey: "cardDesign.logo",
+    header: "Logo",
+    cell: ({ row }) => (
+      <div className="flex items-center justify-center">
+        {row.original.cardDesign.logo ? (
+          <img 
+            src={row.original.cardDesign.logo}
+            alt="Logo"
+            className="w-10 h-10 object-contain rounded-full"
+          />
+        ) : (
+          <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+            Sin logo
+          </div>
+        )}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "cardTitle", 
+    header: "Título de la Tarjeta",
     cell: ({ row }) => <div>{row.original.cardTitle}</div>,
   },
   {
     accessorKey: "description",
-    header: "Description",
+    header: "Descripción",
     cell: ({ row }) => <div>{row.original.description}</div>,
   },
   {
     accessorKey: "contact.phoneNumber",
-    header: "Phone Number",
+    header: "Teléfono",
     cell: ({ row }) => <div>{row.original.contact.phoneNumber}</div>,
   },
   {
     accessorKey: "contact.website",
-    header: "Website",
+    header: "Sitio Web",
     cell: ({ row }) => <div>{row.original.contact.website}</div>,
   },
   {
     accessorKey: "rules.currency",
-    header: "Currency",
+    header: "Moneda",
     cell: ({ row }) => <div>{row.original.rules.currency}</div>,
   },
-  {
-    accessorKey: "rules.forPurchasePrice",
-    header: "Purchase Price",
-    cell: ({ row }) => <div>{row.original.rules.forPurchasePrice}</div>,
-  },
+  // {
+  //   accessorKey: "rules.forPurchasePrice",
+  //   header: "Precio de Compra",
+  //   cell: ({ row }) => <div>{row.original.rules.forPurchasePrice}</div>,
+  // },
   {
     accessorKey: "rules.initialCredits",
-    header: "Initial Credits",
+    header: "Créditos Iniciales",
     cell: ({ row }) => <div>{row.original.rules.initialCredits}</div>,
   },
-  {
-    accessorKey: "rules.status",
-    header: "Status",
-    cell: ({ row }) => <div>{row.original.rules.status}</div>,
-  },
+  // {
+  //   accessorKey: "rules.status",
+  //   header: "Status",
+  //   cell: ({ row }) => <div>{row.original.rules.status}</div>,
+  // },
   {
     id: "actions",
     cell: ({ row }) => (

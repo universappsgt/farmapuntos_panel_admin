@@ -81,23 +81,23 @@ export const action: ActionFunction = async ({ request }) => {
       case "create":
       case "edit": {
         const id = formData.get("id") as string;
-        const backgroundImageFile = formData.get("backgroundImage") as File | null;
-        const logoFile = formData.get("logo") as File | null;
+        const backgroundImageFile = formData.get("backgroundImage") as File;
+        const logoFile = formData.get("logo") as File;
 
         let backgroundImageUrl = formData.get(
           "cardDesign.backgroundImage"
         ) as string;
         let logoUrl = formData.get("cardDesign.logo") as string;
 
-        if (backgroundImageFile && backgroundImageFile.size > 0) {
-          const arrayBuffer = await backgroundImageFile.arrayBuffer();
-          const buffer = Buffer.from(arrayBuffer);
-          backgroundImageUrl = await uploadImage(
-            buffer,
-            backgroundImageFile.name,
-            "cards"
-          );
-        }
+        // if (backgroundImageFile && backgroundImageFile.size > 0) {
+        //   const arrayBuffer = await backgroundImageFile.arrayBuffer();
+        //   const buffer = Buffer.from(arrayBuffer);
+        //   backgroundImageUrl = await uploadImage(
+        //     buffer,
+        //     backgroundImageFile.name,
+        //     "cards"
+        //   );
+        // }
 
         if (logoFile && logoFile.size > 0) {
           const arrayBuffer = await logoFile.arrayBuffer();
@@ -317,7 +317,7 @@ export default function Wallet() {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Billetera</h1>
+      <h1 className="text-3xl font-bold mb-6">Laboratorios, 🔬</h1>
       <FidelityCardForm
         isSheetOpen={isSheetOpen}
         setIsSheetOpen={setIsSheetOpen}
