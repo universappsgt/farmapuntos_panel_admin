@@ -124,3 +124,14 @@ export async function fetchTransactions(
   return data;
 }
 
+// Add a new document to a collection
+export async function createSubDocument<T>(
+  collectionName: string,
+  subCollectionName: string,
+  data: Omit<T, "id">
+): Promise<string> {
+  const collectionRef = collection(db, collectionName);
+  const subCollectionRef = collection(collectionRef, subCollectionName);
+  const docRef = await addDoc(subCollectionRef, data);  
+  return docRef.id;
+}

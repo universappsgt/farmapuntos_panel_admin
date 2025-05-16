@@ -47,6 +47,14 @@ export interface FidelityCard {
     rewardPoints: string;
     status: string;
   };
+  loyaltyLevels?: LoyaltyLevel[];
+}
+
+export interface LoyaltyLevel {
+  id?: string;
+  level: number;
+  name: string;
+  requiredPoints: number;
 }
 
 export interface Survey {
