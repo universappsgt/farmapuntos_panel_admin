@@ -63,9 +63,9 @@ export const action: ActionFunction = async ({ request }) => {
       case "edit": {
         const id = formData.get("id") as string;
         const imageFile = formData.get("imageUrl") as File;
-        let imageUrl = formData.get("imageUrl") as string;
+        let imageUrl = formData.get("currentImageUrl") as string;
 
-        if (imageFile.size > 0) {
+        if (imageFile && imageFile.size > 0) {
           const arrayBuffer = await imageFile.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
           imageUrl = await uploadImage(buffer, imageFile.name, "rewards");
