@@ -1,6 +1,7 @@
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import { ColumnDef } from "@tanstack/react-table";
+import type { SerializeFrom } from "@remix-run/node";
 import {
   FidelityCard,
   Laboratory,
@@ -11,11 +12,15 @@ import {
   Reward,
   Product,
   Pharmacy,
+  RewardRequest,
+  RewardRequestStatus,
 } from "~/models/types";
 import { Button } from "../ui/button";
 import { Form, Link } from "@remix-run/react";
 import { Badge } from "../ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/components/ui/dropdown-menu";
+import { MoreHorizontal } from "lucide-react";
 
 export const laboratoryColumns = ({
   editAction,
@@ -682,7 +687,7 @@ export const rewardColumns = ({
 }: {
   editAction: (id: string) => void;
   navigation: { state: string; formData?: FormData };
-}): ColumnDef<Reward>[] => [
+}): ColumnDef<SerializeFrom<Reward>>[] => [
   {
     accessorKey: "name",
     header: "Nombre",
@@ -701,7 +706,7 @@ export const rewardColumns = ({
     ),
   },
   {
-    accessorKey: "requestedPoints",
+    accessorKey: "awardedPoints",
     header: "Puntos Requeridos",
   },
   {
@@ -866,5 +871,91 @@ export const pharmacyColumns = ({
         </Form>
       </div>
     ),
+  },
+];
+
+export const rewardRequestColumns = ({
+  editAction,
+  navigation,
+}: {
+  editAction: (id: string) => void;
+  navigation: { state: string; formData?: FormData };
+}): ColumnDef<RewardRequest>[] => [
+  {
+    accessorKey: "user.name",
+    header: "Usuario",
+  },
+  {
+    accessorKey: "reward.name",
+    header: "Recompensa",
+  },
+  {
+    accessorKey: "reward.imageUrl",
+    header: "Imagen",
+    cell: ({ row }: { row: any }) => (
+      <div className="relative w-10 h-10">
+        <img
+          src={row.original.reward.imageUrl}
+          alt={row.original.reward.name}
+          className="rounded-full object-cover w-full h-full"
+        />
+      </div>
+    ),
+  },
+  {
+    accessorKey: "reward.awardedPoints",
+    header: "Puntos Requeridos",
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Fecha de Solicitud",
+    cell: ({ row }: { row: any }) => {
+      const date = row.getValue("createdAt") as Date;
+      return date ? new Date(date).toLocaleString() : "N/A";
+    },
+  },
+  {
+    accessorKey: "status",
+    header: "Estado",
+    cell: ({ row }: { row: any }) => {
+      const status = row.getValue("status") as RewardRequestStatus;
+      return (
+        <Badge variant={RewardRequestStatus.getVariant(status)}>
+          {RewardRequestStatus.getName(status)}
+        </Badge>
+      );
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }: { row: any }) => {
+      const rewardRequest = row.original as RewardRequest;
+      return (
+        <div className="flex items-center gap-2">
+          <Link
+            to={`/reward-requests/${rewardRequest.id}`}
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3"
+          >
+            Ver
+          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Abrir menú</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => editAction(rewardRequest.id)}
+                disabled={navigation.state === "submitting"}
+              >
+                Editar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      );
+    },
   },
 ];

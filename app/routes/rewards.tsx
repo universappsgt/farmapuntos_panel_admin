@@ -5,7 +5,7 @@ import {
   useNavigation,
   useActionData,
 } from "@remix-run/react";
-import type { LoaderFunction, ActionFunction } from "@remix-run/node";
+import type { LoaderFunction, ActionFunction, SerializeFrom } from "@remix-run/node";
 import { Reward } from "~/models/types";
 import {
   createDocument,
@@ -46,7 +46,7 @@ export const action: ActionFunction = async ({ request }) => {
           name: formData.get("name") as string,
           imageUrl,
           expirationDate: new Date(formData.get("expirationDate") as string),
-          requestedPoints: Number(formData.get("requestedPoints")),
+          awardedPoints: Number(formData.get("awardedPoints")),
           stock: Number(formData.get("stock")),
           id: "",
         };
@@ -55,10 +55,6 @@ export const action: ActionFunction = async ({ request }) => {
           "rewards",
           reward
         );
-        if (errors) {
-          const values = Object.fromEntries(formData);
-          return json({ errors, values });
-        }
         return json({
           success: true,
           message: "Reward created successfully!",
@@ -79,7 +75,7 @@ export const action: ActionFunction = async ({ request }) => {
           name: formData.get("name") as string,
           imageUrl,
           expirationDate: new Date(formData.get("expirationDate") as string),
-          requestedPoints: Number(formData.get("requestedPoints")),
+          awardedPoints: Number(formData.get("awardedPoints")),
           stock: Number(formData.get("stock")),
         };
 
@@ -153,7 +149,7 @@ export default function Rewards() {
         editingId={editingId}
         setEditingId={setEditingId}
       />
-      <DataTable
+      <DataTable<SerializeFrom<Reward>>
         columns={rewardColumns({
           editAction: (id) => {
             setIsCreating(false);

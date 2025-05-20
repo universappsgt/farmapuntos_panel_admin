@@ -17,6 +17,7 @@ export interface User {
   backgroundPictureUrl: string;
   isAgent: boolean;
   accountStatus: "active" | "inactive" | "newAccount";
+  requestRewards?: string[];
 }
 
 export interface UserCard {
@@ -172,8 +173,64 @@ export interface Reward {
   imageUrl: string;
   name: string;
   expirationDate: Date;
-  requestedPoints: number;
+  awardedPoints: number;
   stock: number;
+}
+
+export enum RewardRequestStatus {
+  Requested = "requested",
+  Approved = "approved",
+  Rejected = "rejected",
+}
+
+export namespace RewardRequestStatus {
+  export function getName(status: RewardRequestStatus): string {
+    switch (status) {
+      case RewardRequestStatus.Requested:
+        return "En progreso";
+      case RewardRequestStatus.Approved:
+        return "Aprobada";
+      case RewardRequestStatus.Rejected:
+        return "Denegada";
+      default:
+        return "Desconocido";
+    }
+  }
+
+  export function getVariant(status: RewardRequestStatus): "default" | "secondary" | "destructive" | "outline" {
+    switch (status) {
+      case RewardRequestStatus.Requested:
+        return "secondary";
+      case RewardRequestStatus.Approved:
+        return "default";
+      case RewardRequestStatus.Rejected:
+        return "destructive";
+      default:
+        return "outline";
+    }
+  }
+
+  export function fromValue(value: string): RewardRequestStatus {
+    switch (value) {
+      case "requested":
+        return RewardRequestStatus.Requested;
+      case "approved":
+        return RewardRequestStatus.Approved;
+      case "rejected":
+        return RewardRequestStatus.Rejected;
+      default:
+        return RewardRequestStatus.Requested;
+    }
+  }
+}
+
+export interface RewardRequest {
+  id: string;
+  user: User;
+  createdAt: Date;
+  reward: Reward;
+  status: RewardRequestStatus;
+  card: UserCard;
 }
 
 export interface Pharmacy {

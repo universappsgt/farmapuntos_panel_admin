@@ -92,6 +92,11 @@ const items = [
     icon: Gift,
   },
   {
+    title: "Solicitudes de Canjeo",
+    url: "/reward-requests",
+    icon: Gift,
+  },
+  {
     title: "Productos",
     url: "/products",
     icon: Package,
