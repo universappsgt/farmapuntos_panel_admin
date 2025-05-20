@@ -5,12 +5,12 @@ import {
   useNavigation,
   useActionData,
 } from "@remix-run/react";
-import type { LoaderFunction, ActionFunction } from "@remix-run/node";
+import type { LoaderFunction, ActionFunction, SerializeFrom } from "@remix-run/node";
 import { RewardRequest, RewardRequestStatus } from "~/models/types";
 import {
   createDocument,
   deleteDocument,
-  fetchDocuments,
+  fetchRewardRequests,
   updateDocument,
 } from "~/services/firestore.server";
 import { DataTable } from "~/components/ui/data-table";
@@ -19,7 +19,7 @@ import { RewardRequestForm } from "~/lib/features/reward-requests/reward-request
 import { toast } from "sonner";
 
 export const loader: LoaderFunction = async () => {
-  const rewardRequests: RewardRequest[] = await fetchDocuments(
+  const rewardRequests: RewardRequest[] = await fetchRewardRequests(
     "rewardRequests"
   );
 
@@ -98,16 +98,9 @@ export default function RewardRequests() {
   return (
     <div className="container mx-auto">
       <h1 className="text-3xl font-bold mb-6">Solicitudes de Canjeo</h1>
-      <RewardRequestForm
-        isSheetOpen={isSheetOpen}
-        setIsSheetOpen={setIsSheetOpen}
-        rewardRequestToEdit={getRewardRequestToEdit()}
-        editingId={editingId}
-        setEditingId={setEditingId}
-      />
-      <DataTable
+      <DataTable<SerializeFrom<RewardRequest>>
         columns={rewardRequestColumns({
-          editAction: (id) => {
+          editAction: (id) => { 
             setEditingId(id);
             setIsSheetOpen(true);
           },
@@ -118,7 +111,4 @@ export default function RewardRequests() {
     </div>
   );
 
-  function getRewardRequestToEdit() {
-    return rewardRequests.find((request) => request.id === editingId);
-  }
 } 

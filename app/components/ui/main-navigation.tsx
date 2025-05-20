@@ -37,39 +37,21 @@ import {
   DropdownMenuTrigger,
 } from "./dropdown-menu";
 import { Button } from "./button";
-import { useLocation } from "@remix-run/react";
+import { Form, useLocation } from "@remix-run/react";
 import { Theme, useTheme } from "remix-themes";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import type { User } from "~/models/types";
 
-// Mock user data - replace this with actual user data from your auth system
-const currentUser: User = {
-  id: "1",
-  name: "John Doe",
-  email: "john@example.com",
-  points: 100,
-  phoneNumber: "+1234567890",
-  profilePictureUrl: "https://picsum.photos/200/300",
-  notificationTokens: [],
-  backgroundPictureUrl: "",
-  isAgent: false,
-};
-
 const items = [
   {
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: LayoutDashboard,
+    title: "Usuarios",
+    url: "/users",
+    icon: UserIcon,
   },
   {
     title: "Agentes",
     url: "/agents",
     icon: Users,
-  },
-  {
-    title: "Usuarios",
-    url: "/users",
-    icon: UserIcon,
   },
   {
     title: "Laboratorios",
@@ -113,7 +95,11 @@ const items = [
   },
 ];
 
-export function MainNavigation() {
+interface MainNavigationProps {
+  user: User;
+}
+
+export function MainNavigation({ user }: MainNavigationProps) {
   const location = useLocation();
   const pathname = location.pathname;
   const [, setTheme] = useTheme();
@@ -123,7 +109,7 @@ export function MainNavigation() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-foreground/70">
-            Becofarma
+            Farmapuntos
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -152,38 +138,42 @@ export function MainNavigation() {
               <Button variant="ghost" className="flex-1 justify-start px-2">
                 <div className="flex items-center gap-3">
                   <Avatar>
-                    <AvatarImage src={currentUser.profilePictureUrl} />
+                    <AvatarImage src={user.profilePictureUrl || ""} />
                     <AvatarFallback className="bg-muted">
-                      {currentUser.name.charAt(0)}
+                      {user.name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col items-start text-left">
                     <span className="text-sm font-medium text-foreground">
-                      {currentUser.name}
+                      {user.name}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {currentUser.email}
+                      {user.email}
                     </span>
                   </div>
                 </div>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <UserIcon className="mr-2 h-4 w-4" />
-                <span>Account Settings</span>
+                <span>Configuración</span>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Code2 className="mr-2 h-4 w-4" />
-                <span>Codebase</span>
+                <span>Código</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Sign Out</span>
-              </DropdownMenuItem>
+              <Form action="/logout" method="post">
+                <DropdownMenuItem asChild>
+                  <button className="w-full text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Cerrar sesión</span>
+                  </button>
+                </DropdownMenuItem>
+              </Form>
             </DropdownMenuContent>
           </DropdownMenu>
           <DropdownMenu>
@@ -191,15 +181,15 @@ export function MainNavigation() {
               <Button variant="ghost" size="icon">
                 <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                 <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Toggle theme</span>
+                <span className="sr-only">Cambiar tema</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setTheme(Theme.LIGHT)}>
-                Light
+                Claro
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setTheme(Theme.DARK)}>
-                Dark
+                Oscuro
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

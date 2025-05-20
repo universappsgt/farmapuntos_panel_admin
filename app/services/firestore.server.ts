@@ -14,7 +14,7 @@ import {
   Query,
   orderBy,
 } from "firebase/firestore";
-import { Transaction } from "~/models/types";
+import { RewardRequest, Transaction } from "~/models/types";
 
 // Fetch documents from a collection
 
@@ -134,4 +134,33 @@ export async function createSubDocument<T>(
   const subCollectionRef = collection(collectionRef, subCollectionName);
   const docRef = await addDoc(subCollectionRef, data);  
   return docRef.id;
+}
+
+export async function fetchRewardRequests(
+  collectionName: string,
+
+): Promise<RewardRequest[]> {
+  const collectionRef = collection(db, collectionName);
+  let q: CollectionReference | Query = collectionRef;
+
+
+  q = query(collectionRef, orderBy("createdAt", "desc"));
+
+
+  const snapshot = await getDocs(q);
+
+  const data = snapshot.docs.map((doc) => {
+    const docData = doc.data();
+    // Parse date fields
+    Object.keys(docData).forEach((key) => {
+      if (docData[key] && docData[key].toDate instanceof Function) {
+        docData[key] = docData[key].toDate();
+      }
+    });
+    return {
+      ...docData,
+      id: doc.id,
+    } as RewardRequest & { id: string };
+  });
+  return data;
 }

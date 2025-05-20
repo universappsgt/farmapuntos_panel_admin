@@ -20,13 +20,30 @@ import { clsx } from "clsx";
 import { MainNavigation } from "./components/ui/main-navigation";
 import { SidebarProvider, SidebarTrigger } from "./components/ui/sidebar";
 import { Toaster } from "./components/ui/sonner";
+import { auth } from "firebase";
+import { fetchDocument } from "~/services/firestore.server";
+import type { User } from "~/models/types";
 
 export const links: LinksFunction = () => [{ rel: "stylesheet", href: styles }];
 
 export const loader: LoaderFunction = async ({ request }) => {
   const { getTheme } = await themeSessionResolver(request);
+  
+  // Obtener el token de la sesión
+  const session = await auth.currentUser;
+  let userData = null;
+
+  if (session) {
+    try {
+      userData = await fetchDocument<User>("users", session.uid);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  }
+  
   return {
     theme: getTheme(),
+    user: userData,
   };
 };
 
@@ -56,10 +73,10 @@ export function App() {
       <body>
         <SidebarProvider>
           <div className="flex min-h-screen w-full">
-            <MainNavigation />
+            {data.user && <MainNavigation user={data.user} />}
             <main className="flex-1 w-full p-6">
               <div className="flex flex-col gap-6">
-                <SidebarTrigger />
+                {data.user && <SidebarTrigger />}
                 <div className="w-full">
                   <Outlet />
                 </div>

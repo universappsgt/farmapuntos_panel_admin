@@ -83,7 +83,16 @@ export const action: ActionFunction = async ({ request }) => {
         if (status === RewardRequestStatus.Approved || status === RewardRequestStatus.Rejected) {
           // Obtener la tarjeta del usuario
           const userCard = await fetchDocument<UserCard>("userCards", rewardRequest.card.id);
-          if (userCard) {
+
+          if(userCard?.points && userCard.points < rewardRequest.reward.awardedPoints) {
+            
+            return json({
+              success: false,
+              message: "El usuario no tiene suficientes puntos para canjear esta recompensa",
+            });
+          }
+
+          if (userCard && status === RewardRequestStatus.Approved) {
             // Debitar los puntos
             await updateDocument<UserCard>("userCards", userCard.id, {
               points: userCard.points - rewardRequest.reward.awardedPoints
@@ -137,10 +146,34 @@ export default function RewardRequestDetail() {
   useEffect(() => {
     if (actionData) {
       if (actionData.success) {
-        toast.success(actionData.message);
+        toast.success(actionData.message, {
+          duration: 3000,
+          className: "bg-background border border-green-500 p-4 rounded-lg shadow-lg",
+          position: "bottom-right",
+          icon: "✅",
+          style: {
+            color: "hsl(var(--foreground))",
+            backgroundColor: "hsl(var(--background))",
+            padding: "1rem",
+            borderRadius: "0.5rem",
+            boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+          },
+        });
         setShowConfirmModal(false);
       } else {
-        toast.error(actionData.message);
+        toast.error(actionData.message, {
+          duration: 3000,
+          className: "bg-background border border-destructive p-4 rounded-lg shadow-lg",
+          position: "bottom-right",
+          icon: "❌",
+          style: {
+            color: "hsl(var(--foreground))",
+            backgroundColor: "hsl(var(--background))",
+            padding: "1rem",
+            borderRadius: "0.5rem",
+            boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+          },
+        });
       }
     }
   }, [actionData]);

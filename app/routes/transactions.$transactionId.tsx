@@ -257,7 +257,7 @@ export default function TransactionDetail() {
                 </div>
                 <div className="text-right">
                   <p className="font-medium">
-                    ${(tp.product.price * tp.quantity).toFixed(2)}
+                    Q {(tp.product.price * tp.quantity).toFixed(2)}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {tp.product.awardedPoints * tp.quantity} pts
@@ -268,7 +268,7 @@ export default function TransactionDetail() {
             <div className="flex justify-between pt-4 border-t">
               <p className="font-semibold">Total</p>
               <div className="text-right">
-                <p className="font-semibold">${totalAmount.toFixed(2)}</p>
+                <p className="font-semibold">Q {totalAmount.toFixed(2)}</p>
                 <p className="text-sm text-muted-foreground">
                   {transaction.points} pts
                 </p>

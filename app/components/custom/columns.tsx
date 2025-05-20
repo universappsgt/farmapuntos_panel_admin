@@ -880,7 +880,7 @@ export const rewardRequestColumns = ({
 }: {
   editAction: (id: string) => void;
   navigation: { state: string; formData?: FormData };
-}): ColumnDef<RewardRequest>[] => [
+}): ColumnDef<SerializeFrom<RewardRequest>>[] => [
   {
     accessorKey: "user.name",
     header: "Usuario",
@@ -938,22 +938,6 @@ export const rewardRequestColumns = ({
           >
             Ver
           </Link>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Abrir menú</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => editAction(rewardRequest.id)}
-                disabled={navigation.state === "submitting"}
-              >
-                Editar
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       );
     },
