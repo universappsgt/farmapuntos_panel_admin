@@ -21,6 +21,7 @@ import { Badge } from "../ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 
 export const laboratoryColumns = ({
   editAction,
@@ -938,6 +939,81 @@ export const rewardRequestColumns = ({
           >
             Ver
           </Link>
+        </div>
+      );
+    },
+  },
+];
+
+export const adminColumns = ({
+  editAction,
+  navigation,
+}: {
+  editAction: (id: string) => void;
+  navigation: any;
+}) => [
+  {
+    accessorKey: "name",
+    header: "Nombre",
+  },
+  {
+    accessorKey: "email",
+    header: "Correo Electrónico",
+  },
+  {
+    accessorKey: "phoneNumber",
+    header: "Teléfono",
+  },
+  {
+    accessorKey: "accountStatus",
+    header: "Estado",
+    cell: ({ row }: any) => {
+      const status = row.getValue("accountStatus");
+      return (
+        <Badge
+          variant={
+            status === "active"
+              ? "default"
+              : status === "newAccount"
+              ? "secondary"
+              : "destructive"
+          }
+        >
+          {status === "active"
+            ? "Activo"
+            : status === "newAccount"
+            ? "Nueva Cuenta"
+            : "Inactivo"}
+        </Badge>
+      );
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }: any) => {
+      const id = row.original.id;
+      return (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => editAction(id)}
+            disabled={navigation.state === "submitting"}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Form method="post">
+            <input type="hidden" name="action" value="delete" />
+            <input type="hidden" name="id" value={id} />
+            <Button
+              variant="ghost"
+              size="icon"
+              type="submit"
+              disabled={navigation.state === "submitting"}
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </Form>
         </div>
       );
     },

@@ -13,6 +13,7 @@ import {
   CollectionReference,
   Query,
   orderBy,
+  setDoc,
 } from "firebase/firestore";
 import { RewardRequest, Transaction } from "~/models/types";
 
@@ -69,11 +70,25 @@ export async function fetchDocument<T>(
 // Add a new document to a collection
 export async function createDocument<T>(
   collectionName: string,
-  data: Omit<T, "id">
-): Promise<string> {
-  const collectionRef = collection(db, collectionName);
-  const docRef = await addDoc(collectionRef, data);
-  return docRef.id;
+  data: Omit<T, "id">,
+  customId?: string
+): Promise<[string | null, T | null]> {
+  try {
+    const collectionRef = collection(db, collectionName);
+    let docRef;
+
+    if (customId) {
+      docRef = doc(db, collectionName, customId);
+      await setDoc(docRef, data);
+    } else {
+      docRef = await addDoc(collectionRef, data);
+    }
+
+    return [null, { ...data, id: docRef.id } as T];
+  } catch (error: any) {
+    console.error("Error creating document:", error);
+    return [error.message || "Error desconocido", null];
+  }
 }
 
 // Update an existing document in a collection

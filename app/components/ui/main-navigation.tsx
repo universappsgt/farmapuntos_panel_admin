@@ -54,6 +54,11 @@ const items = [
     icon: Users,
   },
   {
+    title: "Administradores",
+    url: "/admins",
+    icon: UserIcon,
+  },
+  {
     title: "Laboratorios",
     url: "/wallet",
     icon: FlaskConical,

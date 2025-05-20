@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Form, useActionData, useNavigation } from "@remix-run/react";
 import { json, redirect } from "@remix-run/node";
 import type { ActionFunction } from "@remix-run/node";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "firebase";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -15,6 +15,8 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "firebase";
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
@@ -26,7 +28,34 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   try {
-    await signInWithEmailAndPassword(auth, email, password);
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
+    
+    if (!userDoc.exists()) {
+      await signOut(auth);
+      return json(
+        { error: "Usuario no encontrado" },
+        { status: 401 }
+      );
+    }
+
+    const userData = userDoc.data();
+    if (!userData.isAdministrator) {
+      await signOut(auth);
+      return json(
+        { error: "No tienes permisos de administrador" },
+        { status: 403 }
+      );
+    }
+
+    if (userData.accountStatus !== "active") {
+      await signOut(auth);
+      return json(
+        { error: "Tu cuenta no está activa. Por favor, contacta al administrador." },
+        { status: 403 }
+      );
+    }
+
     return redirect("/users");
   } catch (error) {
     return json(

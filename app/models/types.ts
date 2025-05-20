@@ -16,6 +16,7 @@ export interface User {
   notificationTokens: string[];
   backgroundPictureUrl: string;
   isAgent: boolean;
+  isAdministrator: boolean;
   accountStatus: "active" | "inactive" | "newAccount";
   requestRewards?: string[];
 }
