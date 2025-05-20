@@ -24,6 +24,13 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { FidelityCardForm } from "~/lib/features/wallet/fidelity-card-form";
 import { uploadImage } from "~/services/firebase-storage.server";
 import { Buffer } from "buffer";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "~/components/ui/dialog";
 
 export const loader: LoaderFunction = async () => {
   const fidelityCards: FidelityCard[] = await fetchDocuments<FidelityCard>(
@@ -240,6 +247,20 @@ export const action: ActionFunction = async ({ request }) => {
       case "delete": {
         const id = formData.get("id") as string;
 
+        // Buscar y eliminar todas las referencias en userCards
+        const userCards = await fetchDocuments<{ id: string }>("userCards", [
+          "fidelityCardId",
+          "==",
+          id,
+        ]);
+
+        // Eliminar cada userCard encontrado
+        for (const userCard of userCards) {
+          if (userCard.id) {
+            await deleteDocument("userCards", userCard.id);
+          }
+        }
+
         // Eliminar también los niveles de lealtad
         const loyaltyLevels = await fetchDocuments<LoyaltyLevel>(
           `cards/${id}/loyaltyLevels`
@@ -251,10 +272,11 @@ export const action: ActionFunction = async ({ request }) => {
           }
         }
 
+        // Finalmente, eliminar la tarjeta
         await deleteDocument("cards", id);
         return json({
           success: true,
-          message: "Fidelity card deleted successfully!",
+          message: "Tarjeta de fidelidad eliminada exitosamente!",
         });
       }
     }
@@ -262,7 +284,7 @@ export const action: ActionFunction = async ({ request }) => {
     console.error("Error handling action:", error);
     return json({
       success: false,
-      message: "An error occurred. Please try again.",
+      message: "Ocurrió un error. Por favor, intente nuevamente.",
     });
   }
 };
@@ -284,6 +306,8 @@ export default function Wallet() {
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [cardToDelete, setCardToDelete] = useState<FidelityCard | null>(null);
   const navigation = useNavigation();
   const actionData = useActionData<{ success: boolean; message: string }>();
 
@@ -299,6 +323,8 @@ export default function Wallet() {
             color: "hsl(var(--foreground))",
           },
         });
+        setIsDeleteDialogOpen(false);
+        setCardToDelete(null);
       } else {
         toast.error(actionData.message, {
           duration: 3000,
@@ -331,11 +357,55 @@ export default function Wallet() {
             setEditingId(id);
             setIsSheetOpen(true);
           },
+          deleteAction: (card: FidelityCard) => {
+            setCardToDelete(card);
+            setIsDeleteDialogOpen(true);
+          },
           navigation,
         })}
         data={fidelityCards}
         filterColumn="cardTitle"
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Eliminar Tarjeta de Fidelidad</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            ¿Está seguro que desea eliminar la tarjeta "{cardToDelete?.cardTitle}"? Esta acción eliminará:
+          </p>
+          <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+            <li>La tarjeta de fidelidad y todos sus niveles de lealtad</li>
+            <li>Todas las referencias a esta tarjeta en las cuentas de usuarios</li>
+            <li>Los puntos acumulados por los usuarios en esta tarjeta</li>
+          </ul>
+          <p className="text-sm font-medium text-destructive mt-2">
+            Esta acción no se puede deshacer.
+          </p>
+          <DialogFooter>
+            <form method="post" className="flex gap-2">
+              <input type="hidden" name="action" value="delete" />
+              <input type="hidden" name="id" value={cardToDelete?.id || ""} />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsDeleteDialogOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                variant="destructive"
+                disabled={navigation.state === "submitting"}
+              >
+                {navigation.state === "submitting" ? "Eliminando..." : "Eliminar"}
+              </Button>
+            </form>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 

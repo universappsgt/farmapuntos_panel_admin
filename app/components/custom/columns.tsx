@@ -126,9 +126,11 @@ export const laboratoryColumns = ({
 
 export const fidelityCardColumns = ({
   editAction,
+  deleteAction,
   navigation,
 }: {
   editAction: (id: string) => void;
+  deleteAction: (card: FidelityCard) => void;
   navigation: { state: string; formData?: FormData };
 }): ColumnDef<FidelityCard>[] => [
   {
@@ -194,32 +196,20 @@ export const fidelityCardColumns = ({
     id: "actions",
     cell: ({ row }) => (
       <div className="flex space-x-2">
-        <Form method="post" style={{ display: "inline" }}>
-          <input type="hidden" name="action" value="edit" />
-          <input type="hidden" name="id" value={row.original.id} />
-          <Button
-            type="submit"
-            onClick={() => editAction(row.original.id)}
-            variant="secondary"
-            disabled={navigation.state === "submitting"}
-          >
-            Edit
-          </Button>
-        </Form>
-        <Form method="post" style={{ display: "inline" }}>
-          <input type="hidden" name="action" value="delete" />
-          <input type="hidden" name="id" value={row.original.id} />
-          <Button
-            type="submit"
-            variant="destructive"
-            disabled={navigation.state === "submitting"}
-          >
-            {navigation.state === "submitting" &&
-            navigation.formData?.get("id") === row.original.id
-              ? "Deleting..."
-              : "Delete"}
-          </Button>
-        </Form>
+        <Button
+          onClick={() => editAction(row.original.id)}
+          variant="secondary"
+          disabled={navigation.state === "submitting"}
+        >
+          Editar
+        </Button>
+        <Button
+          onClick={() => deleteAction(row.original)}
+          variant="destructive"
+          disabled={navigation.state === "submitting"}
+        >
+          Eliminar
+        </Button>
       </div>
     ),
   },
