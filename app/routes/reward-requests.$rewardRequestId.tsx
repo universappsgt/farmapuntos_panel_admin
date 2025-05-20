@@ -71,7 +71,10 @@ export const action: ActionFunction = async ({ request }) => {
         const rewardRequest = await fetchDocument<RewardRequest>("rewardRequests", id);
 
         if (!rewardRequest) {
-          throw new Error("Solicitud no encontrada");
+          return json({
+            success: false,
+            message: "Solicitud no encontrada",
+          });
         }
 
         // Actualizar el estado de la solicitud
@@ -85,7 +88,18 @@ export const action: ActionFunction = async ({ request }) => {
           const userCard = await fetchDocument<UserCard>("userCards", rewardRequest.card.id);
 
           if(userCard?.points && userCard.points < rewardRequest.reward.awardedPoints) {
-            
+            const user = await fetchDocument<User>("users", rewardRequest.user.id);
+            if (user && user.requestRewards) {
+              const updatedRequestRewards = user.requestRewards.filter(
+                (requestId: string) => requestId !== rewardRequest.reward.id
+              );
+              await updateDocument<User>("users", user.id, {
+                requestRewards: updatedRequestRewards
+              });
+            }
+            await updateDocument<RewardRequest>("rewardRequests", id, {
+              status: RewardRequestStatus.Rejected,
+            });
             return json({
               success: false,
               message: "El usuario no tiene suficientes puntos para canjear esta recompensa",
@@ -101,12 +115,10 @@ export const action: ActionFunction = async ({ request }) => {
 
           // Actualizar el array requestRewards del usuario
           const user = await fetchDocument<User>("users", rewardRequest.user.id);
-          console.log(user);
           if (user && user.requestRewards) {
             const updatedRequestRewards = user.requestRewards.filter(
               (requestId: string) => requestId !== rewardRequest.reward.id
             );
-            console.log(updatedRequestRewards);
             await updateDocument<User>("users", user.id, {
               requestRewards: updatedRequestRewards
             });

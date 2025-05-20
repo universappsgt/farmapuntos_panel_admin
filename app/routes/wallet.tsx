@@ -152,7 +152,6 @@ export const action: ActionFunction = async ({ request }) => {
             currency: formData.get("rules.currency") as string,
             forPurchasePrice: Number(formData.get("rules.forPurchasePrice")),
             initialCredits: Number(formData.get("rules.initialCredits")),
-            rewardPoints: formData.get("rules.rewardPoints") as string,
             status: formData.get("rules.status") as string,
           },
           id: id,

@@ -46,7 +46,6 @@ export interface FidelityCard {
     currency: string;
     forPurchasePrice: number;
     initialCredits: number;
-    rewardPoints: string;
     status: string;
   };
   loyaltyLevels?: LoyaltyLevel[];

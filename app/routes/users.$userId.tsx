@@ -109,7 +109,7 @@ export const action: ActionFunction = async ({
           userId,
           fidelityCardId,
           createdAt: new Date(),
-          points: fidelityCard?.rules.rewardPoints || 10,
+          points: fidelityCard?.rules.initialCredits || 10,
         };
 
         const [errors] = await createDocument("userCards", userCard);
