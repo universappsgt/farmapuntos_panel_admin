@@ -102,6 +102,15 @@ export function PharmacyForm({
                 defaultValue={pharmacyToEdit?.phoneNumber || ""}
               />
             </div>
+            <div className="mb-4">
+              <Label htmlFor="code">Código</Label>
+              <Input
+                id="code"
+                name="code"
+                required
+                defaultValue={pharmacyToEdit?.code || ""}
+              />
+            </div>
             <SheetFooter>
               <Button type="submit">
                 {navigation.state === "submitting"

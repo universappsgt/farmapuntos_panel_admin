@@ -33,7 +33,7 @@ export function ImageUpload({ id, name, onImageUpload }: ImageUploadProps) {
         className="hidden"
       />
       <Button type="button" onClick={handleButtonClick}>
-        Upload New Picture
+        Subir imagen
       </Button>
     </div>
   );

@@ -1,7 +1,7 @@
 import { json, redirect } from "@remix-run/react";
 
 export const loader = async () => {
-  await redirect("/dashboard");
+  await redirect("/users");
   return json({ ok: true });
 };
 

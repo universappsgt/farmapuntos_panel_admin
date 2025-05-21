@@ -12,7 +12,10 @@ import {
   where,
   CollectionReference,
   Query,
+  orderBy,
+  setDoc,
 } from "firebase/firestore";
+import { RewardRequest, Transaction } from "~/models/types";
 
 // Fetch documents from a collection
 
@@ -67,11 +70,25 @@ export async function fetchDocument<T>(
 // Add a new document to a collection
 export async function createDocument<T>(
   collectionName: string,
-  data: Omit<T, "id">
-): Promise<string> {
-  const collectionRef = collection(db, collectionName);
-  const docRef = await addDoc(collectionRef, data);
-  return docRef.id;
+  data: Omit<T, "id">,
+  customId?: string
+): Promise<[string | null, T | null]> {
+  try {
+    const collectionRef = collection(db, collectionName);
+    let docRef;
+
+    if (customId) {
+      docRef = doc(db, collectionName, customId);
+      await setDoc(docRef, data);
+    } else {
+      docRef = await addDoc(collectionRef, data);
+    }
+
+    return [null, { ...data, id: docRef.id } as T];
+  } catch (error: any) {
+    console.error("Error creating document:", error);
+    return [error.message || "Error desconocido", null];
+  }
 }
 
 // Update an existing document in a collection
@@ -91,4 +108,74 @@ export async function deleteDocument(
 ): Promise<void> {
   const documentRef = doc(db, collectionName, id);
   await deleteDoc(documentRef);
+}
+
+export async function fetchTransactions(
+  collectionName: string,
+
+): Promise<Transaction[]> {
+  const collectionRef = collection(db, collectionName);
+  let q: CollectionReference | Query = collectionRef;
+
+
+  q = query(collectionRef, orderBy("createdAt", "desc"));
+
+
+  const snapshot = await getDocs(q);
+
+  const data = snapshot.docs.map((doc) => {
+    const docData = doc.data();
+    // Parse date fields
+    Object.keys(docData).forEach((key) => {
+      if (docData[key] && docData[key].toDate instanceof Function) {
+        docData[key] = docData[key].toDate();
+      }
+    });
+    return {
+      ...docData,
+      id: doc.id,
+    } as Transaction & { id: string };
+  });
+  return data;
+}
+
+// Add a new document to a collection
+export async function createSubDocument<T>(
+  collectionName: string,
+  subCollectionName: string,
+  data: Omit<T, "id">
+): Promise<string> {
+  const collectionRef = collection(db, collectionName);
+  const subCollectionRef = collection(collectionRef, subCollectionName);
+  const docRef = await addDoc(subCollectionRef, data);  
+  return docRef.id;
+}
+
+export async function fetchRewardRequests(
+  collectionName: string,
+
+): Promise<RewardRequest[]> {
+  const collectionRef = collection(db, collectionName);
+  let q: CollectionReference | Query = collectionRef;
+
+
+  q = query(collectionRef, orderBy("createdAt", "desc"));
+
+
+  const snapshot = await getDocs(q);
+
+  const data = snapshot.docs.map((doc) => {
+    const docData = doc.data();
+    // Parse date fields
+    Object.keys(docData).forEach((key) => {
+      if (docData[key] && docData[key].toDate instanceof Function) {
+        docData[key] = docData[key].toDate();
+      }
+    });
+    return {
+      ...docData,
+      id: doc.id,
+    } as RewardRequest & { id: string };
+  });
+  return data;
 }

@@ -19,23 +19,22 @@ const firebaseConfig = {
   measurementId: "G-MFFW7GZN7S"
 };
 
-
-
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
-
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
 
 export async function requireAuth(request: Request) {
-  const user = auth.currentUser;
-  if (!user) {
+  const session = auth.currentUser;
+  if (!session) {
     throw redirect('/login');
   }
-  return user;
+  return session;
 }
 
-export { auth, db, storage };
+export async function getCurrentUser() {
+  return auth.currentUser;
+}
 
 

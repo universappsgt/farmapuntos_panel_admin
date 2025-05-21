@@ -1,6 +1,7 @@
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import { ColumnDef } from "@tanstack/react-table";
+import type { SerializeFrom } from "@remix-run/node";
 import {
   FidelityCard,
   Laboratory,
@@ -11,11 +12,16 @@ import {
   Reward,
   Product,
   Pharmacy,
+  RewardRequest,
+  RewardRequestStatus,
 } from "~/models/types";
 import { Button } from "../ui/button";
 import { Form, Link } from "@remix-run/react";
 import { Badge } from "../ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/components/ui/dropdown-menu";
+import { MoreHorizontal } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 
 export const laboratoryColumns = ({
   editAction,
@@ -120,81 +126,90 @@ export const laboratoryColumns = ({
 
 export const fidelityCardColumns = ({
   editAction,
+  deleteAction,
   navigation,
 }: {
   editAction: (id: string) => void;
+  deleteAction: (card: FidelityCard) => void;
   navigation: { state: string; formData?: FormData };
 }): ColumnDef<FidelityCard>[] => [
   {
-    accessorKey: "cardTitle",
-    header: "Card Title",
+    accessorKey: "cardDesign.logo",
+    header: "Logo",
+    cell: ({ row }) => (
+      <div className="flex items-center justify-center">
+        {row.original.cardDesign.logo ? (
+          <img 
+            src={row.original.cardDesign.logo}
+            alt="Logo"
+            className="w-10 h-10 object-contain rounded-full"
+          />
+        ) : (
+          <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+            Sin logo
+          </div>
+        )}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "cardTitle", 
+    header: "Título de la Tarjeta",
     cell: ({ row }) => <div>{row.original.cardTitle}</div>,
   },
   {
     accessorKey: "description",
-    header: "Description",
+    header: "Descripción",
     cell: ({ row }) => <div>{row.original.description}</div>,
   },
   {
     accessorKey: "contact.phoneNumber",
-    header: "Phone Number",
+    header: "Teléfono",
     cell: ({ row }) => <div>{row.original.contact.phoneNumber}</div>,
   },
   {
     accessorKey: "contact.website",
-    header: "Website",
+    header: "Sitio Web",
     cell: ({ row }) => <div>{row.original.contact.website}</div>,
   },
   {
     accessorKey: "rules.currency",
-    header: "Currency",
+    header: "Moneda",
     cell: ({ row }) => <div>{row.original.rules.currency}</div>,
   },
-  {
-    accessorKey: "rules.forPurchasePrice",
-    header: "Purchase Price",
-    cell: ({ row }) => <div>{row.original.rules.forPurchasePrice}</div>,
-  },
+  // {
+  //   accessorKey: "rules.forPurchasePrice",
+  //   header: "Precio de Compra",
+  //   cell: ({ row }) => <div>{row.original.rules.forPurchasePrice}</div>,
+  // },
   {
     accessorKey: "rules.initialCredits",
-    header: "Initial Credits",
+    header: "Créditos Iniciales",
     cell: ({ row }) => <div>{row.original.rules.initialCredits}</div>,
   },
-  {
-    accessorKey: "rules.status",
-    header: "Status",
-    cell: ({ row }) => <div>{row.original.rules.status}</div>,
-  },
+  // {
+  //   accessorKey: "rules.status",
+  //   header: "Status",
+  //   cell: ({ row }) => <div>{row.original.rules.status}</div>,
+  // },
   {
     id: "actions",
     cell: ({ row }) => (
       <div className="flex space-x-2">
-        <Form method="post" style={{ display: "inline" }}>
-          <input type="hidden" name="action" value="edit" />
-          <input type="hidden" name="id" value={row.original.id} />
-          <Button
-            type="submit"
-            onClick={() => editAction(row.original.id)}
-            variant="secondary"
-            disabled={navigation.state === "submitting"}
-          >
-            Edit
-          </Button>
-        </Form>
-        <Form method="post" style={{ display: "inline" }}>
-          <input type="hidden" name="action" value="delete" />
-          <input type="hidden" name="id" value={row.original.id} />
-          <Button
-            type="submit"
-            variant="destructive"
-            disabled={navigation.state === "submitting"}
-          >
-            {navigation.state === "submitting" &&
-            navigation.formData?.get("id") === row.original.id
-              ? "Deleting..."
-              : "Delete"}
-          </Button>
-        </Form>
+        <Button
+          onClick={() => editAction(row.original.id)}
+          variant="secondary"
+          disabled={navigation.state === "submitting"}
+        >
+          Editar
+        </Button>
+        <Button
+          onClick={() => deleteAction(row.original)}
+          variant="destructive"
+          disabled={navigation.state === "submitting"}
+        >
+          Eliminar
+        </Button>
       </div>
     ),
   },
@@ -468,13 +483,28 @@ export const userColumns = ({
     cell: ({ row }) => <div>{row.getValue("points")}</div>,
   },
   {
-    accessorKey: "isEnabled",
-    header: "Estado",
+    accessorKey: "accountStatus",
+    header: "Estado de Cuenta",
     cell: ({ row }) => {
-      const isEnabled = row.getValue("isEnabled");
+      const accountStatus = row.getValue("accountStatus");
+      let variant = "secondary";
+      let text = "Inactivo";
+
+      if (accountStatus === "active") {
+        variant = "default";
+        text = "Activo";
+      } else if (accountStatus === "newAccount") {
+        variant = "se";
+        text = "Nueva Cuenta";
+      }
+
       return (
-        <Badge variant={isEnabled ? "default" : "secondary"}>
-          {isEnabled ? "Activo" : "Desactivado"}
+        <Badge
+          variant={
+            variant as "default" | "secondary" | "destructive" | "outline"
+          }
+        >
+          {text}
         </Badge>
       );
     },
@@ -536,57 +566,60 @@ export const transactionColumns = ({
   navigation: { state: string; formData?: FormData };
 }): ColumnDef<Transaction>[] => [
   {
+    accessorKey: "user.name",
+    header: "Cliente",
+    cell: ({ row }) => (
+      <div className="flex items-center space-x-2">
+        <Avatar className="w-8 h-8">
+          <AvatarImage
+            src={row.original.user.profilePictureUrl}
+            alt={row.original.user.name}
+          />
+          <AvatarFallback>{row.original.user.name.charAt(0)}</AvatarFallback>
+        </Avatar>
+        <span>{row.original.user.name}</span>
+      </div>
+    ),
+  },
+    {
+      accessorKey: "agent.name",
+      header: "Agente",
+      cell: ({ row }) => (
+        <div className="flex items-center space-x-2">
+          <Avatar className="w-8 h-8">
+            <AvatarImage
+              src={row.original.agent.profilePictureUrl}
+              alt={row.original.agent.name}
+            />
+            <AvatarFallback>{row.original.agent.name.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <span>{row.original.agent.name}</span>
+        </div>
+      ),
+    },
+  {
     accessorKey: "createdAt",
     header: "Fecha de Creación",
     cell: ({ row }) => (
       <div>{new Date(row.getValue("createdAt")).toLocaleString()}</div>
     ),
   },
+  
+  
   {
-    accessorKey: "client.name",
-    header: "Cliente",
-    cell: ({ row }) => (
-      <div className="flex items-center space-x-2">
-        <Avatar className="w-8 h-8">
-          <AvatarImage
-            src={row.original.client.profilePictureUrl}
-            alt={row.original.client.name}
-          />
-          <AvatarFallback>{row.original.client.name.charAt(0)}</AvatarFallback>
-        </Avatar>
-        <span>{row.original.client.name}</span>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "agent.name",
-    header: "Agente",
-    cell: ({ row }) => (
-      <div className="flex items-center space-x-2">
-        <Avatar className="w-8 h-8">
-          <AvatarImage
-            src={row.original.agent.profilePictureUrl}
-            alt={row.original.agent.name}
-          />
-          <AvatarFallback>{row.original.agent.name.charAt(0)}</AvatarFallback>
-        </Avatar>
-        <span>{row.original.agent.name}</span>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "rewardPoins",
+    accessorKey: "points",
     header: "Puntos de Recompensa",
+    cell: ({ row }) => <div>{row.getValue("points") as number}</div>,
   },
   {
-    accessorKey: "transactionStatus",
+    accessorKey: "status",
     header: "Estado",
     cell: ({ row }) => {
-      const status = row.getValue("transactionStatus") as TransactionStatus;
-      const variant = getStatusVariant(status);
+      const status = row.getValue("status") as TransactionStatus;
+      const variant = TransactionStatus.getVariant(status);
       return (
         <Badge variant={variant} className="capitalize">
-          {status}
+          {TransactionStatus.getName(status)}
         </Badge>
       );
     },
@@ -639,26 +672,13 @@ export const transactionColumns = ({
   },
 ];
 
-function getStatusVariant(status: TransactionStatus) {
-  switch (status) {
-    case TransactionStatus.InProgress:
-      return "secondary";
-    case TransactionStatus.Approved:
-      return "default";
-    case TransactionStatus.Denied:
-      return "destructive";
-    default:
-      return "outline";
-  }
-}
-
 export const rewardColumns = ({
   editAction,
   navigation,
 }: {
   editAction: (id: string) => void;
   navigation: { state: string; formData?: FormData };
-}): ColumnDef<Reward>[] => [
+}): ColumnDef<SerializeFrom<Reward>>[] => [
   {
     accessorKey: "name",
     header: "Nombre",
@@ -677,7 +697,7 @@ export const rewardColumns = ({
     ),
   },
   {
-    accessorKey: "requestedPoints",
+    accessorKey: "awardedPoints",
     header: "Puntos Requeridos",
   },
   {
@@ -746,6 +766,17 @@ export const productColumns = ({
     cell: ({ row }) => (
       <div className="flex space-x-2">
         <Form method="post" style={{ display: "inline" }}>
+          <input type="hidden" name="action" value="viewQR" />
+          <input type="hidden" name="id" value={row.original.id} />
+          <Button
+            type="submit"
+            variant="outline"
+            disabled={navigation.state === "submitting"}
+          >
+            Ver QR
+          </Button>
+        </Form>
+        <Form method="post" style={{ display: "inline" }}>
           <input type="hidden" name="action" value="edit" />
           <input type="hidden" name="id" value={row.original.id} />
           <Button
@@ -788,6 +819,10 @@ export const pharmacyColumns = ({
     header: "Nombre",
   },
   {
+    accessorKey: "code",
+    header: "Código",
+  },
+  {
     accessorKey: "address",
     header: "Dirección",
   },
@@ -827,5 +862,150 @@ export const pharmacyColumns = ({
         </Form>
       </div>
     ),
+  },
+];
+
+export const rewardRequestColumns = ({
+  editAction,
+  navigation,
+}: {
+  editAction: (id: string) => void;
+  navigation: { state: string; formData?: FormData };
+}): ColumnDef<SerializeFrom<RewardRequest>>[] => [
+  {
+    accessorKey: "user.name",
+    header: "Usuario",
+  },
+  {
+    accessorKey: "reward.name",
+    header: "Recompensa",
+  },
+  {
+    accessorKey: "reward.imageUrl",
+    header: "Imagen",
+    cell: ({ row }: { row: any }) => (
+      <div className="relative w-10 h-10">
+        <img
+          src={row.original.reward.imageUrl}
+          alt={row.original.reward.name}
+          className="rounded-full object-cover w-full h-full"
+        />
+      </div>
+    ),
+  },
+  {
+    accessorKey: "reward.awardedPoints",
+    header: "Puntos Requeridos",
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Fecha de Solicitud",
+    cell: ({ row }: { row: any }) => {
+      const date = row.getValue("createdAt") as Date;
+      return date ? new Date(date).toLocaleString() : "N/A";
+    },
+  },
+  {
+    accessorKey: "status",
+    header: "Estado",
+    cell: ({ row }: { row: any }) => {
+      const status = row.getValue("status") as RewardRequestStatus;
+      return (
+        <Badge variant={RewardRequestStatus.getVariant(status)}>
+          {RewardRequestStatus.getName(status)}
+        </Badge>
+      );
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }: { row: any }) => {
+      const rewardRequest = row.original as RewardRequest;
+      return (
+        <div className="flex items-center gap-2">
+          <Link
+            to={`/reward-requests/${rewardRequest.id}`}
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3"
+          >
+            Ver
+          </Link>
+        </div>
+      );
+    },
+  },
+];
+
+export const adminColumns = ({
+  editAction,
+  navigation,
+}: {
+  editAction: (id: string) => void;
+  navigation: any;
+}) => [
+  {
+    accessorKey: "name",
+    header: "Nombre",
+  },
+  {
+    accessorKey: "email",
+    header: "Correo Electrónico",
+  },
+  {
+    accessorKey: "phoneNumber",
+    header: "Teléfono",
+  },
+  {
+    accessorKey: "accountStatus",
+    header: "Estado",
+    cell: ({ row }: any) => {
+      const status = row.getValue("accountStatus");
+      return (
+        <Badge
+          variant={
+            status === "active"
+              ? "default"
+              : status === "newAccount"
+              ? "secondary"
+              : "destructive"
+          }
+        >
+          {status === "active"
+            ? "Activo"
+            : status === "newAccount"
+            ? "Nueva Cuenta"
+            : "Inactivo"}
+        </Badge>
+      );
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }: any) => {
+      const id = row.original.id;
+      return (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => editAction(id)}
+            disabled={navigation.state === "submitting"}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Form method="post">
+            <input type="hidden" name="action" value="delete" />
+            <input type="hidden" name="id" value={id} />
+            <Button
+              variant="ghost"
+              size="icon"
+              type="submit"
+              disabled={navigation.state === "submitting"}
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </Form>
+        </div>
+      );
+    },
   },
 ];

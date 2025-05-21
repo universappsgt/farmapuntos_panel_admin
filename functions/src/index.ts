@@ -25,12 +25,21 @@ export const onTransactionStatusUpdate = onDocumentWritten(
 
     // Check if status was changed to approved
     if (
-      newData?.transactionStatus === "approved" &&
-      previousData?.transactionStatus !== "approved"
+      newData?.status === "approved" &&
+      previousData?.status !== "approved"
     ) {
       try {
         // Get the client data from the transaction
-        const client = newData.client;
+        const client = newData.user;
+
+        // Actualizar puntos de un cliente
+        const userCardRef = admin
+          .firestore()
+          .collection("userCards")
+          .doc(newData.userCard.id);
+        await userCardRef.update({
+          points: admin.firestore.FieldValue.increment(newData.points),
+        });
 
         // If there are no notification tokens, exit
         if (
@@ -48,7 +57,7 @@ export const onTransactionStatusUpdate = onDocumentWritten(
             // Split long string into multiple lines
             body:
               "Tu transacción ha sido aprobada y se han acreditado " +
-              newData.rewardPoints +
+              newData.points +
               " puntos a tu cuenta.",
           },
           data: {

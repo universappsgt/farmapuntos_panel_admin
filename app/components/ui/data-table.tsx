@@ -44,10 +44,12 @@ export function DataTable<T>({
   data,
   columns,
   filterColumn = "name", // Set default value to "name"
+  showFilter = true,
 }: {
   data: T[];
   columns: ColumnDef<T>[];
   filterColumn?: string;
+  showFilter?: boolean;
 }) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -79,14 +81,17 @@ export function DataTable<T>({
   return (
     <div className="w-full space-y-4">
       <div className="flex items-center justify-between gap-4">
-        <Input
-          placeholder="Filtrar..."
-          value={(table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn(filterColumn)?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
+        {showFilter && (
+          <Input
+            placeholder="Filtrar..."
+            value={(table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""}
+            onChange={(event) =>
+              table.getColumn(filterColumn)?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
+        )}
+        <div className="w-20" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline">
@@ -125,9 +130,9 @@ export function DataTable<T>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   );
                 })}

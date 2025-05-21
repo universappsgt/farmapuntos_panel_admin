@@ -22,8 +22,8 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 
-interface UserFormProps {
-  userToEdit: User | undefined;
+interface AdminFormProps {
+  adminToEdit: User | undefined;
   isCreating: boolean;
   setIsCreating: (value: boolean) => void;
   editingId: string | null;
@@ -32,17 +32,20 @@ interface UserFormProps {
   setIsSheetOpen: (value: boolean) => void;
 }
 
-export function UserForm({
-  userToEdit,
+export function AdminForm({
+  adminToEdit,
   isCreating,
   setIsCreating,
   editingId,
   setEditingId,
   isSheetOpen,
   setIsSheetOpen,
-}: UserFormProps) {
+}: AdminFormProps) {
   const navigation = useNavigation();
   const actionData = useActionData<{ success: boolean; message: string }>();
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   useEffect(() => {
     if (actionData && actionData.success) {
@@ -54,6 +57,24 @@ export function UserForm({
     }
   }, [actionData, setIsSheetOpen]);
 
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+    if (e.target.value !== confirmPassword) {
+      setPasswordError("Las contraseñas no coinciden");
+    } else {
+      setPasswordError("");
+    }
+  };
+
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setConfirmPassword(e.target.value);
+    if (e.target.value !== password) {
+      setPasswordError("Las contraseñas no coinciden");
+    } else {
+      setPasswordError("");
+    }
+  };
+
   return (
     <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
       <SheetTrigger asChild>
@@ -64,13 +85,13 @@ export function UserForm({
             setEditingId(null);
           }}
         >
-          + Agregar Usuario
+          + Agregar Administrador
         </Button>
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
           <SheetTitle>
-            {isCreating ? "Crear Nuevo Usuario" : "Editar Usuario"}
+            {isCreating ? "Crear Nuevo Administrador" : "Editar Administrador"}
           </SheetTitle>
         </SheetHeader>
         <Form method="post" className="space-y-4">
@@ -84,15 +105,15 @@ export function UserForm({
               <input type="hidden" name="id" value={editingId || ""} />
             )}
             <div className="mb-4">
-              <Label>Profile Picture</Label>
+              <Label>Foto de Perfil</Label>
               <div className="flex items-center space-x-4">
                 <Avatar className="w-20 h-20">
                   <AvatarImage
-                    src={userToEdit?.profilePictureUrl || undefined}
+                    src={adminToEdit?.profilePictureUrl || undefined}
                     alt="Profile picture"
                   />
                   <AvatarFallback>
-                    {userToEdit?.name?.[0] || "U"}
+                    {adminToEdit?.name?.[0] || "A"}
                   </AvatarFallback>
                 </Avatar>
               </div>
@@ -103,7 +124,7 @@ export function UserForm({
                 id="name"
                 name="name"
                 required
-                defaultValue={userToEdit?.name || ""}
+                defaultValue={adminToEdit?.name || ""}
               />
             </div>
             <div className="mb-4">
@@ -113,7 +134,7 @@ export function UserForm({
                 name="email"
                 type="email"
                 required
-                defaultValue={userToEdit?.email || ""}
+                defaultValue={adminToEdit?.email || ""}
               />
             </div>
             <div className="mb-4">
@@ -122,15 +143,45 @@ export function UserForm({
                 id="phoneNumber"
                 name="phoneNumber"
                 required
-                defaultValue={userToEdit?.phoneNumber || ""}
+                defaultValue={adminToEdit?.phoneNumber || ""}
               />
             </div>
+
+            {isCreating && (
+              <>
+                <div className="mb-4">
+                  <Label htmlFor="password">Contraseña</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required={isCreating}
+                    value={password}
+                    onChange={handlePasswordChange}
+                  />
+                </div>
+                <div className="mb-4">
+                  <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    required={isCreating}
+                    value={confirmPassword}
+                    onChange={handleConfirmPasswordChange}
+                  />
+                  {passwordError && (
+                    <p className="text-sm text-destructive mt-1">{passwordError}</p>
+                  )}
+                </div>
+              </>
+            )}
 
             <div className="mb-4 flex items-center justify-between">
               <Label htmlFor="accountStatus">Estado de Cuenta</Label>
               <Select
                 name="accountStatus"
-                defaultValue={userToEdit?.accountStatus ?? "inactive"}
+                defaultValue={adminToEdit?.accountStatus ?? "inactive"}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Selecciona un estado" />
@@ -143,7 +194,10 @@ export function UserForm({
               </Select>
             </div>
             <SheetFooter>
-              <Button type="submit">
+              <Button 
+                type="submit"
+                disabled={isCreating && (!!passwordError || !password || !confirmPassword)}
+              >
                 {navigation.state === "submitting"
                   ? "Guardando..."
                   : isCreating
@@ -156,4 +210,4 @@ export function UserForm({
       </SheetContent>
     </Sheet>
   );
-}
+} 

@@ -10,9 +10,10 @@ import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { Button } from "~/components/ui/button";
 import { toast } from "sonner";
 
-import { FidelityCard } from "~/models/types";
+import { FidelityCard, LoyaltyLevel } from "~/models/types";
 import {
   createDocument,
+  createSubDocument,
   deleteDocument,
   fetchDocuments,
   updateDocument,
@@ -23,13 +24,32 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { FidelityCardForm } from "~/lib/features/wallet/fidelity-card-form";
 import { uploadImage } from "~/services/firebase-storage.server";
 import { Buffer } from "buffer";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "~/components/ui/dialog";
 
 export const loader: LoaderFunction = async () => {
   const fidelityCards: FidelityCard[] = await fetchDocuments<FidelityCard>(
     "cards"
   );
 
-  console.log(fidelityCards);
+  // Para cada tarjeta, cargar sus niveles de lealtad
+  for (const card of fidelityCards) {
+    try {
+      const levels = await fetchDocuments<LoyaltyLevel>(
+        `cards/${card.id}/loyaltyLevels`
+      );
+      card.loyaltyLevels = levels;
+    } catch (error) {
+      console.error(`Error loading loyalty levels for card ${card.id}:`, error);
+      card.loyaltyLevels = [];
+    }
+  }
+
   return { fidelityCards };
 };
 
@@ -67,7 +87,7 @@ export const action: ActionFunction = async ({ request }) => {
     switch (action) {
       case "create":
       case "edit": {
-        const id = formData.get("id");
+        const id = formData.get("id") as string;
         const backgroundImageFile = formData.get("backgroundImage") as File;
         const logoFile = formData.get("logo") as File;
 
@@ -76,27 +96,57 @@ export const action: ActionFunction = async ({ request }) => {
         ) as string;
         let logoUrl = formData.get("cardDesign.logo") as string;
 
-        if (backgroundImageFile.size > 0) {
+        console.log("Logo URL existente:", logoUrl);
+        console.log("Logo File nuevo:", logoFile);
+        console.log("¿Hay nuevo archivo?:", logoFile && logoFile.size > 0);
+
+        if (backgroundImageFile && backgroundImageFile.size > 0) {
           const arrayBuffer = await backgroundImageFile.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
-          backgroundImageUrl = await uploadImage(
-            buffer,
-            backgroundImageFile.name,
-            "cards"
-          );
+          backgroundImageUrl = await uploadImage(buffer, backgroundImageFile.name, "cards");
         }
 
-        if (logoFile.size > 0) {
+        if (logoFile && logoFile.size > 0) {
           const arrayBuffer = await logoFile.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
           logoUrl = await uploadImage(buffer, logoFile.name, "cards");
         }
 
+        // Extraer niveles de lealtad del formulario
+        const loyaltyLevelsKeys = Array.from(formData.keys()).filter(key =>
+          key.startsWith("loyaltyLevels[") && key.endsWith("].id")
+        );
+
+        interface TempLoyaltyLevel {
+          id: string;
+          level: number;
+          name: string;
+          requiredPoints: number;
+        }
+
+        const loyaltyLevels: LoyaltyLevel[] = loyaltyLevelsKeys
+          .map(key => {
+            const match = key.match(/\[(\d+)\]/);
+            const index = match ? match[1] : null;
+            if (!index) return null;
+
+            return {
+              id: formData.get(`loyaltyLevels[${index}].id`) as string,
+              level: Number(formData.get(`loyaltyLevels[${index}].level`)),
+              name: formData.get(`loyaltyLevels[${index}].name`) as string,
+              requiredPoints: Number(formData.get(`loyaltyLevels[${index}].requiredPoints`)),
+            };
+          })
+          .filter((level): level is TempLoyaltyLevel => level !== null)
+          .map(level => ({
+            ...level,
+          }));
+
         const fidelityCard: FidelityCard = {
           cardTitle: formData.get("cardTitle") as string,
           cardDesign: {
-            backgroundImage: backgroundImageUrl,
-            logo: logoUrl,
+            backgroundImage: backgroundImageUrl || "",
+            logo: logoUrl || "",
           },
           contact: {
             locationUrl: formData.get("contact.locationUrl") as string,
@@ -109,11 +159,12 @@ export const action: ActionFunction = async ({ request }) => {
             currency: formData.get("rules.currency") as string,
             forPurchasePrice: Number(formData.get("rules.forPurchasePrice")),
             initialCredits: Number(formData.get("rules.initialCredits")),
-            rewardPoints: formData.get("rules.rewardPoints") as string,
             status: formData.get("rules.status") as string,
           },
-          id: id as string,
+          id: id,
         };
+
+        console.log(loyaltyLevels);
 
         if (action === "create") {
           const [errors, card] = await createDocument<FidelityCard>(
@@ -124,6 +175,23 @@ export const action: ActionFunction = async ({ request }) => {
             const values = Object.fromEntries(formData);
             return json({ errors, values });
           }
+
+          // Si hay niveles de lealtad, los guardamos en Firestore
+          if (loyaltyLevels && loyaltyLevels.length) {
+
+
+            // Guardar los niveles en la subcolección
+            for (const level of loyaltyLevels) {
+              // Omitir el id para que Firestore genere uno nuevo
+              const { id: levelId, ...levelData } = level as TempLoyaltyLevel;
+              await createSubDocument<LoyaltyLevel>(
+                "cards",
+                "loyaltyLevels",
+                levelData
+              );
+            }
+          }
+
           return json({
             success: true,
             message: "Fidelity card created successfully!",
@@ -131,9 +199,45 @@ export const action: ActionFunction = async ({ request }) => {
         } else {
           await updateDocument<FidelityCard>(
             "cards",
-            id as string,
+            id,
             fidelityCard
           );
+
+          // Actualizar los niveles de lealtad
+          if (id) {
+            // Primero, obtener los niveles actuales para comparar
+            const currentLevels = await fetchDocuments<LoyaltyLevel>(
+              `cards/${id}/loyaltyLevels`
+            );
+
+            // Eliminar niveles que ya no existen
+            const newLevelIds = loyaltyLevels.map(level => (level as TempLoyaltyLevel).id);
+            for (const currentLevel of currentLevels) {
+              if (currentLevel.id && !newLevelIds.includes(currentLevel.id)) {
+                await deleteDocument(`cards/${id}/loyaltyLevels`, currentLevel.id);
+              }
+            }
+
+            // Actualizar o crear nuevos niveles
+            for (const level of loyaltyLevels) {
+              const typedLevel = level as TempLoyaltyLevel;
+              const levelId = typedLevel.id;
+              if (levelId && levelId.startsWith("temp-")) {
+                // Es un nuevo nivel, crear documento
+                const { id: tempId, ...levelData } = typedLevel;
+                await createDocument(`cards/${id}/loyaltyLevels`, levelData);
+              } else if (levelId) {
+                // Es un nivel existente, actualizarlo
+                const { id: tempId, ...levelData } = typedLevel;
+                await updateDocument(
+                  `cards/${id}/loyaltyLevels`,
+                  levelId,
+                  levelData
+                );
+              }
+            }
+          }
+
           return json({
             success: true,
             message: "Fidelity card updated successfully!",
@@ -141,11 +245,38 @@ export const action: ActionFunction = async ({ request }) => {
         }
       }
       case "delete": {
-        const id = formData.get("id");
-        await deleteDocument("cards", id as string);
+        const id = formData.get("id") as string;
+
+        // Buscar y eliminar todas las referencias en userCards
+        const userCards = await fetchDocuments<{ id: string }>("userCards", [
+          "fidelityCardId",
+          "==",
+          id,
+        ]);
+
+        // Eliminar cada userCard encontrado
+        for (const userCard of userCards) {
+          if (userCard.id) {
+            await deleteDocument("userCards", userCard.id);
+          }
+        }
+
+        // Eliminar también los niveles de lealtad
+        const loyaltyLevels = await fetchDocuments<LoyaltyLevel>(
+          `cards/${id}/loyaltyLevels`
+        );
+
+        for (const level of loyaltyLevels) {
+          if (level.id) {
+            await deleteDocument(`cards/${id}/loyaltyLevels`, level.id);
+          }
+        }
+
+        // Finalmente, eliminar la tarjeta
+        await deleteDocument("cards", id);
         return json({
           success: true,
-          message: "Fidelity card deleted successfully!",
+          message: "Tarjeta de fidelidad eliminada exitosamente!",
         });
       }
     }
@@ -153,7 +284,7 @@ export const action: ActionFunction = async ({ request }) => {
     console.error("Error handling action:", error);
     return json({
       success: false,
-      message: "An error occurred. Please try again.",
+      message: "Ocurrió un error. Por favor, intente nuevamente.",
     });
   }
 };
@@ -175,6 +306,8 @@ export default function Wallet() {
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [cardToDelete, setCardToDelete] = useState<FidelityCard | null>(null);
   const navigation = useNavigation();
   const actionData = useActionData<{ success: boolean; message: string }>();
 
@@ -190,6 +323,8 @@ export default function Wallet() {
             color: "hsl(var(--foreground))",
           },
         });
+        setIsDeleteDialogOpen(false);
+        setCardToDelete(null);
       } else {
         toast.error(actionData.message, {
           duration: 3000,
@@ -206,7 +341,7 @@ export default function Wallet() {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Billetera</h1>
+      <h1 className="text-3xl font-bold mb-6">Laboratorios, 🔬</h1>
       <FidelityCardForm
         isSheetOpen={isSheetOpen}
         setIsSheetOpen={setIsSheetOpen}
@@ -222,11 +357,55 @@ export default function Wallet() {
             setEditingId(id);
             setIsSheetOpen(true);
           },
+          deleteAction: (card: FidelityCard) => {
+            setCardToDelete(card);
+            setIsDeleteDialogOpen(true);
+          },
           navigation,
         })}
         data={fidelityCards}
         filterColumn="cardTitle"
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Eliminar Tarjeta de Fidelidad</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            ¿Está seguro que desea eliminar la tarjeta "{cardToDelete?.cardTitle}"? Esta acción eliminará:
+          </p>
+          <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+            <li>La tarjeta de fidelidad y todos sus niveles de lealtad</li>
+            <li>Todas las referencias a esta tarjeta en las cuentas de usuarios</li>
+            <li>Los puntos acumulados por los usuarios en esta tarjeta</li>
+          </ul>
+          <p className="text-sm font-medium text-destructive mt-2">
+            Esta acción no se puede deshacer.
+          </p>
+          <DialogFooter>
+            <form method="post" className="flex gap-2">
+              <input type="hidden" name="action" value="delete" />
+              <input type="hidden" name="id" value={cardToDelete?.id || ""} />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsDeleteDialogOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                variant="destructive"
+                disabled={navigation.state === "submitting"}
+              >
+                {navigation.state === "submitting" ? "Eliminando..." : "Eliminar"}
+              </Button>
+            </form>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 

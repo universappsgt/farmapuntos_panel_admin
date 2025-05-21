@@ -75,33 +75,41 @@ export function TransactionForm({
             {!isCreating && (
               <>
                 <input type="hidden" name="id" value={editingId || ""} />
-                <input type="hidden" name="userId" value={transactionToEdit?.userId || ""} />
-                <input type="hidden" name="agentId" value={transactionToEdit?.agentId || ""} />
-                <input 
-                  type="hidden" 
-                  name="agentSignatureUrl" 
-                  value={transactionToEdit?.agentSignatureUrl || ""} 
+                <input
+                  type="hidden"
+                  name="userId"
+                  value={transactionToEdit?.userId || ""}
                 />
-                <input 
-                  type="hidden" 
-                  name="clientSignatureUrl" 
-                  value={transactionToEdit?.clientSignatureUrl || ""} 
+                <input
+                  type="hidden"
+                  name="agentId"
+                  value={transactionToEdit?.agentId || ""}
                 />
-                <input 
-                  type="hidden" 
-                  name="evidenceImageUrl" 
-                  value={transactionToEdit?.evidenceImageUrl || ""} 
+                <input
+                  type="hidden"
+                  name="agentSignatureUrl"
+                  value={transactionToEdit?.agentSignatureUrl || ""}
                 />
-                <input 
-                  type="hidden" 
-                  name="rewardPoints" 
-                  value={transactionToEdit?.rewardPoins || 0} 
+                <input
+                  type="hidden"
+                  name="userSignatureUrl"
+                  value={transactionToEdit?.userSignatureUrl || ""}
+                />
+                <input
+                  type="hidden"
+                  name="evidenceImageUrl"
+                  value={transactionToEdit?.evidenceImageUrl || ""}
+                />
+                <input
+                  type="hidden"
+                  name="points"
+                  value={transactionToEdit?.points || 0}
                 />
               </>
             )}
             <div className="mb-4">
               <Label>Usuario</Label>
-              <div>{transactionToEdit?.client.name || "N/A"}</div>
+              <div>{transactionToEdit?.user.name || "N/A"}</div>
             </div>
             <div className="mb-4">
               <Label>Agente</Label>
@@ -109,44 +117,50 @@ export function TransactionForm({
             </div>
             <div className="mb-4">
               <Label>Puntos de Recompensa</Label>
-              <div>{transactionToEdit?.rewardPoins || 0}</div>
+              <div>{transactionToEdit?.points || 0}</div>
             </div>
             <div className="mb-4">
-              <Label htmlFor="transactionStatus">Estado de la Transacción</Label>
+              <Label htmlFor="status">
+                Estado de la Transacción
+              </Label>
               <Select
-                name="transactionStatus"
+                name="status"
                 defaultValue={
-                  transactionToEdit?.transactionStatus ||
-                  TransactionStatus.InProgress
+                  transactionToEdit?.status || TransactionStatus.InProgress
                 }
+                disabled={transactionToEdit?.status === TransactionStatus.Approved}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar estado" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.values(TransactionStatus).map((status) => (
+                  {Object.values(TransactionStatus).filter((value): value is TransactionStatus => 
+                    typeof value === 'string'
+                  ).map((status) => (
                     <SelectItem key={status} value={status}>
-                      {status}
+                      {TransactionStatus.getName(status)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="mb-4">
-              <Label htmlFor="transactionType">Tipo de Transacción</Label>
+              <Label htmlFor="type">Tipo de Transacción</Label>
               <Select
-                name="transactionType"
+                name="type"
                 defaultValue={
-                  transactionToEdit?.transactionType || TransactionType.Credit
+                  transactionToEdit?.type || TransactionType.Credit
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.values(TransactionType).map((type) => (
+                  {Object.values(TransactionType).filter((value): value is TransactionType => 
+                    typeof value === 'string'
+                  ).map((type) => (
                     <SelectItem key={type} value={type}>
-                      {type}
+                      {TransactionType.getName(type)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -165,9 +179,9 @@ export function TransactionForm({
             </div>
             <div className="mb-4">
               <Label>Firma del Cliente</Label>
-              {transactionToEdit?.clientSignatureUrl && (
+              {transactionToEdit?.userSignatureUrl && (
                 <img
-                  src={transactionToEdit.clientSignatureUrl}
+                  src={transactionToEdit.userSignatureUrl}
                   alt="Firma del Cliente"
                   className="w-full h-40 object-cover rounded-md"
                   style={{ objectFit: "contain" }}
