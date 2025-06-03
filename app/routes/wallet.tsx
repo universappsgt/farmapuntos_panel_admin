@@ -34,21 +34,7 @@ import {
 } from "~/components/ui/dialog";
 import { getCurrentUser } from "~/services/firebase-auth.server";
 
-const ALLOWED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/gif",
-  "image/webp",
-  "image/svg+xml",
-];
 
-const validateImageFile = (file: File) => {
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-    throw new Error(
-      "Tipo de archivo no permitido. Solo se permiten imágenes (image/jpeg, image/png, image/gif, image/webp, image/svg+xml)"
-    );
-  }
-};
 
 export const loader: LoaderFunction = async () => {
   const user = await getCurrentUser();
@@ -108,23 +94,55 @@ export const action: ActionFunction = async ({ request }) => {
   try {
     switch (action) {
       case "create":
+
+          // const [errors, card] = await createDocument<FidelityCard>(
+          //   "cards",
+          //   fidelityCard
+          // );
+          // if (errors) {
+          //   return json({
+          //     success: false,
+          //     message: "Error al crear la tarjeta. Por favor, intente nuevamente.",
+          //   });
+          // }
+
+          // // Si hay niveles de lealtad, los guardamos en Firestore
+          // if (loyaltyLevels && loyaltyLevels.length) {
+          //   // Guardar los niveles en la subcolección
+          //   for (const level of loyaltyLevels) {
+          //     // Omitir el id para que Firestore genere uno nuevo
+          //     const { id: levelId, ...levelData } = level as TempLoyaltyLevel;
+          //     await createSubDocument<LoyaltyLevel>(
+          //       "cards",
+          //       "loyaltyLevels",
+          //       levelData
+          //     );
+          //   }
+          // }
+
+          // return json({
+          //   success: true,
+          //   message: "Tarjeta creada exitosamente!",
+          // });
+        break;
       case "edit": {
         const id = formData.get("id") as string;
-        const backgroundImageFile = formData.get("backgroundImage") as File;
+
+        //Obtiene archivos o si no existe, null
         const logoFile = formData.get("logo") as File;
+        const backgroundImageFile = formData.get("backgroundImage") as File;
         const bannerFiles = formData.getAll("bannerImage") as File[];
+        const productsImageFile = formData.get("productsImage") as File;
+        //Obtiene urls de las imagnes actuales en inputs ocultos
+        let currentLogoUrl = formData.get("currentLogoUrl") as string;
+        let currentBackgroundImageUrl = formData.get("currentBackgroundImageUrl") as string;
+        let currentProductsImageUrl = formData.get("currentProductsImageUrl") as string;
 
-        let backgroundImageUrl = formData.get(
-          "cardDesign.backgroundImage"
-        ) as string;
-        let logoUrl = formData.get("cardDesign.logo") as string;
-
-        console.log("Logo URL existente:", logoUrl);
-        console.log("Logo File nuevo:", logoFile);
-        console.log("¿Hay nuevo archivo?:", logoFile && logoFile.size > 0);
-
+        let logoUrl = currentLogoUrl || "";
+        let backgroundImageUrl = currentBackgroundImageUrl || "";
+        let productsImageUrl = currentProductsImageUrl || "";
+        // Procesar imagen de fondo
         if (backgroundImageFile && backgroundImageFile.size > 0) {
-          validateImageFile(backgroundImageFile);
           const arrayBuffer = await backgroundImageFile.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
           backgroundImageUrl = await uploadImage(
@@ -134,16 +152,22 @@ export const action: ActionFunction = async ({ request }) => {
           );
         }
 
+        // Procesar logo
         if (logoFile && logoFile.size > 0) {
-          validateImageFile(logoFile);
           const arrayBuffer = await logoFile.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
           logoUrl = await uploadImage(buffer, logoFile.name, "cards");
         }
 
+        // Procesar imagen de productos
+        if (productsImageFile && productsImageFile.size > 0) {
+          const arrayBuffer = await productsImageFile.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          productsImageUrl = await uploadImage(buffer, productsImageFile.name, "cards");
+        }
+
         // Procesar banners
         const bannerImages: Banner[] = [];
-
         // Procesar banners existentes
         const existingBanners = Array.from(formData.keys())
           .filter((key) => key.startsWith("banners[") && key.endsWith("].id"))
@@ -159,12 +183,9 @@ export const action: ActionFunction = async ({ request }) => {
 
         bannerImages.push(...existingBanners);
 
-        console.log("Banner Images:", existingBanners);
-
         // Procesar nuevos banners
         for (const file of bannerFiles) {
           if (file && file.size > 0) {
-            validateImageFile(file);
             const arrayBuffer = await file.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
             const imgUrl = await uploadImage(buffer, file.name, "cards");
@@ -209,11 +230,12 @@ export const action: ActionFunction = async ({ request }) => {
             ...level,
           }));
 
-        const fidelityCard: FidelityCard = {
+        const fidelityCard: Partial<FidelityCard> = {
           cardTitle: formData.get("cardTitle") as string,
           cardDesign: {
-            backgroundImage: backgroundImageUrl || "",
-            logo: logoUrl || "",
+            backgroundImage: backgroundImageUrl,
+            logo: logoUrl,
+            productsImage: productsImageUrl,
             color: formData.get("cardDesign.color") as string,
             bannerImages: bannerImages,
           },
@@ -233,82 +255,59 @@ export const action: ActionFunction = async ({ request }) => {
           id: id,
         };
 
-        if (action === "create") {
-          const [errors, card] = await createDocument<FidelityCard>(
-            "cards",
-            fidelityCard
-          );
-          if (errors) {
-            const values = Object.fromEntries(formData);
-            return json({ errors, values });
-          }
+          try {
+            await updateDocument<FidelityCard>("cards", id, fidelityCard);
 
-          // Si hay niveles de lealtad, los guardamos en Firestore
-          if (loyaltyLevels && loyaltyLevels.length) {
-            // Guardar los niveles en la subcolección
-            for (const level of loyaltyLevels) {
-              // Omitir el id para que Firestore genere uno nuevo
-              const { id: levelId, ...levelData } = level as TempLoyaltyLevel;
-              await createSubDocument<LoyaltyLevel>(
-                "cards",
-                "loyaltyLevels",
-                levelData
+            // Actualizar los niveles de lealtad
+            if (id) {
+              // Primero, obtener los niveles actuales para comparar
+              const currentLevels = await fetchDocuments<LoyaltyLevel>(
+                `cards/${id}/loyaltyLevels`
               );
-            }
-          }
 
-          return json({
-            success: true,
-            message: "Fidelity card created successfully!",
-          });
-        } else {
-          await updateDocument<FidelityCard>("cards", id, fidelityCard);
+              // Eliminar niveles que ya no existen
+              const newLevelIds = loyaltyLevels.map(
+                (level) => (level as TempLoyaltyLevel).id
+              );
+              for (const currentLevel of currentLevels) {
+                if (currentLevel.id && !newLevelIds.includes(currentLevel.id)) {
+                  await deleteDocument(
+                    `cards/${id}/loyaltyLevels`,
+                    currentLevel.id
+                  );
+                }
+              }
 
-          // Actualizar los niveles de lealtad
-          if (id) {
-            // Primero, obtener los niveles actuales para comparar
-            const currentLevels = await fetchDocuments<LoyaltyLevel>(
-              `cards/${id}/loyaltyLevels`
-            );
-
-            // Eliminar niveles que ya no existen
-            const newLevelIds = loyaltyLevels.map(
-              (level) => (level as TempLoyaltyLevel).id
-            );
-            for (const currentLevel of currentLevels) {
-              if (currentLevel.id && !newLevelIds.includes(currentLevel.id)) {
-                await deleteDocument(
-                  `cards/${id}/loyaltyLevels`,
-                  currentLevel.id
-                );
+              // Actualizar o crear nuevos niveles
+              for (const level of loyaltyLevels) {
+                const typedLevel = level as TempLoyaltyLevel;
+                const levelId = typedLevel.id;
+                if (levelId && levelId.startsWith("temp-")) {
+                  // Es un nuevo nivel, crear documento
+                  const { id: tempId, ...levelData } = typedLevel;
+                  await createDocument(`cards/${id}/loyaltyLevels`, levelData);
+                } else if (levelId) {
+                  // Es un nivel existente, actualizarlo
+                  const { id: tempId, ...levelData } = typedLevel;
+                  await updateDocument(
+                    `cards/${id}/loyaltyLevels`,
+                    levelId,
+                    levelData
+                  );
+                }
               }
             }
 
-            // Actualizar o crear nuevos niveles
-            for (const level of loyaltyLevels) {
-              const typedLevel = level as TempLoyaltyLevel;
-              const levelId = typedLevel.id;
-              if (levelId && levelId.startsWith("temp-")) {
-                // Es un nuevo nivel, crear documento
-                const { id: tempId, ...levelData } = typedLevel;
-                await createDocument(`cards/${id}/loyaltyLevels`, levelData);
-              } else if (levelId) {
-                // Es un nivel existente, actualizarlo
-                const { id: tempId, ...levelData } = typedLevel;
-                await updateDocument(
-                  `cards/${id}/loyaltyLevels`,
-                  levelId,
-                  levelData
-                );
-              }
-            }
+            return json({
+              success: true,
+              message: "Tarjeta actualizada exitosamente!",
+            });
+          } catch (error) {
+            return json({
+              success: false,
+              message: "Error al actualizar la tarjeta. Por favor, intente nuevamente.",
+            });
           }
-
-          return json({
-            success: true,
-            message: "Fidelity card updated successfully!",
-          });
-        }
       }
       case "delete": {
         const id = formData.get("id") as string;

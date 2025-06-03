@@ -22,7 +22,8 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { ImageUpload } from "~/components/custom/image-upload";
+import { SingleImageUpload } from "~/components/custom/single-image-upload";
+import { MultiImageUpload } from "~/components/custom/multi-image-upload";
 import { Card, CardContent } from "~/components/ui/card";
 import { X, Plus, Edit } from "lucide-react";
 import {
@@ -73,6 +74,7 @@ export function FidelityCardForm({
   const actionData = useActionData<{ success: boolean; message: string }>();
   const [backgroundImage, setBackgroundImage] = useState<File | null>(null);
   const [logoImage, setLogoImage] = useState<File | null>(null);
+  const [productsImage, setProductsImage] = useState<File | null>(null);
   const [bannerImages, setBannerImages] = useState<File[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loyaltyLevels, setLoyaltyLevels] = useState<LoyaltyLevel[]>([]);
@@ -190,7 +192,7 @@ export function FidelityCardForm({
         >
           <SheetHeader>
             <SheetTitle>
-              {isCreating ? "Create New Fidelity Card" : "Edit Fidelity Card"}
+              {isCreating ? "Crear Nueva Tarjeta" : "Editar Tarjeta"}
             </SheetTitle>
           </SheetHeader>
           <Form
@@ -207,6 +209,27 @@ export function FidelityCardForm({
               {!isCreating && (
                 <input type="hidden" name="id" value={editingId || ""} />
               )}
+              {!isCreating && fidelityCardToEdit?.cardDesign.backgroundImage && (
+              <input
+                type="hidden"
+                name="currentBackgroundImageUrl"
+                value={fidelityCardToEdit?.cardDesign.backgroundImage}
+              />
+            )}
+            {!isCreating && fidelityCardToEdit?.cardDesign.logo && (
+              <input
+                type="hidden"
+                name="currentLogoUrl"
+                value={fidelityCardToEdit?.cardDesign.logo}
+              />
+            )}
+            {!isCreating && fidelityCardToEdit?.cardDesign.productsImage && (
+              <input
+                type="hidden"
+                name="currentProductsImageUrl"
+                value={fidelityCardToEdit?.cardDesign.productsImage}
+              />
+            )}
 
               {/* Add hidden inputs for loyalty levels */}
               {loyaltyLevels.map((level, index) => (
@@ -250,19 +273,6 @@ export function FidelityCardForm({
                 </div>
               ))}
 
-              {/* Add file inputs for new banner images */}
-              {bannerImages.map((file, index) => {
-                return (
-                  <input
-                    key={index}
-                    type="file"
-                    name="bannerImage"
-                    className="hidden"
-                    style={{ display: "none" }}
-                  />
-                );
-              })}
-
               <div className="space-y-8">
                 {/* Sección General */}
                 <div className="space-y-4">
@@ -288,59 +298,32 @@ export function FidelityCardForm({
 
                   <div>
                     <Label htmlFor="logo">Logo</Label>
-                    <Card className="mt-2">
-                      <CardContent className="p-4">
-                        {logoImage || fidelityCardToEdit?.cardDesign.logo ? (
-                          <img
-                            src={
-                              logoImage
-                                ? URL.createObjectURL(logoImage)
-                                : fidelityCardToEdit?.cardDesign.logo
-                            }
-                            alt="Logo Preview"
-                            className="w-32 h-32 object-contain"
-                          />
-                        ) : (
-                          <div className="w-32 h-32 bg-muted flex items-center justify-center rounded-md">
-                            Sin logo
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                    <br />
-                    <ImageUpload
+                    <SingleImageUpload
                       id="logo"
                       name="logo"
                       onImageUpload={(file) => setLogoImage(file)}
+                      initialImageUrl={fidelityCardToEdit?.cardDesign.logo}
+                      helpText="Sube el logo de la tarjeta (máx 3MB)"
                     />
                   </div>
                   <div>
                     <Label htmlFor="backgroundImage">Imagen de Tarjeta</Label>
-                    <Card className="mt-2">
-                      <CardContent className="p-4">
-                        {backgroundImage ||
-                        fidelityCardToEdit?.cardDesign.backgroundImage ? (
-                          <img
-                            src={
-                              backgroundImage
-                                ? URL.createObjectURL(backgroundImage)
-                                : fidelityCardToEdit?.cardDesign.backgroundImage
-                            }
-                            alt="Background Preview"
-                            className="w-full h-40 object-cover rounded-md"
-                          />
-                        ) : (
-                          <div className="w-full h-40 bg-muted flex items-center justify-center rounded-md">
-                            Sin imagen
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                    <br />
-                    <ImageUpload
+                    <SingleImageUpload
                       id="backgroundImage"
                       name="backgroundImage"
                       onImageUpload={(file) => setBackgroundImage(file)}
+                      initialImageUrl={fidelityCardToEdit?.cardDesign.backgroundImage}
+                      helpText="Sube la imagen de fondo de la tarjeta (máx 3MB)"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="productsImage">Imagen de Productos</Label>
+                    <SingleImageUpload
+                      id="productsImage"
+                      name="productsImage"
+                      onImageUpload={(file) => setProductsImage(file)}
+                      initialImageUrl={fidelityCardToEdit?.cardDesign.productsImage}
+                      helpText="Sube la imagen de productos de la tarjeta (máx 3MB)"
                     />
                   </div>
                   <div>
@@ -466,12 +449,16 @@ export function FidelityCardForm({
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold">Banners</h3>
-                    <ImageUpload
-                      id="bannerImage"
-                      name="bannerImage"
-                      onImageUpload={handleBannerUpload}
-                    />
                   </div>
+
+                  <MultiImageUpload
+                    id="bannerImage"
+                    name="bannerImage"
+                    imageFiles={bannerImages}
+                    onImagesChange={setBannerImages}
+                    helpText="Sube los banners de la tarjeta (máx 3MB cada uno)"
+                    maxImages={5}
+                  />
 
                   {/* Mostrar banners existentes */}
                   {banners.length > 0 && (
@@ -499,32 +486,6 @@ export function FidelityCardForm({
                     </div>
                   )}
 
-                  {/* Mostrar nuevos banners subidos */}
-                  {bannerImages.length > 0 && (
-                    <div className="grid grid-cols-2 gap-4">
-                      {bannerImages.map((file, index) => (
-                        <Card key={index} className="relative">
-                          <CardContent className="p-4">
-                            <img
-                              src={URL.createObjectURL(file)}
-                              alt="Banner Preview"
-                              className="w-full h-40 object-cover rounded-md"
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="absolute top-2 right-2"
-                              onClick={() => removeBanner(index)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-
                   {banners.length === 0 && bannerImages.length === 0 && (
                     <div className="text-center p-4 border border-dashed rounded-md">
                       <p className="text-muted-foreground">
@@ -537,10 +498,10 @@ export function FidelityCardForm({
               <SheetFooter>
                 <Button type="submit">
                   {navigation.state === "submitting"
-                    ? "Saving..."
+                    ? "Guardando..."
                     : isCreating
-                    ? "Create"
-                    : "Save"}
+                    ? "Crear"
+                    : "Guardar"}
                 </Button>
               </SheetFooter>
             </fieldset>
