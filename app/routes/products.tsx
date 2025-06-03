@@ -4,6 +4,7 @@ import {
   useActionData,
   json,
   useNavigation,
+  redirect,
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { Product } from "~/models/types";
@@ -23,8 +24,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
+import { getCurrentUser } from "~/services/firebase-auth.server";
 
 export const loader: LoaderFunction = async () => {
+  const user = await getCurrentUser();
+  if (!user) {
+    return redirect("/login");
+  }
   const products: Product[] = await fetchDocuments<Product>("products");
   return { products };
 };

@@ -5,6 +5,7 @@ import {
   useNavigation,
   useRouteError,
   useActionData,
+  redirect,
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { Button } from "~/components/ui/button";
@@ -31,8 +32,15 @@ import {
   DialogTitle,
   DialogFooter,
 } from "~/components/ui/dialog";
+import { getCurrentUser } from "~/services/firebase-auth.server";
 
 export const loader: LoaderFunction = async () => {
+
+  const user = await getCurrentUser();
+  if (!user) {
+    return redirect("/login");
+  }
+
   const fidelityCards: FidelityCard[] = await fetchDocuments<FidelityCard>(
     "cards"
   );

@@ -4,6 +4,7 @@ import {
   json,
   useNavigation,
   useActionData,
+  redirect,
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction, SerializeFrom } from "@remix-run/node";
 import { Reward } from "~/models/types";
@@ -20,8 +21,15 @@ import { toast } from "sonner";
 
 import { parseISO } from "date-fns";
 import { uploadImage } from "~/services/firebase-storage.server";
+import { getCurrentUser } from "~/services/firebase-auth.server";
 
 export const loader: LoaderFunction = async () => {
+
+  const user = await getCurrentUser();
+  if (!user) {
+    return redirect("/login");
+  }
+
   const rewards: Reward[] = await fetchDocuments<Reward>("rewards");
   return { rewards };
 };

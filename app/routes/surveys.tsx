@@ -5,6 +5,7 @@ import {
   useActionData,
   json,
   useNavigation,
+  redirect,
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { Survey, Question, FidelityCard } from "~/models/types";
@@ -19,8 +20,14 @@ import { surveyColumns } from "~/components/custom/columns";
 import { SurveyForm } from "~/lib/features/surveys/survey-form";
 import { db } from "firebase";
 import { collection, addDoc, writeBatch, doc } from "firebase/firestore";
+import { getCurrentUser } from "~/services/firebase-auth.server";
+
 
 export const loader: LoaderFunction = async () => {
+  const user = await getCurrentUser();
+  if (!user) {
+    return redirect("/login");
+  }
   const [surveys, cards] = await Promise.all([
     fetchDocuments<Survey>("surveys"),
     fetchDocuments<FidelityCard>("cards"),

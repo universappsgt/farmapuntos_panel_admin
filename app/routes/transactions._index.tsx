@@ -4,6 +4,7 @@ import {
   json,
   useNavigation,
   useActionData,
+  redirect,
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import {
@@ -22,8 +23,15 @@ import { DataTable } from "~/components/ui/data-table";
 import { transactionColumns } from "~/components/custom/columns";
 import { TransactionForm } from "~/lib/features/transactions/transaction-form";
 import { toast } from "sonner";
+import { getCurrentUser } from "~/services/firebase-auth.server";
 
 export const loader: LoaderFunction = async () => {
+
+  const user = await getCurrentUser();
+  if (!user) {
+    return redirect("/login");
+  }
+
   const transactions: Transaction[] = await fetchTransactions(
     "transactions"
   );

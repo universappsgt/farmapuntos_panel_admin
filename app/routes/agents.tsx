@@ -5,6 +5,7 @@ import {
   useActionData,
   json,
   useNavigation,
+  redirect,
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
@@ -20,8 +21,13 @@ import { DataTable } from "~/components/ui/data-table";
 import { agentColumns } from "~/components/custom/columns";
 import { AgentForm } from "~/lib/features/agents/agent-form";
 import { toast } from "sonner";
+import { getCurrentUser } from "~/services/firebase-auth.server";
 
 export const loader: LoaderFunction = async () => {
+  const user = await getCurrentUser();
+  if (!user) {
+    return redirect("/login");
+  }
   const agents: User[] = await fetchDocuments<User>("users", [
     "isAgent",
     "==",
