@@ -78,6 +78,13 @@ export function RewardForm({
             {!isCreating && (
               <input type="hidden" name="id" value={editingId || ""} />
             )}
+            {!isCreating && rewardToEdit?.imageUrl && (
+              <input
+                type="hidden"
+                name="currentImageUrl"
+                value={rewardToEdit.imageUrl}
+              />
+            )}
             <div className="mb-4">
               <Label htmlFor="name">Nombre</Label>
               <Input

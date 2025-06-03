@@ -6,7 +6,11 @@ import {
   useActionData,
   redirect,
 } from "@remix-run/react";
-import type { LoaderFunction, ActionFunction, SerializeFrom } from "@remix-run/node";
+import type {
+  LoaderFunction,
+  ActionFunction,
+  SerializeFrom,
+} from "@remix-run/node";
 import { Reward } from "~/models/types";
 import {
   createDocument,
@@ -24,7 +28,6 @@ import { uploadImage } from "~/services/firebase-storage.server";
 import { getCurrentUser } from "~/services/firebase-auth.server";
 
 export const loader: LoaderFunction = async () => {
-
   const user = await getCurrentUser();
   if (!user) {
     return redirect("/login");
@@ -71,9 +74,9 @@ export const action: ActionFunction = async ({ request }) => {
       case "edit": {
         const id = formData.get("id") as string;
         const imageFile = formData.get("imageUrl") as File;
-        let imageUrl = formData.get("currentImageUrl") as string;
+        let imageUrl = (formData.get("currentImageUrl") as string) || "";
 
-        if (imageFile && imageFile.size > 0) {
+        if (imageFile && imageFile.size > 0 && imageFile.name !== "") {
           const arrayBuffer = await imageFile.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
           imageUrl = await uploadImage(buffer, imageFile.name, "rewards");

@@ -1,0 +1,50 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Remix App",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "skipFiles": ["<node_internals>/**"],
+      "console": "integratedTerminal",
+      "env": {
+        "PORT": "5174"
+      }
+    },
+    {
+      "name": "Debug Browser",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5174",
+      "webRoot": "${workspaceFolder}",
+      "sourceMapPathOverrides": {
+        "webpack:///src/*": "${webRoot}/*"
+      }
+    },
+    {
+      "name": "Debug Full Stack",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "skipFiles": ["<node_internals>/**"],
+      "console": "integratedTerminal",
+      "env": {
+        "PORT": "5174"
+      },
+      "serverReadyAction": {
+        "pattern": "Local:.+(https?://\\S+)",
+        "uriFormat": "http://localhost:5174",
+        "action": "debugWithChrome"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug All",
+      "configurations": ["Debug Remix App", "Debug Browser"]
+    }
+  ]
+}
