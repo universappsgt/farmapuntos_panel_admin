@@ -11,7 +11,7 @@ import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { Button } from "~/components/ui/button";
 import { toast } from "sonner";
 
-import { FidelityCard, LoyaltyLevel } from "~/models/types";
+import { FidelityCard, LoyaltyLevel, Banner } from "~/models/types";
 import {
   createDocument,
   createSubDocument,
@@ -34,6 +34,20 @@ import {
 } from "~/components/ui/dialog";
 import { getCurrentUser } from "~/services/firebase-auth.server";
 
+const ALLOWED_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/svg+xml'
+];
+
+const validateImageFile = (file: File) => {
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    throw new Error('Tipo de archivo no permitido. Solo se permiten imágenes (image/jpeg, image/png, image/gif, image/webp, image/svg+xml)');
+  }
+};
+
 export const loader: LoaderFunction = async () => {
 
   const user = await getCurrentUser();
@@ -41,11 +55,8 @@ export const loader: LoaderFunction = async () => {
     return redirect("/login");
   }
 
-  const fidelityCards: FidelityCard[] = await fetchDocuments<FidelityCard>(
-    "cards"
-  );
+  const fidelityCards: FidelityCard[] = await fetchDocuments<FidelityCard>("cards");
 
-  // Para cada tarjeta, cargar sus niveles de lealtad
   for (const card of fidelityCards) {
     try {
       const levels = await fetchDocuments<LoyaltyLevel>(
@@ -98,6 +109,7 @@ export const action: ActionFunction = async ({ request }) => {
         const id = formData.get("id") as string;
         const backgroundImageFile = formData.get("backgroundImage") as File;
         const logoFile = formData.get("logo") as File;
+        const bannerFiles = formData.getAll("bannerImage") as File[];
 
         let backgroundImageUrl = formData.get(
           "cardDesign.backgroundImage"
@@ -109,15 +121,54 @@ export const action: ActionFunction = async ({ request }) => {
         console.log("¿Hay nuevo archivo?:", logoFile && logoFile.size > 0);
 
         if (backgroundImageFile && backgroundImageFile.size > 0) {
+          validateImageFile(backgroundImageFile);
           const arrayBuffer = await backgroundImageFile.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
           backgroundImageUrl = await uploadImage(buffer, backgroundImageFile.name, "cards");
         }
 
         if (logoFile && logoFile.size > 0) {
+          validateImageFile(logoFile);
           const arrayBuffer = await logoFile.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
           logoUrl = await uploadImage(buffer, logoFile.name, "cards");
+        }
+
+        // Procesar banners
+        const bannerImages: Banner[] = [];
+        
+
+
+        // Procesar banners existentes
+        const existingBanners = Array.from(formData.keys())
+          .filter(key => key.startsWith("banners[") && key.endsWith("].id"))
+          .map(key => {
+            const index = key.match(/\[(\d+)\]/)?.[1];
+            if (!index) return null;
+            return {
+              id: formData.get(`banners[${index}].id`) as string,
+              img: formData.get(`banners[${index}].img`) as string,
+            };
+          })
+          .filter((banner): banner is Banner => banner !== null);
+
+        bannerImages.push(...existingBanners);
+
+        console.log("Banner Images:", existingBanners);
+
+
+        // Procesar nuevos banners
+        for (const file of bannerFiles) {
+          if (file && file.size > 0) {
+            validateImageFile(file);
+            const arrayBuffer = await file.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const imgUrl = await uploadImage(buffer, file.name, "cards");
+            bannerImages.push({
+              id: `banner-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              img: imgUrl,
+            });
+          }
         }
 
         // Extraer niveles de lealtad del formulario
@@ -155,6 +206,8 @@ export const action: ActionFunction = async ({ request }) => {
           cardDesign: {
             backgroundImage: backgroundImageUrl || "",
             logo: logoUrl || "",
+            color: formData.get("cardDesign.color") as string,
+            bannerImages: [],
           },
           contact: {
             locationUrl: formData.get("contact.locationUrl") as string,
@@ -172,7 +225,6 @@ export const action: ActionFunction = async ({ request }) => {
           id: id,
         };
 
-        console.log(loyaltyLevels);
 
         if (action === "create") {
           const [errors, card] = await createDocument<FidelityCard>(

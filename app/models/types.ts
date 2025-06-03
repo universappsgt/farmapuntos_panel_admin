@@ -34,6 +34,8 @@ export interface FidelityCard {
   cardDesign: {
     backgroundImage: string;
     logo: string;
+    color: string;
+    bannerImages: Banner[];
   };
   contact: {
     locationUrl: string;

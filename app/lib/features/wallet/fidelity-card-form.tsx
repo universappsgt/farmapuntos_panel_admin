@@ -12,7 +12,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "~/components/ui/sheet";
-import { FidelityCard, LoyaltyLevel } from "~/models/types";
+import { FidelityCard, LoyaltyLevel, Banner } from "~/models/types";
 import { toast } from "~/hooks/use-toast";
 import {
   Select,
@@ -43,6 +43,20 @@ interface FidelityCardFormProps {
   setIsSheetOpen: (value: boolean) => void;
 }
 
+const ALLOWED_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/svg+xml'
+];
+
+const validateImageFile = (file: File) => {
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    throw new Error('Tipo de archivo no permitido. Solo se permiten imágenes (image/jpeg, image/png, image/gif, image/webp, image/svg+xml)');
+  }
+};
+
 export function FidelityCardForm({
   fidelityCardToEdit,
   isCreating,
@@ -56,6 +70,8 @@ export function FidelityCardForm({
   const actionData = useActionData<{ success: boolean; message: string }>();
   const [backgroundImage, setBackgroundImage] = useState<File | null>(null);
   const [logoImage, setLogoImage] = useState<File | null>(null);
+  const [bannerImages, setBannerImages] = useState<File[]>([]);
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [loyaltyLevels, setLoyaltyLevels] = useState<LoyaltyLevel[]>([]);
   const [isLevelDialogOpen, setIsLevelDialogOpen] = useState(false);
   const [currentLevel, setCurrentLevel] = useState<LoyaltyLevel | null>(null);
@@ -72,11 +88,17 @@ export function FidelityCardForm({
   }, [actionData, setIsSheetOpen]);
 
   useEffect(() => {
-    // Initialize loyalty levels from the existing card data
-    if (fidelityCardToEdit && fidelityCardToEdit.loyaltyLevels) {
-      setLoyaltyLevels(fidelityCardToEdit.loyaltyLevels);
+    // Initialize loyalty levels and banners from the existing card data
+    if (fidelityCardToEdit) {
+      if (fidelityCardToEdit.loyaltyLevels) {
+        setLoyaltyLevels(fidelityCardToEdit.loyaltyLevels);
+      }
+      if (fidelityCardToEdit.cardDesign.bannerImages) {
+        setBanners(fidelityCardToEdit.cardDesign.bannerImages);
+      }
     } else {
       setLoyaltyLevels([]);
+      setBanners([]);
     }
   }, [fidelityCardToEdit]);
 
@@ -85,6 +107,8 @@ export function FidelityCardForm({
       // Clear the images when the sheet is dismissed
       setBackgroundImage(null);
       setLogoImage(null);
+      setBannerImages([]);
+      setBanners([]);
       setLoyaltyLevels([]);
     }
     setIsSheetOpen(open);
@@ -128,6 +152,27 @@ export function FidelityCardForm({
     setLoyaltyLevels(prev => prev.filter(level => level.id !== id));
   };
 
+  const handleBannerUpload = (file: File) => {
+    try {
+      validateImageFile(file);
+      setBannerImages(prev => [...prev, file]);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error al subir la imagen",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const removeBanner = (index: number) => {
+    setBannerImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingBanner = (id: string) => {
+    setBanners(prev => prev.filter(banner => banner.id !== id));
+  };
+
   return (
     <>
       <Sheet open={isSheetOpen} onOpenChange={handleSheetOpenChange}>
@@ -169,6 +214,14 @@ export function FidelityCardForm({
                   <input type="hidden" name={`loyaltyLevels[${index}].level`} value={level.level} />
                   <input type="hidden" name={`loyaltyLevels[${index}].name`} value={level.name} />
                   <input type="hidden" name={`loyaltyLevels[${index}].requiredPoints`} value={level.requiredPoints} />
+                </div>
+              ))}
+
+              {/* Add hidden inputs for banners */}
+              {banners.map((banner, index) => (
+                <div key={banner.id}>
+                  <input type="hidden" name={`banners[${index}].id`} value={banner.id} />
+                  <input type="hidden" name={`banners[${index}].img`} value={banner.img} />
                 </div>
               ))}
 
@@ -224,7 +277,7 @@ export function FidelityCardForm({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="backgroundImage">Imagen de Fondo</Label>
+                    <Label htmlFor="backgroundImage">Imagen de Tarjeta</Label>
                     <Card className="mt-2">
                       <CardContent className="p-4">
                         {backgroundImage ||
@@ -252,21 +305,21 @@ export function FidelityCardForm({
                       onImageUpload={(file) => setBackgroundImage(file)}
                     />
                   </div>
+                  <div>
+                    <Label htmlFor="color">Color de la Tarjeta</Label>
+                    <Input
+                      id="color"
+                      name="cardDesign.color"
+                      type="color"
+                      defaultValue={fidelityCardToEdit?.cardDesign.color || "#ffffff"}
+                      className="w-full h-10"
+                    />
+                  </div>
                 </div>
 
                 {/* Sección de Contacto */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Información de Contacto</h3>
-                  {/* <div>
-                    <Label htmlFor="locationUrl">URL de Ubicación</Label>
-                    <Input
-                      id="locationUrl"
-                      name="contact.locationUrl"
-                      defaultValue={
-                        fidelityCardToEdit?.contact.locationUrl || ""
-                      }
-                    />
-                  </div> */}
                   <div>
                     <Label htmlFor="phoneNumber">Teléfono</Label>
                     <Input
@@ -290,25 +343,6 @@ export function FidelityCardForm({
                 {/* Sección de Reglas */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Reglas del Programa</h3>
-                  {/* <div>
-                    <Label htmlFor="currency">Moneda</Label>
-                    <Input
-                      id="currency"
-                      name="rules.currency"
-                      defaultValue={fidelityCardToEdit?.rules.currency || ""}
-                    />
-                  </div> */}
-                  {/* <div>
-                    <Label htmlFor="forPurchasePrice">Precio de Compra</Label>
-                    <Input
-                      id="forPurchasePrice"
-                      name="rules.forPurchasePrice"
-                      type="number"
-                      defaultValue={
-                        fidelityCardToEdit?.rules.forPurchasePrice || 0
-                      }
-                    />
-                  </div> */}
                   <div>
                     <Label htmlFor="initialCredits">Créditos Iniciales</Label>
                     <Input
@@ -320,32 +354,6 @@ export function FidelityCardForm({
                       }
                     />
                   </div>
-                  {/* <div>
-                    <Label htmlFor="rewardPoints">Puntos de Recompensa</Label>
-                    <Input
-                      id="rewardPoints"
-                      name="rules.rewardPoints"
-                      defaultValue={
-                        fidelityCardToEdit?.rules.rewardPoints || ""
-                      }
-                    />
-                  </div> */}
-                  {/* <div>
-                    <Label htmlFor="status">Estado</Label>
-                    <Select
-                      name="rules.status"
-                      defaultValue={fidelityCardToEdit?.rules.status || ""}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar estado" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">Activo</SelectItem>
-                        <SelectItem value="inactive">Inactivo</SelectItem>
-                        <SelectItem value="pending">Pendiente</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div> */}
                 </div>
 
                 {/* Sección de Niveles */}
@@ -400,6 +408,76 @@ export function FidelityCardForm({
                             </CardContent>
                           </Card>
                         ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Sección de Banners */}
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold">Banners</h3>
+                    <ImageUpload
+                      id="bannerImage"
+                      name="bannerImage"
+                      onImageUpload={handleBannerUpload}
+                    />
+                  </div>
+
+                  {/* Mostrar banners existentes */}
+                  {banners.length > 0 && (
+                    <div className="grid grid-cols-2 gap-4">
+                      {banners.map((banner) => (
+                        <Card key={banner.id} className="relative">
+                          <CardContent className="p-4">
+                            <img
+                              src={banner.img}
+                              alt="Banner Preview"
+                              className="w-full h-40 object-cover rounded-md"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-2 right-2"
+                              onClick={() => removeExistingBanner(banner.id)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Mostrar nuevos banners subidos */}
+                  {bannerImages.length > 0 && (
+                    <div className="grid grid-cols-2 gap-4">
+                      {bannerImages.map((file, index) => (
+                        <Card key={index} className="relative">
+                          <CardContent className="p-4">
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt="Banner Preview"
+                              className="w-full h-40 object-cover rounded-md"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-2 right-2"
+                              onClick={() => removeBanner(index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+
+                  {banners.length === 0 && bannerImages.length === 0 && (
+                    <div className="text-center p-4 border border-dashed rounded-md">
+                      <p className="text-muted-foreground">No hay banners definidos</p>
                     </div>
                   )}
                 </div>

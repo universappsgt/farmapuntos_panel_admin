@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Form, useActionData, useNavigation } from "@remix-run/react";
 import { json, redirect } from "@remix-run/node";
-import type { ActionFunction } from "@remix-run/node";
+import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "firebase";
 import { Button } from "~/components/ui/button";
@@ -17,6 +17,15 @@ import {
 } from "~/components/ui/card";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "firebase";
+import { getCurrentUser } from "~/services/firebase-auth.server";
+
+export const loader: LoaderFunction = async () => {
+  const user = await getCurrentUser();
+  if (user) {
+    return redirect("/users");
+  }
+  return null;
+};
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();

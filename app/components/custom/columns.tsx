@@ -173,15 +173,11 @@ export const fidelityCardColumns = ({
     cell: ({ row }) => <div>{row.original.contact.website}</div>,
   },
   {
-    accessorKey: "rules.currency",
-    header: "Moneda",
-    cell: ({ row }) => <div>{row.original.rules.currency}</div>,
+    accessorKey: "cardDesign.color",
+    header: "Color",
+    cell: ({ row }) => <div>{row.original.cardDesign.color}</div>,
   },
-  // {
-  //   accessorKey: "rules.forPurchasePrice",
-  //   header: "Precio de Compra",
-  //   cell: ({ row }) => <div>{row.original.rules.forPurchasePrice}</div>,
-  // },
+
   {
     accessorKey: "rules.initialCredits",
     header: "Créditos Iniciales",
