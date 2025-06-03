@@ -35,27 +35,30 @@ import {
 import { getCurrentUser } from "~/services/firebase-auth.server";
 
 const ALLOWED_IMAGE_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'image/svg+xml'
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "image/svg+xml",
 ];
 
 const validateImageFile = (file: File) => {
   if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-    throw new Error('Tipo de archivo no permitido. Solo se permiten imágenes (image/jpeg, image/png, image/gif, image/webp, image/svg+xml)');
+    throw new Error(
+      "Tipo de archivo no permitido. Solo se permiten imágenes (image/jpeg, image/png, image/gif, image/webp, image/svg+xml)"
+    );
   }
 };
 
 export const loader: LoaderFunction = async () => {
-
   const user = await getCurrentUser();
   if (!user) {
     return redirect("/login");
   }
 
-  const fidelityCards: FidelityCard[] = await fetchDocuments<FidelityCard>("cards");
+  const fidelityCards: FidelityCard[] = await fetchDocuments<FidelityCard>(
+    "cards"
+  );
 
   for (const card of fidelityCards) {
     try {
@@ -124,7 +127,11 @@ export const action: ActionFunction = async ({ request }) => {
           validateImageFile(backgroundImageFile);
           const arrayBuffer = await backgroundImageFile.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
-          backgroundImageUrl = await uploadImage(buffer, backgroundImageFile.name, "cards");
+          backgroundImageUrl = await uploadImage(
+            buffer,
+            backgroundImageFile.name,
+            "cards"
+          );
         }
 
         if (logoFile && logoFile.size > 0) {
@@ -136,13 +143,11 @@ export const action: ActionFunction = async ({ request }) => {
 
         // Procesar banners
         const bannerImages: Banner[] = [];
-        
-
 
         // Procesar banners existentes
         const existingBanners = Array.from(formData.keys())
-          .filter(key => key.startsWith("banners[") && key.endsWith("].id"))
-          .map(key => {
+          .filter((key) => key.startsWith("banners[") && key.endsWith("].id"))
+          .map((key) => {
             const index = key.match(/\[(\d+)\]/)?.[1];
             if (!index) return null;
             return {
@@ -156,7 +161,6 @@ export const action: ActionFunction = async ({ request }) => {
 
         console.log("Banner Images:", existingBanners);
 
-
         // Procesar nuevos banners
         for (const file of bannerFiles) {
           if (file && file.size > 0) {
@@ -165,15 +169,17 @@ export const action: ActionFunction = async ({ request }) => {
             const buffer = Buffer.from(arrayBuffer);
             const imgUrl = await uploadImage(buffer, file.name, "cards");
             bannerImages.push({
-              id: `banner-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              id: `banner-${Date.now()}-${Math.random()
+                .toString(36)
+                .substr(2, 9)}`,
               img: imgUrl,
             });
           }
         }
 
         // Extraer niveles de lealtad del formulario
-        const loyaltyLevelsKeys = Array.from(formData.keys()).filter(key =>
-          key.startsWith("loyaltyLevels[") && key.endsWith("].id")
+        const loyaltyLevelsKeys = Array.from(formData.keys()).filter(
+          (key) => key.startsWith("loyaltyLevels[") && key.endsWith("].id")
         );
 
         interface TempLoyaltyLevel {
@@ -184,7 +190,7 @@ export const action: ActionFunction = async ({ request }) => {
         }
 
         const loyaltyLevels: LoyaltyLevel[] = loyaltyLevelsKeys
-          .map(key => {
+          .map((key) => {
             const match = key.match(/\[(\d+)\]/);
             const index = match ? match[1] : null;
             if (!index) return null;
@@ -193,11 +199,13 @@ export const action: ActionFunction = async ({ request }) => {
               id: formData.get(`loyaltyLevels[${index}].id`) as string,
               level: Number(formData.get(`loyaltyLevels[${index}].level`)),
               name: formData.get(`loyaltyLevels[${index}].name`) as string,
-              requiredPoints: Number(formData.get(`loyaltyLevels[${index}].requiredPoints`)),
+              requiredPoints: Number(
+                formData.get(`loyaltyLevels[${index}].requiredPoints`)
+              ),
             };
           })
           .filter((level): level is TempLoyaltyLevel => level !== null)
-          .map(level => ({
+          .map((level) => ({
             ...level,
           }));
 
@@ -207,7 +215,7 @@ export const action: ActionFunction = async ({ request }) => {
             backgroundImage: backgroundImageUrl || "",
             logo: logoUrl || "",
             color: formData.get("cardDesign.color") as string,
-            bannerImages: [],
+            bannerImages: bannerImages,
           },
           contact: {
             locationUrl: formData.get("contact.locationUrl") as string,
@@ -225,7 +233,6 @@ export const action: ActionFunction = async ({ request }) => {
           id: id,
         };
 
-
         if (action === "create") {
           const [errors, card] = await createDocument<FidelityCard>(
             "cards",
@@ -238,8 +245,6 @@ export const action: ActionFunction = async ({ request }) => {
 
           // Si hay niveles de lealtad, los guardamos en Firestore
           if (loyaltyLevels && loyaltyLevels.length) {
-
-
             // Guardar los niveles en la subcolección
             for (const level of loyaltyLevels) {
               // Omitir el id para que Firestore genere uno nuevo
@@ -257,11 +262,7 @@ export const action: ActionFunction = async ({ request }) => {
             message: "Fidelity card created successfully!",
           });
         } else {
-          await updateDocument<FidelityCard>(
-            "cards",
-            id,
-            fidelityCard
-          );
+          await updateDocument<FidelityCard>("cards", id, fidelityCard);
 
           // Actualizar los niveles de lealtad
           if (id) {
@@ -271,10 +272,15 @@ export const action: ActionFunction = async ({ request }) => {
             );
 
             // Eliminar niveles que ya no existen
-            const newLevelIds = loyaltyLevels.map(level => (level as TempLoyaltyLevel).id);
+            const newLevelIds = loyaltyLevels.map(
+              (level) => (level as TempLoyaltyLevel).id
+            );
             for (const currentLevel of currentLevels) {
               if (currentLevel.id && !newLevelIds.includes(currentLevel.id)) {
-                await deleteDocument(`cards/${id}/loyaltyLevels`, currentLevel.id);
+                await deleteDocument(
+                  `cards/${id}/loyaltyLevels`,
+                  currentLevel.id
+                );
               }
             }
 
@@ -434,11 +440,14 @@ export default function Wallet() {
             <DialogTitle>Eliminar Tarjeta de Fidelidad</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            ¿Está seguro que desea eliminar la tarjeta "{cardToDelete?.cardTitle}"? Esta acción eliminará:
+            ¿Está seguro que desea eliminar la tarjeta "
+            {cardToDelete?.cardTitle}"? Esta acción eliminará:
           </p>
           <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
             <li>La tarjeta de fidelidad y todos sus niveles de lealtad</li>
-            <li>Todas las referencias a esta tarjeta en las cuentas de usuarios</li>
+            <li>
+              Todas las referencias a esta tarjeta en las cuentas de usuarios
+            </li>
             <li>Los puntos acumulados por los usuarios en esta tarjeta</li>
           </ul>
           <p className="text-sm font-medium text-destructive mt-2">
@@ -460,7 +469,9 @@ export default function Wallet() {
                 variant="destructive"
                 disabled={navigation.state === "submitting"}
               >
-                {navigation.state === "submitting" ? "Eliminando..." : "Eliminar"}
+                {navigation.state === "submitting"
+                  ? "Eliminando..."
+                  : "Eliminar"}
               </Button>
             </form>
           </DialogFooter>

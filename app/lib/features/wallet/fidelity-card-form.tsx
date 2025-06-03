@@ -32,6 +32,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "~/components/ui/dialog";
+import React from "react";
 
 interface FidelityCardFormProps {
   fidelityCardToEdit: FidelityCard | undefined;
@@ -44,16 +45,18 @@ interface FidelityCardFormProps {
 }
 
 const ALLOWED_IMAGE_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'image/svg+xml'
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "image/svg+xml",
 ];
 
 const validateImageFile = (file: File) => {
   if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-    throw new Error('Tipo de archivo no permitido. Solo se permiten imágenes (image/jpeg, image/png, image/gif, image/webp, image/svg+xml)');
+    throw new Error(
+      "Tipo de archivo no permitido. Solo se permiten imágenes (image/jpeg, image/png, image/gif, image/webp, image/svg+xml)"
+    );
   }
 };
 
@@ -76,16 +79,6 @@ export function FidelityCardForm({
   const [isLevelDialogOpen, setIsLevelDialogOpen] = useState(false);
   const [currentLevel, setCurrentLevel] = useState<LoyaltyLevel | null>(null);
   const [isEditingLevel, setIsEditingLevel] = useState(false);
-
-  useEffect(() => {
-    if (actionData && actionData.success) {
-      setIsSheetOpen(false);
-      toast({
-        title: actionData.message,
-        variant: actionData.success ? "default" : "destructive",
-      });
-    }
-  }, [actionData, setIsSheetOpen]);
 
   useEffect(() => {
     // Initialize loyalty levels and banners from the existing card data
@@ -131,46 +124,50 @@ export function FidelityCardForm({
     const formData = new FormData(e.currentTarget);
 
     const newLevel: LoyaltyLevel = {
-      id: isEditingLevel && currentLevel?.id ? currentLevel.id : `temp-${Date.now()}`,
+      id:
+        isEditingLevel && currentLevel?.id
+          ? currentLevel.id
+          : `temp-${Date.now()}`,
       level: parseInt(formData.get("level") as string) || 0,
       name: formData.get("name") as string,
       requiredPoints: parseInt(formData.get("requiredPoints") as string) || 0,
     };
 
     if (isEditingLevel) {
-      setLoyaltyLevels(prev =>
-        prev.map(level => level.id === newLevel.id ? newLevel : level)
+      setLoyaltyLevels((prev) =>
+        prev.map((level) => (level.id === newLevel.id ? newLevel : level))
       );
     } else {
-      setLoyaltyLevels(prev => [...prev, newLevel]);
+      setLoyaltyLevels((prev) => [...prev, newLevel]);
     }
 
     closeLevelDialog();
   };
 
   const removeLevel = (id: string) => {
-    setLoyaltyLevels(prev => prev.filter(level => level.id !== id));
+    setLoyaltyLevels((prev) => prev.filter((level) => level.id !== id));
   };
 
   const handleBannerUpload = (file: File) => {
     try {
       validateImageFile(file);
-      setBannerImages(prev => [...prev, file]);
+      setBannerImages((prev) => [...prev, file]);
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Error al subir la imagen",
+        description:
+          error instanceof Error ? error.message : "Error al subir la imagen",
         variant: "destructive",
       });
     }
   };
 
   const removeBanner = (index: number) => {
-    setBannerImages(prev => prev.filter((_, i) => i !== index));
+    setBannerImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const removeExistingBanner = (id: string) => {
-    setBanners(prev => prev.filter(banner => banner.id !== id));
+    setBanners((prev) => prev.filter((banner) => banner.id !== id));
   };
 
   return (
@@ -196,7 +193,11 @@ export function FidelityCardForm({
               {isCreating ? "Create New Fidelity Card" : "Edit Fidelity Card"}
             </SheetTitle>
           </SheetHeader>
-          <Form method="post" className="space-y-4" encType="multipart/form-data">
+          <Form
+            method="post"
+            className="space-y-4"
+            encType="multipart/form-data"
+          >
             <fieldset disabled={navigation.state === "submitting"}>
               <input
                 type="hidden"
@@ -210,20 +211,57 @@ export function FidelityCardForm({
               {/* Add hidden inputs for loyalty levels */}
               {loyaltyLevels.map((level, index) => (
                 <div key={level.id}>
-                  <input type="hidden" name={`loyaltyLevels[${index}].id`} value={level.id || ""} />
-                  <input type="hidden" name={`loyaltyLevels[${index}].level`} value={level.level} />
-                  <input type="hidden" name={`loyaltyLevels[${index}].name`} value={level.name} />
-                  <input type="hidden" name={`loyaltyLevels[${index}].requiredPoints`} value={level.requiredPoints} />
+                  <input
+                    type="hidden"
+                    name={`loyaltyLevels[${index}].id`}
+                    value={level.id || ""}
+                  />
+                  <input
+                    type="hidden"
+                    name={`loyaltyLevels[${index}].level`}
+                    value={level.level}
+                  />
+                  <input
+                    type="hidden"
+                    name={`loyaltyLevels[${index}].name`}
+                    value={level.name}
+                  />
+                  <input
+                    type="hidden"
+                    name={`loyaltyLevels[${index}].requiredPoints`}
+                    value={level.requiredPoints}
+                  />
                 </div>
               ))}
 
               {/* Add hidden inputs for banners */}
               {banners.map((banner, index) => (
                 <div key={banner.id}>
-                  <input type="hidden" name={`banners[${index}].id`} value={banner.id} />
-                  <input type="hidden" name={`banners[${index}].img`} value={banner.img} />
+                  <input
+                    type="hidden"
+                    name={`banners[${index}].id`}
+                    value={banner.id}
+                  />
+                  <input
+                    type="hidden"
+                    name={`banners[${index}].img`}
+                    value={banner.img}
+                  />
                 </div>
               ))}
+
+              {/* Add file inputs for new banner images */}
+              {bannerImages.map((file, index) => {
+                return (
+                  <input
+                    key={index}
+                    type="file"
+                    name="bannerImage"
+                    className="hidden"
+                    style={{ display: "none" }}
+                  />
+                );
+              })}
 
               <div className="space-y-8">
                 {/* Sección General */}
@@ -281,7 +319,7 @@ export function FidelityCardForm({
                     <Card className="mt-2">
                       <CardContent className="p-4">
                         {backgroundImage ||
-                          fidelityCardToEdit?.cardDesign.backgroundImage ? (
+                        fidelityCardToEdit?.cardDesign.backgroundImage ? (
                           <img
                             src={
                               backgroundImage
@@ -311,7 +349,9 @@ export function FidelityCardForm({
                       id="color"
                       name="cardDesign.color"
                       type="color"
-                      defaultValue={fidelityCardToEdit?.cardDesign.color || "#ffffff"}
+                      defaultValue={
+                        fidelityCardToEdit?.cardDesign.color || "#ffffff"
+                      }
                       className="w-full h-10"
                     />
                   </div>
@@ -319,7 +359,9 @@ export function FidelityCardForm({
 
                 {/* Sección de Contacto */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Información de Contacto</h3>
+                  <h3 className="text-lg font-semibold">
+                    Información de Contacto
+                  </h3>
                   <div>
                     <Label htmlFor="phoneNumber">Teléfono</Label>
                     <Input
@@ -359,7 +401,9 @@ export function FidelityCardForm({
                 {/* Sección de Niveles */}
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold">Niveles de Lealtad</h3>
+                    <h3 className="text-lg font-semibold">
+                      Niveles de Lealtad
+                    </h3>
                     <Button
                       type="button"
                       variant="outline"
@@ -372,7 +416,9 @@ export function FidelityCardForm({
 
                   {loyaltyLevels.length === 0 ? (
                     <div className="text-center p-4 border border-dashed rounded-md">
-                      <p className="text-muted-foreground">No hay niveles definidos</p>
+                      <p className="text-muted-foreground">
+                        No hay niveles definidos
+                      </p>
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -382,7 +428,9 @@ export function FidelityCardForm({
                           <Card key={level.id} className="p-0">
                             <CardContent className="p-4 flex justify-between items-center">
                               <div>
-                                <h4 className="font-medium">Nivel {level.level}: {level.name}</h4>
+                                <h4 className="font-medium">
+                                  Nivel {level.level}: {level.name}
+                                </h4>
                                 <p className="text-sm text-muted-foreground">
                                   Puntos requeridos: {level.requiredPoints}
                                 </p>
@@ -400,7 +448,9 @@ export function FidelityCardForm({
                                   type="button"
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => removeLevel(level.id as string)}
+                                  onClick={() =>
+                                    removeLevel(level.id as string)
+                                  }
                                 >
                                   <X className="h-4 w-4" />
                                 </Button>
@@ -477,7 +527,9 @@ export function FidelityCardForm({
 
                   {banners.length === 0 && bannerImages.length === 0 && (
                     <div className="text-center p-4 border border-dashed rounded-md">
-                      <p className="text-muted-foreground">No hay banners definidos</p>
+                      <p className="text-muted-foreground">
+                        No hay banners definidos
+                      </p>
                     </div>
                   )}
                 </div>
@@ -487,8 +539,8 @@ export function FidelityCardForm({
                   {navigation.state === "submitting"
                     ? "Saving..."
                     : isCreating
-                      ? "Create"
-                      : "Save"}
+                    ? "Create"
+                    : "Save"}
                 </Button>
               </SheetFooter>
             </fieldset>
@@ -536,7 +588,11 @@ export function FidelityCardForm({
               />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={closeLevelDialog}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={closeLevelDialog}
+              >
                 Cancelar
               </Button>
               <Button type="submit">
