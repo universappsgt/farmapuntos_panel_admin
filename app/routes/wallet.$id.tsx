@@ -10,18 +10,14 @@ import {
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { Button } from "~/components/ui/button";
 import { toast } from "sonner";
-
 import { FidelityCard, LoyaltyLevel, Banner } from "~/models/types";
 import {
-  createDocument,
-  createSubDocument,
+  fetchDocument,
+  updateDocument,
   deleteDocument,
   fetchDocuments,
-  updateDocument,
+  createDocument,
 } from "~/services/firestore.server";
-import { DataTable } from "~/components/ui/data-table";
-import { fidelityCardColumns } from "~/components/custom/columns";
-import { Skeleton } from "~/components/ui/skeleton";
 import { FidelityCardForm } from "~/lib/features/wallet/fidelity-card-form";
 import { uploadImage } from "~/services/firebase-storage.server";
 import { Buffer } from "buffer";
@@ -33,32 +29,42 @@ import {
   DialogFooter,
 } from "~/components/ui/dialog";
 import { getCurrentUser } from "~/services/firebase-auth.server";
+import { Card, CardContent } from "~/components/ui/card";
+import { Label } from "~/components/ui/label";
+import { Input } from "~/components/ui/input";
+import { Textarea } from "~/components/ui/textarea";
+import { SingleImageUpload } from "~/components/custom/single-image-upload";
+import { MultiImageUpload } from "~/components/custom/multi-image-upload";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { Plus, X, Edit } from "lucide-react";
 
-
-
-export const loader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async ({ params }) => {
   const user = await getCurrentUser();
   if (!user) {
     return redirect("/login");
   }
 
-  const fidelityCards: FidelityCard[] = await fetchDocuments<FidelityCard>(
-    "cards"
-  );
-
-  for (const card of fidelityCards) {
-    try {
-      const levels = await fetchDocuments<LoyaltyLevel>(
-        `cards/${card.id}/loyaltyLevels`
-      );
-      card.loyaltyLevels = levels;
-    } catch (error) {
-      console.error(`Error loading loyalty levels for card ${card.id}:`, error);
-      card.loyaltyLevels = [];
-    }
+  const id = params.id;
+  if (!id) {
+    throw new Error("ID no proporcionado");
   }
 
-  return { fidelityCards };
+  const fidelityCard = await fetchDocument<FidelityCard>("cards", id);
+  if (!fidelityCard) {
+    throw new Error("Tarjeta no encontrada");
+  }
+
+  try {
+    const levels = await fetchDocuments<LoyaltyLevel>(
+      `cards/${id}/loyaltyLevels`
+    );
+    fidelityCard.loyaltyLevels = levels;
+  } catch (error) {
+    console.error(`Error loading loyalty levels for card ${id}:`, error);
+    fidelityCard.loyaltyLevels = [];
+  }
+
+  return { fidelityCard };
 };
 
 export function ErrorBoundary() {
@@ -87,47 +93,21 @@ export function ErrorBoundary() {
   );
 }
 
-export const action: ActionFunction = async ({ request }) => {
+export const action: ActionFunction = async ({ request, params }) => {
   const formData = await request.formData();
   const action = formData.get("action");
+  const id = params.id;
+
+  if (!id) {
+    return json({
+      success: false,
+      message: "ID no proporcionado",
+    });
+  }
 
   try {
     switch (action) {
-      case "create":
-
-          // const [errors, card] = await createDocument<FidelityCard>(
-          //   "cards",
-          //   fidelityCard
-          // );
-          // if (errors) {
-          //   return json({
-          //     success: false,
-          //     message: "Error al crear la tarjeta. Por favor, intente nuevamente.",
-          //   });
-          // }
-
-          // // Si hay niveles de lealtad, los guardamos en Firestore
-          // if (loyaltyLevels && loyaltyLevels.length) {
-          //   // Guardar los niveles en la subcolección
-          //   for (const level of loyaltyLevels) {
-          //     // Omitir el id para que Firestore genere uno nuevo
-          //     const { id: levelId, ...levelData } = level as TempLoyaltyLevel;
-          //     await createSubDocument<LoyaltyLevel>(
-          //       "cards",
-          //       "loyaltyLevels",
-          //       levelData
-          //     );
-          //   }
-          // }
-
-          // return json({
-          //   success: true,
-          //   message: "Tarjeta creada exitosamente!",
-          // });
-        break;
       case "edit": {
-        const id = formData.get("id") as string;
-
         //Obtiene archivos o si no existe, null
         const logoFile = formData.get("logo") as File;
         const backgroundImageFile = formData.get("backgroundImage") as File;
@@ -141,6 +121,7 @@ export const action: ActionFunction = async ({ request }) => {
         let logoUrl = currentLogoUrl || "";
         let backgroundImageUrl = currentBackgroundImageUrl || "";
         let productsImageUrl = currentProductsImageUrl || "";
+
         // Procesar imagen de fondo
         if (backgroundImageFile && backgroundImageFile.size > 0) {
           const arrayBuffer = await backgroundImageFile.arrayBuffer();
@@ -252,66 +233,63 @@ export const action: ActionFunction = async ({ request }) => {
             initialCredits: Number(formData.get("rules.initialCredits")),
             status: formData.get("rules.status") as string,
           },
-          id: id,
         };
 
-          try {
-            await updateDocument<FidelityCard>("cards", id, fidelityCard);
+        try {
+          await updateDocument<FidelityCard>("cards", id, fidelityCard);
 
-            // Actualizar los niveles de lealtad
-            if (id) {
-              // Primero, obtener los niveles actuales para comparar
-              const currentLevels = await fetchDocuments<LoyaltyLevel>(
-                `cards/${id}/loyaltyLevels`
-              );
+          // Actualizar los niveles de lealtad
+          if (id) {
+            // Primero, obtener los niveles actuales para comparar
+            const currentLevels = await fetchDocuments<LoyaltyLevel>(
+              `cards/${id}/loyaltyLevels`
+            );
 
-              // Eliminar niveles que ya no existen
-              const newLevelIds = loyaltyLevels.map(
-                (level) => (level as TempLoyaltyLevel).id
-              );
-              for (const currentLevel of currentLevels) {
-                if (currentLevel.id && !newLevelIds.includes(currentLevel.id)) {
-                  await deleteDocument(
-                    `cards/${id}/loyaltyLevels`,
-                    currentLevel.id
-                  );
-                }
-              }
-
-              // Actualizar o crear nuevos niveles
-              for (const level of loyaltyLevels) {
-                const typedLevel = level as TempLoyaltyLevel;
-                const levelId = typedLevel.id;
-                if (levelId && levelId.startsWith("temp-")) {
-                  // Es un nuevo nivel, crear documento
-                  const { id: tempId, ...levelData } = typedLevel;
-                  await createDocument(`cards/${id}/loyaltyLevels`, levelData);
-                } else if (levelId) {
-                  // Es un nivel existente, actualizarlo
-                  const { id: tempId, ...levelData } = typedLevel;
-                  await updateDocument(
-                    `cards/${id}/loyaltyLevels`,
-                    levelId,
-                    levelData
-                  );
-                }
+            // Eliminar niveles que ya no existen
+            const newLevelIds = loyaltyLevels.map(
+              (level) => (level as TempLoyaltyLevel).id
+            );
+            for (const currentLevel of currentLevels) {
+              if (currentLevel.id && !newLevelIds.includes(currentLevel.id)) {
+                await deleteDocument(
+                  `cards/${id}/loyaltyLevels`,
+                  currentLevel.id
+                );
               }
             }
 
-            return json({
-              success: true,
-              message: "Tarjeta actualizada exitosamente!",
-            });
-          } catch (error) {
-            return json({
-              success: false,
-              message: "Error al actualizar la tarjeta. Por favor, intente nuevamente.",
-            });
+            // Actualizar o crear nuevos niveles
+            for (const level of loyaltyLevels) {
+              const typedLevel = level as TempLoyaltyLevel;
+              const levelId = typedLevel.id;
+              if (levelId && levelId.startsWith("temp-")) {
+                // Es un nuevo nivel, crear documento
+                const { id: tempId, ...levelData } = typedLevel;
+                await createDocument(`cards/${id}/loyaltyLevels`, levelData);
+              } else if (levelId) {
+                // Es un nivel existente, actualizarlo
+                const { id: tempId, ...levelData } = typedLevel;
+                await updateDocument(
+                  `cards/${id}/loyaltyLevels`,
+                  levelId,
+                  levelData
+                );
+              }
+            }
           }
+
+          return json({
+            success: true,
+            message: "Tarjeta actualizada exitosamente!",
+          });
+        } catch (error) {
+          return json({
+            success: false,
+            message: "Error al actualizar la tarjeta. Por favor, intente nuevamente.",
+          });
+        }
       }
       case "delete": {
-        const id = formData.get("id") as string;
-
         // Buscar y eliminar todas las referencias en userCards
         const userCards = await fetchDocuments<{ id: string }>("userCards", [
           "fidelityCardId",
@@ -339,10 +317,7 @@ export const action: ActionFunction = async ({ request }) => {
 
         // Finalmente, eliminar la tarjeta
         await deleteDocument("cards", id);
-        return json({
-          success: true,
-          message: "Tarjeta de fidelidad eliminada exitosamente!",
-        });
+        return redirect("/wallet");
       }
     }
   } catch (error) {
@@ -354,24 +329,10 @@ export const action: ActionFunction = async ({ request }) => {
   }
 };
 
-export function HydrateFallback() {
-  return (
-    <div className="space-y-4">
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-10 w-full" />
-    </div>
-  );
-}
-
-export default function Wallet() {
-  const { fidelityCards } = useLoaderData<{ fidelityCards: FidelityCard[] }>();
-  const [isCreating, setIsCreating] = useState(false);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+export default function WalletDetail() {
+  const { fidelityCard } = useLoaderData<{ fidelityCard: FidelityCard }>();
+  const [isEditing, setIsEditing] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [cardToDelete, setCardToDelete] = useState<FidelityCard | null>(null);
   const navigation = useNavigation();
   const actionData = useActionData<{ success: boolean; message: string }>();
 
@@ -388,7 +349,6 @@ export default function Wallet() {
           },
         });
         setIsDeleteDialogOpen(false);
-        setCardToDelete(null);
       } else {
         toast.error(actionData.message, {
           duration: 3000,
@@ -404,41 +364,192 @@ export default function Wallet() {
   }, [actionData]);
 
   return (
-    <div className="container mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Laboratorios, 🔬</h1>
-      <FidelityCardForm
-        isSheetOpen={isSheetOpen}
-        setIsSheetOpen={setIsSheetOpen}
-        fidelityCardToEdit={undefined}
-        isCreating={isCreating}
-        setIsCreating={setIsCreating}
-        editingId={null}
-        setEditingId={() => {}}
-      />
-      <DataTable
-        columns={fidelityCardColumns({
-          editAction: (id) => {
-            // Ya no necesitamos esta función
-          },
-          deleteAction: (card: FidelityCard) => {
-            setCardToDelete(card);
-            setIsDeleteDialogOpen(true);
-          },
-          navigation,
-        })}
-        data={fidelityCards}
-        filterColumn="cardTitle"
-      />
+    <div className="container mx-auto py-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">{fidelityCard.cardTitle}</h1>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setIsEditing(!isEditing)}
+          >
+            {isEditing ? "Cancelar" : "Editar"}
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => setIsDeleteDialogOpen(true)}
+          >
+            Eliminar
+          </Button>
+        </div>
+      </div>
 
-      {/* Delete Confirmation Dialog */}
+      {isEditing ? (
+        <FidelityCardForm
+          isSheetOpen={true}
+          setIsSheetOpen={() => {}}
+          fidelityCardToEdit={fidelityCard}
+          isCreating={false}
+          setIsCreating={() => {}}
+          editingId={fidelityCard.id}
+          setEditingId={() => {}}
+        />
+      ) : (
+        <Tabs defaultValue="general" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="general">General</TabsTrigger>
+            <TabsTrigger value="design">Diseño</TabsTrigger>
+            <TabsTrigger value="levels">Niveles</TabsTrigger>
+            <TabsTrigger value="banners">Banners</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="general" className="space-y-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div>
+                    <Label>Título</Label>
+                    <p className="text-lg">{fidelityCard.cardTitle}</p>
+                  </div>
+                  <div>
+                    <Label>Descripción</Label>
+                    <p className="text-lg">{fidelityCard.description}</p>
+                  </div>
+                  <div>
+                    <Label>Teléfono</Label>
+                    <p className="text-lg">{fidelityCard.contact.phoneNumber}</p>
+                  </div>
+                  <div>
+                    <Label>Sitio Web</Label>
+                    <p className="text-lg">{fidelityCard.contact.website}</p>
+                  </div>
+                  <div>
+                    <Label>Créditos Iniciales</Label>
+                    <p className="text-lg">{fidelityCard.rules.initialCredits}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="design" className="space-y-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div>
+                    <Label>Logo</Label>
+                    {fidelityCard.cardDesign.logo ? (
+                      <img
+                        src={fidelityCard.cardDesign.logo}
+                        alt="Logo"
+                        className="w-32 h-32 object-contain"
+                      />
+                    ) : (
+                      <p>No hay logo</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label>Imagen de Fondo</Label>
+                    {fidelityCard.cardDesign.backgroundImage ? (
+                      <img
+                        src={fidelityCard.cardDesign.backgroundImage}
+                        alt="Background"
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                    ) : (
+                      <p>No hay imagen de fondo</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label>Imagen de Productos</Label>
+                    {fidelityCard.cardDesign.productsImage ? (
+                      <img
+                        src={fidelityCard.cardDesign.productsImage}
+                        alt="Products"
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                    ) : (
+                      <p>No hay imagen de productos</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label>Color</Label>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-8 h-8 rounded-full border"
+                        style={{ backgroundColor: fidelityCard.cardDesign.color }}
+                      />
+                      <p>{fidelityCard.cardDesign.color}</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="levels" className="space-y-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  {fidelityCard.loyaltyLevels?.length === 0 ? (
+                    <p>No hay niveles definidos</p>
+                  ) : (
+                    <div className="grid gap-4">
+                      {fidelityCard.loyaltyLevels
+                        ?.sort((a, b) => a.level - b.level)
+                        .map((level) => (
+                          <Card key={level.id}>
+                            <CardContent className="p-4">
+                              <h4 className="font-medium">
+                                Nivel {level.level}: {level.name}
+                              </h4>
+                              <p className="text-sm text-muted-foreground">
+                                Puntos requeridos: {level.requiredPoints}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="banners" className="space-y-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  {fidelityCard.cardDesign.bannerImages?.length === 0 ? (
+                    <p>No hay banners definidos</p>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                      {fidelityCard.cardDesign.bannerImages?.map((banner) => (
+                        <Card key={banner.id}>
+                          <CardContent className="p-4">
+                            <img
+                              src={banner.img}
+                              alt="Banner"
+                              className="w-full h-40 object-cover rounded-md"
+                            />
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      )}
+
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Eliminar Tarjeta de Fidelidad</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            ¿Está seguro que desea eliminar la tarjeta "
-            {cardToDelete?.cardTitle}"? Esta acción eliminará:
+            ¿Está seguro que desea eliminar la tarjeta "{fidelityCard.cardTitle}"? Esta acción eliminará:
           </p>
           <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
             <li>La tarjeta de fidelidad y todos sus niveles de lealtad</li>
@@ -453,7 +564,6 @@ export default function Wallet() {
           <DialogFooter>
             <form method="post" className="flex gap-2">
               <input type="hidden" name="action" value="delete" />
-              <input type="hidden" name="id" value={cardToDelete?.id || ""} />
               <Button
                 type="button"
                 variant="outline"
@@ -476,4 +586,4 @@ export default function Wallet() {
       </Dialog>
     </div>
   );
-}
+} 
