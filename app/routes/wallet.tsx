@@ -369,6 +369,7 @@ export function HydrateFallback() {
 export default function Wallet() {
   const { fidelityCards } = useLoaderData<{ fidelityCards: FidelityCard[] }>();
   const [isCreating, setIsCreating] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [cardToDelete, setCardToDelete] = useState<FidelityCard | null>(null);
@@ -409,16 +410,17 @@ export default function Wallet() {
       <FidelityCardForm
         isSheetOpen={isSheetOpen}
         setIsSheetOpen={setIsSheetOpen}
-        fidelityCardToEdit={undefined}
+        fidelityCardToEdit={getFidelityCardToEdit()}
         isCreating={isCreating}
         setIsCreating={setIsCreating}
-        editingId={null}
-        setEditingId={() => {}}
+        editingId={editingId}
+        setEditingId={setEditingId}
       />
       <DataTable
         columns={fidelityCardColumns({
           editAction: (id) => {
-            // Ya no necesitamos esta función
+            setEditingId(id);
+            setIsSheetOpen(true);
           },
           deleteAction: (card: FidelityCard) => {
             setCardToDelete(card);
@@ -476,4 +478,8 @@ export default function Wallet() {
       </Dialog>
     </div>
   );
+
+  function getFidelityCardToEdit() {
+    return fidelityCards.find((card) => card.id === editingId);
+  }
 }

@@ -41,8 +41,11 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
   }
   
+  // Establecer tema por defecto como "light" si no hay tema guardado
+  const currentTheme = getTheme() || "light";
+  
   return {
-    theme: getTheme(),
+    theme: currentTheme,
     user: userData,
   };
 };

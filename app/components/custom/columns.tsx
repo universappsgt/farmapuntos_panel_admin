@@ -177,22 +177,27 @@ export const fidelityCardColumns = ({
     header: "Color",
     cell: ({ row }) => <div>{row.original.cardDesign.color}</div>,
   },
+
   {
     accessorKey: "rules.initialCredits",
     header: "Créditos Iniciales",
     cell: ({ row }) => <div>{row.original.rules.initialCredits}</div>,
   },
+  // {
+  //   accessorKey: "rules.status",
+  //   header: "Status",
+  //   cell: ({ row }) => <div>{row.original.rules.status}</div>,
+  // },
   {
     id: "actions",
     cell: ({ row }) => (
       <div className="flex space-x-2">
         <Button
-          asChild
-          variant="default"
+          onClick={() => editAction(row.original.id)}
+          variant="secondary"
+          disabled={navigation.state === "submitting"}
         >
-          <Link to={`/wallet/${row.original.id}`}>
-            Ver
-          </Link>
+          Editar
         </Button>
         <Button
           onClick={() => deleteAction(row.original)}
