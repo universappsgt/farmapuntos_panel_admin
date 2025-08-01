@@ -14,7 +14,7 @@ import {
 import { Reward } from "~/models/types";
 import { toast } from "~/hooks/use-toast";
 import { Card, CardContent } from "~/components/ui/card";
-import { ImageUpload } from "~/components/custom/image-upload";
+import { SingleImageUpload } from "~/components/custom/single-image-upload";
 
 interface RewardFormProps {
   rewardToEdit: Reward | undefined;
@@ -78,6 +78,13 @@ export function RewardForm({
             {!isCreating && (
               <input type="hidden" name="id" value={editingId || ""} />
             )}
+            {!isCreating && rewardToEdit?.imageUrl && (
+              <input
+                type="hidden"
+                name="currentImageUrl"
+                value={rewardToEdit.imageUrl}
+              />
+            )}
             <div className="mb-4">
               <Label htmlFor="name">Nombre</Label>
               <Input
@@ -89,29 +96,12 @@ export function RewardForm({
             </div>
             <div className="mb-4">
               <Label htmlFor="imageUrl">Imagen</Label>
-              <Card className="mt-2">
-                <CardContent className="p-4">
-                  {imageFile || rewardToEdit?.imageUrl ? (
-                    <img
-                      src={
-                        imageFile
-                          ? URL.createObjectURL(imageFile)
-                          : rewardToEdit?.imageUrl
-                      }
-                      alt="Image Preview"
-                      className="w-full h-40 object-cover rounded-md"
-                    />
-                  ) : (
-                    <div className="w-full h-40 bg-muted flex items-center justify-center rounded-md">
-                      Sin imagen
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-              <ImageUpload
+              <SingleImageUpload
                 id="imageUrl"
                 name="imageUrl"
                 onImageUpload={(file) => setImageFile(file)}
+                initialImageUrl={rewardToEdit?.imageUrl}
+                helpText="Sube una imagen para la recompensa (máx 3MB)"
               />
             </div>
             <div className="mb-4">

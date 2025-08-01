@@ -4,6 +4,7 @@ import {
   json,
   useNavigation,
   useActionData,
+  redirect,
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import {
@@ -22,11 +23,15 @@ import { DataTable } from "~/components/ui/data-table";
 import { transactionColumns } from "~/components/custom/columns";
 import { TransactionForm } from "~/lib/features/transactions/transaction-form";
 import { toast } from "sonner";
+import { getCurrentUser } from "~/services/firebase-auth.server";
 
 export const loader: LoaderFunction = async () => {
-  const transactions: Transaction[] = await fetchTransactions(
-    "transactions"
-  );
+  const user = await getCurrentUser();
+  if (!user) {
+    return redirect("/login");
+  }
+
+  const transactions: Transaction[] = await fetchTransactions("transactions");
 
   return { transactions };
 };
@@ -38,10 +43,6 @@ export const action: ActionFunction = async ({ request }) => {
   try {
     switch (action) {
       case "edit": {
-
-        
-
-
         const id = formData.get("id") as string;
         const transaction: Partial<Transaction> = {
           userId: formData.get("userId") as string,
@@ -148,6 +149,8 @@ export default function Transactions() {
   );
 
   function getTransactionToEdit() {
-    return transactions.find((transaction) => transaction.id === editingId) as unknown as Transaction | undefined;
+    return transactions.find(
+      (transaction) => transaction.id === editingId
+    ) as unknown as Transaction | undefined;
   }
 }

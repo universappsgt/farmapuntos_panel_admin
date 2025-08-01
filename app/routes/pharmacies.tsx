@@ -5,6 +5,7 @@ import {
   useActionData,
   json,
   useNavigation,
+  redirect,
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { Pharmacy } from "~/models/types";
@@ -18,8 +19,13 @@ import { DataTable } from "~/components/ui/data-table";
 import { pharmacyColumns } from "~/components/custom/columns";
 import { PharmacyForm } from "~/lib/features/pharmacies/pharmacy-form";
 import { toast } from "sonner";
+import { getCurrentUser } from "~/services/firebase-auth.server";
 
 export const loader: LoaderFunction = async () => {
+  const user = await getCurrentUser();
+  if (!user) {
+    return redirect("/login");
+  }
   const pharmacies: Pharmacy[] = await fetchDocuments<Pharmacy>("pharmacies");
   return { pharmacies };
 };

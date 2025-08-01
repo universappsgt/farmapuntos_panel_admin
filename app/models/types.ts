@@ -33,7 +33,10 @@ export interface FidelityCard {
   cardTitle: string;
   cardDesign: {
     backgroundImage: string;
+    productsImage: string;
     logo: string;
+    color: string;
+    bannerImages: Banner[];
   };
   contact: {
     locationUrl: string;

@@ -1,15 +1,14 @@
-import { json, redirect } from "@remix-run/react";
+import { redirect } from "@remix-run/node";
+import { getCurrentUser } from "~/services/firebase-auth.server";
 
 export const loader = async () => {
-  await redirect("/users");
-  return json({ ok: true });
+  const user = await getCurrentUser();
+  if (!user) {
+    return redirect("/login");
+  }
+  return redirect("/users");
 };
 
 export default function Index() {
-  return (
-    <div>
-      <h1>Welcome to the Basic HTML Page</h1>
-      <p>This is a simple HTML structure returned by the Index component.</p>
-    </div>
-  );
+  return null;
 }

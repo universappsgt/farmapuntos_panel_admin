@@ -5,6 +5,7 @@ import {
   useNavigation,
   useActionData,
   Form,
+  redirect,
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { Banner } from "~/models/types";
@@ -18,10 +19,15 @@ import { DataTable } from "~/components/ui/data-table";
 import { BannerForm } from "~/lib/features/banners/banner-form";
 import { bannerColumns } from "~/components/custom/banner-columns";
 import { toast } from "sonner";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getCurrentUser } from "~/services/firebase-auth.server";
 import { uploadImage } from "~/services/firebase-storage.server";
 
 export const loader: LoaderFunction = async () => {
+  const user = await getCurrentUser();
+  if (!user) {
+    return redirect("/login");
+  }
+
   const banners: Banner[] = await fetchDocuments("banners");
   return { banners };
 };

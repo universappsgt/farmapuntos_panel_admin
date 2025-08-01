@@ -4,8 +4,13 @@ import {
   json,
   useNavigation,
   useActionData,
+  redirect,
 } from "@remix-run/react";
-import type { LoaderFunction, ActionFunction, SerializeFrom } from "@remix-run/node";
+import type {
+  LoaderFunction,
+  ActionFunction,
+  SerializeFrom,
+} from "@remix-run/node";
 import { Reward } from "~/models/types";
 import {
   createDocument,
@@ -20,8 +25,14 @@ import { toast } from "sonner";
 
 import { parseISO } from "date-fns";
 import { uploadImage } from "~/services/firebase-storage.server";
+import { getCurrentUser } from "~/services/firebase-auth.server";
 
 export const loader: LoaderFunction = async () => {
+  const user = await getCurrentUser();
+  if (!user) {
+    return redirect("/login");
+  }
+
   const rewards: Reward[] = await fetchDocuments<Reward>("rewards");
   return { rewards };
 };
@@ -36,7 +47,7 @@ export const action: ActionFunction = async ({ request }) => {
         const imageFile = formData.get("imageUrl") as File;
         let imageUrl = "";
 
-        if (imageFile.size > 0) {
+        if (imageFile && imageFile.size > 0) {
           const arrayBuffer = await imageFile.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
           imageUrl = await uploadImage(buffer, imageFile.name, "rewards");
@@ -55,15 +66,24 @@ export const action: ActionFunction = async ({ request }) => {
           "rewards",
           reward
         );
+
+        if (errors) {
+          return json({
+            success: false,
+            message: "Error al crear la recompensa. Por favor, intente nuevamente.",
+          });
+        }
+
         return json({
           success: true,
-          message: "Reward created successfully!",
+          message: "Recompensa creada exitosamente!",
         });
       }
       case "edit": {
         const id = formData.get("id") as string;
         const imageFile = formData.get("imageUrl") as File;
-        let imageUrl = formData.get("currentImageUrl") as string;
+        const currentImageUrl = formData.get("currentImageUrl") as string;
+        let imageUrl = currentImageUrl || "";
 
         if (imageFile && imageFile.size > 0) {
           const arrayBuffer = await imageFile.arrayBuffer();
@@ -79,26 +99,45 @@ export const action: ActionFunction = async ({ request }) => {
           stock: Number(formData.get("stock")),
         };
 
-        await updateDocument<Reward>("rewards", id, reward);
-        return json({
-          success: true,
-          message: "Reward updated successfully!",
-        });
+        try {
+          await updateDocument<Reward>("rewards", id, reward);
+          return json({
+            success: true,
+            message: "Recompensa actualizada exitosamente!",
+          });
+        } catch (error) {
+          return json({
+            success: false,
+            message: "Error al actualizar la recompensa. Por favor, intente nuevamente.",
+          });
+        }
       }
       case "delete": {
         const id = formData.get("id") as string;
-        await deleteDocument("rewards", id);
-        return json({
-          success: true,
-          message: "Reward deleted successfully!",
-        });
+        try {
+          await deleteDocument("rewards", id);
+          return json({
+            success: true,
+            message: "Recompensa eliminada exitosamente!",
+          });
+        } catch (error) {
+          return json({
+            success: false,
+            message: "Error al eliminar la recompensa. Por favor, intente nuevamente.",
+          });
+        }
       }
+      default:
+        return json({
+          success: false,
+          message: "Acción no válida",
+        });
     }
   } catch (error) {
     console.error("Error handling action:", error);
     return json({
       success: false,
-      message: "An error occurred. Please try again.",
+      message: "Ocurrió un error. Por favor, intente nuevamente.",
     });
   }
 };

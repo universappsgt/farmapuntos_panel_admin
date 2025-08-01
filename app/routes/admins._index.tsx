@@ -6,6 +6,7 @@ import {
     useActionData,
     Link,
     useNavigate,
+    redirect,
 } from "@remix-run/react";
 import { type LoaderFunction, type ActionFunction } from "@remix-run/node";
 import { User } from "~/models/types";
@@ -20,9 +21,14 @@ import { adminColumns } from "~/components/custom/columns";
 import { AdminForm } from "~/lib/features/admins/admin-form";
 import { toast } from "sonner";
 import { createUserWithEmailAndPassword, deleteUser, getAuth } from "firebase/auth";
-import { auth } from "firebase";
+import { auth, getCurrentUser } from "firebase";
 
 export const loader: LoaderFunction = async () => {
+
+    const user = await getCurrentUser();
+    if (!user) {
+        return redirect("/login");
+    }
     const admins: User[] = await fetchDocuments<User>("users", [
         "isAdministrator",
         "==",
