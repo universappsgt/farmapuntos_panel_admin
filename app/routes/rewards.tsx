@@ -27,8 +27,8 @@ import { parseISO } from "date-fns";
 import { uploadImage } from "~/services/firebase-storage.server";
 import { getCurrentUser } from "~/services/firebase-auth.server";
 
-export const loader: LoaderFunction = async () => {
-  const user = await getCurrentUser();
+export const loader: LoaderFunction = async ({ request }) => {
+  const user = await getCurrentUser(request);
   if (!user) {
     return redirect("/login");
   }

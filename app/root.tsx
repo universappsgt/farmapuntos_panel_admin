@@ -20,22 +20,22 @@ import { clsx } from "clsx";
 import { MainNavigation } from "./components/ui/main-navigation";
 import { SidebarProvider, SidebarTrigger } from "./components/ui/sidebar";
 import { Toaster } from "./components/ui/sonner";
-import { auth } from "firebase";
 import { fetchDocument } from "~/services/firestore.server";
 import type { User } from "~/models/types";
+import { getSessionUser } from "~/services/sessions.server";
 
 export const links: LinksFunction = () => [{ rel: "stylesheet", href: styles }];
 
 export const loader: LoaderFunction = async ({ request }) => {
   const { getTheme } = await themeSessionResolver(request);
   
-  // Obtener el token de la sesión
-  const session = await auth.currentUser;
+  // Obtener el usuario de la sesión
+  const sessionUser = await getSessionUser(request);
   let userData = null;
 
-  if (session) {
+  if (sessionUser) {
     try {
-      userData = await fetchDocument<User>("users", session.uid);
+      userData = await fetchDocument<User>("users", sessionUser.uid);
     } catch (error) {
       console.error("Error fetching user data:", error);
     }

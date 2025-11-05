@@ -23,8 +23,8 @@ import { collection, addDoc, writeBatch, doc } from "firebase/firestore";
 import { getCurrentUser } from "~/services/firebase-auth.server";
 
 
-export const loader: LoaderFunction = async () => {
-  const user = await getCurrentUser();
+export const loader: LoaderFunction = async ({ request }) => {
+  const user = await getCurrentUser(request);
   if (!user) {
     return redirect("/login");
   }

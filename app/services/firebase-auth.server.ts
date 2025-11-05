@@ -1,5 +1,6 @@
 import { auth } from "../../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { getSessionUser } from "./sessions.server";
 
 export async function loginUser(email: string, password: string) {
   try {
@@ -22,7 +23,11 @@ export async function logoutUser() {
   }
 }
 
-
-export async function getCurrentUser() {
+export async function getCurrentUser(request?: Request) {
+  // Si hay un request, usar la sesión del servidor
+  if (request) {
+    return await getSessionUser(request);
+  }
+  // Si no hay request, intentar usar auth.currentUser (para compatibilidad)
   return auth.currentUser;
 }

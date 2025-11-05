@@ -17,10 +17,10 @@ import {
 } from "~/components/ui/card";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "firebase";
-import { getCurrentUser } from "~/services/firebase-auth.server";
+import { getSessionUser, createUserSession } from "~/services/sessions.server";
 
-export const loader: LoaderFunction = async () => {
-  const user = await getCurrentUser();
+export const loader: LoaderFunction = async ({ request }) => {
+  const user = await getSessionUser(request);
   if (user) {
     return redirect("/users");
   }
@@ -65,7 +65,7 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
-    return redirect("/users");
+    return await createUserSession(userCredential.user, "/users");
   } catch (error) {
     return json(
       { error: "Correo electrónico o contraseña inválidos" },

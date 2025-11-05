@@ -21,11 +21,11 @@ import { adminColumns } from "~/components/custom/columns";
 import { AdminForm } from "~/lib/features/admins/admin-form";
 import { toast } from "sonner";
 import { createUserWithEmailAndPassword, deleteUser, getAuth } from "firebase/auth";
-import { auth, getCurrentUser } from "firebase";
+import { auth } from "firebase";
+import { getCurrentUser } from "~/services/firebase-auth.server";
 
-export const loader: LoaderFunction = async () => {
-
-    const user = await getCurrentUser();
+export const loader: LoaderFunction = async ({ request }) => {
+    const user = await getCurrentUser(request);
     if (!user) {
         return redirect("/login");
     }

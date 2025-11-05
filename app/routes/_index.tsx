@@ -1,8 +1,8 @@
 import { redirect } from "@remix-run/node";
 import { getCurrentUser } from "~/services/firebase-auth.server";
 
-export const loader = async () => {
-  const user = await getCurrentUser();
+export const loader = async ({ request }: { request: Request }) => {
+  const user = await getCurrentUser(request);
   if (!user) {
     return redirect("/login");
   }
