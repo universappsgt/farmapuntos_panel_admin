@@ -113,8 +113,9 @@ export function MainNavigation({ user }: MainNavigationProps) {
     <Sidebar className="border-r bg-background">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-foreground/70">
-            Farmapuntos
+          <SidebarGroupLabel className="text-foreground/70 text-center">
+            <img src="/farmapuntos.png" alt="Farmapuntos" className="p-10" />
+            {/* Farmapuntos */}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>

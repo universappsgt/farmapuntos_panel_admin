@@ -82,12 +82,15 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Card className="w-[350px]">
-        <CardHeader>
-          <CardTitle>Iniciar Sesión</CardTitle>
-          <CardDescription>
-            Ingresa tus credenciales para acceder al panel
-          </CardDescription>
-        </CardHeader>
+        <CardHeader className="text-center">
+            <div className="flex flex-col items-center justify-center mb-2">
+              <img src="/farmapuntos.png" alt="Farmapuntos" className="p-10"/>
+            </div>
+            <CardTitle>Inicia sesión en tu cuenta</CardTitle>
+            <CardDescription>
+              Ingresa tu correo electrónico y contraseña para iniciar sesión.
+            </CardDescription>
+          </CardHeader>
         <CardContent>
           <Form method="post" className="space-y-4">
             <div className="space-y-2">
