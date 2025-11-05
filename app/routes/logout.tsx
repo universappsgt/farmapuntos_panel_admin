@@ -1,9 +1,6 @@
-import { redirect } from "@remix-run/node";
 import type { ActionFunction } from "@remix-run/node";
-import { auth } from "firebase";
-import { signOut } from "firebase/auth";
+import { signOutUser } from "~/services/sessions.server";
 
-export const action: ActionFunction = async () => {
-  await signOut(auth);
-  return redirect("/login");
+export const action: ActionFunction = async ({ request }) => {
+  return await signOutUser(request);
 }; 
